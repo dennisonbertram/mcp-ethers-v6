@@ -215,6 +215,34 @@ const tools = [
             required: ["name"]
         },
     },
+    {
+        name: "formatEther",
+        description: "Convert a wei value to a decimal string in ether",
+        inputSchema: {
+            type: "object",
+            properties: {
+                wei: {
+                    type: "string",
+                    description: "The wei value to format",
+                },
+            },
+            required: ["wei"]
+        },
+    },
+    {
+        name: "parseEther",
+        description: "Convert an ether value to wei",
+        inputSchema: {
+            type: "object",
+            properties: {
+                ether: {
+                    type: "string",
+                    description: "The ether value to parse",
+                },
+            },
+            required: ["ether"]
+        },
+    },
 ];
 
 // Define available tools
@@ -394,6 +422,28 @@ const toolHandlers = {
 
         return {
             content: [{ type: "text", text: `The address for ${name} is ${address}` }],
+        };
+    },
+
+    formatEther: async (args: unknown) => {
+        const schema = z.object({
+            wei: z.string()
+        });
+        const { wei } = schema.parse(args);
+        const formatted = ethersService.formatEther(wei);
+        return {
+            content: [{ type: "text", text: `${wei} wei = ${formatted} ETH` }],
+        };
+    },
+
+    parseEther: async (args: unknown) => {
+        const schema = z.object({
+            ether: z.string()
+        });
+        const { ether } = schema.parse(args);
+        const parsed = ethersService.parseEther(ether);
+        return {
+            content: [{ type: "text", text: `${ether} ETH = ${parsed} wei` }],
         };
     },
 };
