@@ -175,4 +175,23 @@ export class EthersService {
             this.handleProviderError(error, "fetch transaction details", { txHash });
         }
     }
+
+    async getGasPrice(provider?: string): Promise<string> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            const feeData = await selectedProvider.getFeeData();
+            return ethers.formatUnits(feeData.gasPrice || 0n, "gwei");
+        } catch (error) {
+            this.handleProviderError(error, "get gas price");
+        }
+    }
+
+    async getFeeData(provider?: string): Promise<ethers.FeeData> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.getFeeData();
+        } catch (error) {
+            this.handleProviderError(error, "get fee data");
+        }
+    }
 } 

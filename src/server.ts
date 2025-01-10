@@ -135,6 +135,32 @@ const tools = [
             required: ["txHash"]
         },
     },
+    {
+        name: "getGasPrice",
+        description: "Get the current gas price",
+        inputSchema: {
+            type: "object",
+            properties: {
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+        },
+    },
+    {
+        name: "getFeeData",
+        description: "Get the current network fee data",
+        inputSchema: {
+            type: "object",
+            properties: {
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+        },
+    },
 ];
 
 // Define available tools
@@ -238,6 +264,24 @@ const toolHandlers = {
 
         return {
             content: [{ type: "text", text: JSON.stringify(txDetails, null, 2) }],
+        };
+    },
+
+    getGasPrice: async (args: unknown) => {
+        const schema = z.object({ provider: z.string().optional() });
+        const { provider } = schema.parse(args);
+        const gasPrice = await ethersService.getGasPrice(provider);
+        return {
+            content: [{ type: "text", text: `The current gas price is ${gasPrice} gwei` }],
+        };
+    },
+
+    getFeeData: async (args: unknown) => {
+        const schema = z.object({ provider: z.string().optional() });
+        const { provider } = schema.parse(args);
+        const feeData = await ethersService.getFeeData(provider);
+        return {
+            content: [{ type: "text", text: JSON.stringify(feeData, null, 2) }],
         };
     },
 };
