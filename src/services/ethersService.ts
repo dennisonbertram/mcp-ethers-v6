@@ -255,4 +255,90 @@ export class EthersService {
             this.handleProviderError(error, "parse units", { value, unit: String(unit) });
         }
     }
+
+    private getSigner(provider?: string): ethers.Signer {
+        const privateKey = process.env.PRIVATE_KEY;
+        if (!privateKey) {
+            throw new Error("Missing PRIVATE_KEY in environment variables.");
+        }
+        const selectedProvider = this.getProvider(provider);
+        return new ethers.Wallet(privateKey, selectedProvider);
+    }
+
+    async createTransaction(to: string, value: string, data?: string, provider?: string): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(to);
+            const parsedValue = ethers.parseEther(value);
+
+            const transaction: ethers.TransactionRequest = {
+                to,
+                value: parsedValue,
+                data: data || "0x",
+            };
+            
+            const signer = this.getSigner(provider);
+            const populatedTx = await signer.populateTransaction(transaction);
+            return populatedTx;
+        } catch (error) {
+            this.handleProviderError(error, "create transaction", { to, value });
+        }
+    }
+
+    async estimateGas(tx: ethers.TransactionRequest, provider?: string): Promise<bigint> {
+        try {
+            const signer = this.getSigner(provider);
+            const result = await signer.estimateGas(tx);
+            return result;
+        } catch (error) {
+            this.handleProviderError(error, "estimate gas", { tx: JSON.stringify(tx) });
+        }
+    }
+
+    async sendTransaction(to: string, value: string, data?: string, provider?: string): Promise<ethers.TransactionResponse> {
+        try {
+            const transaction = await this.createTransaction(to, value, data, provider);
+            const signer = this.getSigner(provider);
+            return await signer.sendTransaction(transaction);
+        } catch (error) {
+            this.handleProviderError(error, "send transaction", { to, value, data: data || "0x" });
+        }
+    }
+
+    async signMessage(message: string, provider?: string): Promise<string> {
+        try {
+            const signer = this.getSigner(provider);
+            return await signer.signMessage(message);
+        } catch (error) {
+            this.handleProviderError(error, "sign message", { message });
+        }
+    }
+
+    async contractCall(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string
+    ): Promise<any> {
+        try {
+            addressSchema.parse(contractAddress);
+            const signer = this.getSigner(provider);
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                signer
+            );
+            const parsedValue = ethers.parseEther(value);
+            const tx = await contract[method](...args, { value: parsedValue });
+            return tx;
+        } catch (error) {
+            this.handleProviderError(error, `call contract method: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value
+            });
+        }
+    }
 } 

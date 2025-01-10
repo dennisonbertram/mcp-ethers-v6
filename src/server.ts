@@ -279,6 +279,87 @@ const tools = [
             required: ["value", "unit"]
         },
     },
+    {
+        name: "sendTransaction",
+        description: "Send ETH from the server's wallet to a recipient",
+        inputSchema: {
+            type: "object",
+            properties: {
+                to: {
+                    type: "string",
+                    description: "The recipient address",
+                },
+                value: {
+                    type: "string",
+                    description: "The amount of ETH to send",
+                },
+                data: {
+                    type: "string",
+                    description: "Optional. Data to include in the transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["to", "value"]
+        },
+    },
+    {
+        name: "signMessage",
+        description: "Sign a message using the server's wallet",
+        inputSchema: {
+            type: "object",
+            properties: {
+                message: {
+                    type: "string",
+                    description: "The message to sign",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["message"]
+        },
+    },
+    {
+        name: "contractCall",
+        description: "Call a method on a smart contract",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
 ];
 
 // Define available tools
@@ -505,6 +586,78 @@ const toolHandlers = {
         return {
             content: [{ type: "text", text: `${value} = ${parsed} (with ${unit} decimals)` }],
         };
+    },
+
+    sendTransaction: async (args: unknown) => {
+        const schema = z.object({
+            to: z.string(),
+            value: z.string(),
+            data: z.string().optional(),
+            provider: z.string().optional()
+        });
+        const { to, value, data, provider } = schema.parse(args);
+        try {
+            const tx = await ethersService.sendTransaction(to, value, data, provider);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Transaction sent with hash ${tx.hash}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Transaction failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    signMessage: async (args: unknown) => {
+        const schema = z.object({
+            message: z.string(),
+            provider: z.string().optional()
+        });
+        const { message, provider } = schema.parse(args);
+        try {
+            const signature = await ethersService.signMessage(message, provider);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Signature: ${signature}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Message signing failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractCall: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", provider } = schema.parse(args);
+        try {
+            const result = await ethersService.contractCall(contractAddress, abi, method, methodArgs, value, provider);
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(result, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract call failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
     },
 };
 
