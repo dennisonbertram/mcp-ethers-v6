@@ -243,6 +243,42 @@ const tools = [
             required: ["ether"]
         },
     },
+    {
+        name: "formatUnits",
+        description: "Convert a value to a decimal string with specified units",
+        inputSchema: {
+            type: "object",
+            properties: {
+                value: {
+                    type: "string",
+                    description: "The value to format",
+                },
+                unit: {
+                    type: ["string", "number"],
+                    description: "The number of decimals or unit name (e.g., 'gwei', 18)",
+                },
+            },
+            required: ["value", "unit"]
+        },
+    },
+    {
+        name: "parseUnits",
+        description: "Convert a decimal string to its smallest unit representation",
+        inputSchema: {
+            type: "object",
+            properties: {
+                value: {
+                    type: "string",
+                    description: "The decimal string to parse",
+                },
+                unit: {
+                    type: ["string", "number"],
+                    description: "The number of decimals or unit name (e.g., 'gwei', 18)",
+                },
+            },
+            required: ["value", "unit"]
+        },
+    },
 ];
 
 // Define available tools
@@ -444,6 +480,30 @@ const toolHandlers = {
         const parsed = ethersService.parseEther(ether);
         return {
             content: [{ type: "text", text: `${ether} ETH = ${parsed} wei` }],
+        };
+    },
+
+    formatUnits: async (args: unknown) => {
+        const schema = z.object({
+            value: z.string(),
+            unit: z.union([z.string(), z.number()])
+        });
+        const { value, unit } = schema.parse(args);
+        const formatted = ethersService.formatUnits(value, unit);
+        return {
+            content: [{ type: "text", text: `${value} = ${formatted} (with ${unit} decimals)` }],
+        };
+    },
+
+    parseUnits: async (args: unknown) => {
+        const schema = z.object({
+            value: z.string(),
+            unit: z.union([z.string(), z.number()])
+        });
+        const { value, unit } = schema.parse(args);
+        const parsed = ethersService.parseUnits(value, unit);
+        return {
+            content: [{ type: "text", text: `${value} = ${parsed} (with ${unit} decimals)` }],
         };
     },
 };

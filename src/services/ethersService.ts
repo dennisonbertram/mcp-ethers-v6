@@ -223,4 +223,36 @@ export class EthersService {
             this.handleProviderError(error, "resolve ENS name", { name });
         }
     }
+
+    formatEther(wei: string | number | bigint): string {
+        try {
+            return ethers.formatEther(wei);
+        } catch (error) {
+            this.handleProviderError(error, "format Ether value", { wei: String(wei) });
+        }
+    }
+
+    parseEther(ether: string): bigint {
+        try {
+            return ethers.parseEther(ether);
+        } catch (error) {
+            this.handleProviderError(error, "parse Ether string", { ether });
+        }
+    }
+
+    formatUnits(value: string | number | bigint, unit: string | number): string {
+        try {
+            return ethers.formatUnits(value, unit);
+        } catch (error) {
+            this.handleProviderError(error, "format units", { value: String(value), unit: String(unit) });
+        }
+    }
+
+    parseUnits(value: string, unit: string | number): bigint {
+        try {
+            return ethers.parseUnits(value, unit);
+        } catch (error) {
+            this.handleProviderError(error, "parse units", { value, unit: String(unit) });
+        }
+    }
 } 
