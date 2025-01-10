@@ -117,6 +117,24 @@ const tools = [
             required: ["blockTag"]
         },
     },
+    {
+        name: "getTransactionDetails",
+        description: "Get details about a transaction",
+        inputSchema: {
+            type: "object",
+            properties: {
+                txHash: {
+                    type: "string",
+                    description: "The transaction hash to lookup",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["txHash"]
+        },
+    },
 ];
 
 // Define available tools
@@ -200,6 +218,26 @@ const toolHandlers = {
 
         return {
             content: [{ type: "text", text: JSON.stringify(blockDetails, null, 2) }],
+        };
+    },
+
+    getTransactionDetails: async (args: unknown) => {
+        const schema = z.object({
+            txHash: z.string(),
+            provider: z.string().optional()
+        });
+        const { txHash, provider } = schema.parse(args);
+        const txDetails = await ethersService.getTransactionDetails(txHash, provider);
+        
+        if (txDetails === null) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Transaction not found: ${txHash}` }]
+            };
+        }
+
+        return {
+            content: [{ type: "text", text: JSON.stringify(txDetails, null, 2) }],
         };
     },
 };

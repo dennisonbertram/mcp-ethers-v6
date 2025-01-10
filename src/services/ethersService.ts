@@ -164,4 +164,15 @@ export class EthersService {
             this.handleProviderError(error, "fetch block details", { blockTag: String(blockTag) });
         }
     }
+
+    async getTransactionDetails(txHash: string, provider?: string): Promise<ethers.TransactionResponse | null> {
+        try {
+            const txSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
+            txSchema.parse(txHash);
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.getTransaction(txHash);
+        } catch (error) {
+            this.handleProviderError(error, "fetch transaction details", { txHash });
+        }
+    }
 } 
