@@ -154,4 +154,14 @@ export class EthersService {
             this.handleProviderError(error, "fetch latest block number");
         }
     }
+
+    async getBlockDetails(blockTag: string | number, provider?: string): Promise<ethers.Block | null> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            const block = await selectedProvider.getBlock(blockTag);
+            return block;
+        } catch (error) {
+            this.handleProviderError(error, "fetch block details", { blockTag: String(blockTag) });
+        }
+    }
 } 
