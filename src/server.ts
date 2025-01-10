@@ -179,6 +179,42 @@ const tools = [
             required: ["address"]
         },
     },
+    {
+        name: "lookupAddress",
+        description: "Get the ENS name for an address",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The Ethereum address to resolve",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["address"]
+        },
+    },
+    {
+        name: "resolveName",
+        description: "Get the address for an ENS name",
+        inputSchema: {
+            type: "object",
+            properties: {
+                name: {
+                    type: "string",
+                    description: "The ENS name to resolve",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["name"]
+        },
+    },
 ];
 
 // Define available tools
@@ -320,6 +356,44 @@ const toolHandlers = {
 
         return {
             content: [{ type: "text", text: `Contract bytecode at ${address}:\n\n${code}` }],
+        };
+    },
+
+    lookupAddress: async (args: unknown) => {
+        const schema = z.object({
+            address: z.string(),
+            provider: z.string().optional()
+        });
+        const { address, provider } = schema.parse(args);
+        const ensName = await ethersService.lookupAddress(address, provider);
+        
+        if (ensName === null) {
+            return {
+                content: [{ type: "text", text: `No ENS name found for address: ${address}` }]
+            };
+        }
+
+        return {
+            content: [{ type: "text", text: `The ENS name for ${address} is ${ensName}` }],
+        };
+    },
+
+    resolveName: async (args: unknown) => {
+        const schema = z.object({
+            name: z.string(),
+            provider: z.string().optional()
+        });
+        const { name, provider } = schema.parse(args);
+        const address = await ethersService.resolveName(name, provider);
+        
+        if (address === null) {
+            return {
+                content: [{ type: "text", text: `No address found for ENS name: ${name}` }]
+            };
+        }
+
+        return {
+            content: [{ type: "text", text: `The address for ${name} is ${address}` }],
         };
     },
 };

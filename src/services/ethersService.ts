@@ -204,4 +204,23 @@ export class EthersService {
             this.handleProviderError(error, "get contract bytecode", { address });
         }
     }
+
+    async lookupAddress(address: string, provider?: string): Promise<string | null> {
+        try {
+            addressSchema.parse(address);
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.lookupAddress(address);
+        } catch (error) {
+            this.handleProviderError(error, "look up ENS name for address", { address });
+        }
+    }
+
+    async resolveName(name: string, provider?: string): Promise<string | null> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.resolveName(name);
+        } catch (error) {
+            this.handleProviderError(error, "resolve ENS name", { name });
+        }
+    }
 } 
