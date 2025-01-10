@@ -86,6 +86,19 @@ const tools = [
             required: ["address"]
         },
     },
+    {
+        name: "getBlockNumber",
+        description: "Get the current block number",
+        inputSchema: {
+            type: "object",
+            properties: {
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+        },
+    },
 ];
 
 // Define available tools
@@ -140,6 +153,15 @@ const toolHandlers = {
         const count = await ethersService.getTransactionCount(address, provider);
         return {
             content: [{ type: "text", text: `The transaction count for ${address} is ${count}` }],
+        };
+    },
+
+    getBlockNumber: async (args: unknown) => {
+        const schema = z.object({ provider: z.string().optional() });
+        const { provider } = schema.parse(args);
+        const blockNumber = await ethersService.getBlockNumber(provider);
+        return {
+            content: [{ type: "text", text: `The current block number is ${blockNumber}` }],
         };
     },
 };

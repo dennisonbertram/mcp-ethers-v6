@@ -145,4 +145,13 @@ export class EthersService {
             this.handleProviderError(error, "fetch transaction count", { address });
         }
     }
+
+    async getBlockNumber(provider?: string): Promise<number> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.getBlockNumber();
+        } catch (error) {
+            this.handleProviderError(error, "fetch latest block number");
+        }
+    }
 } 
