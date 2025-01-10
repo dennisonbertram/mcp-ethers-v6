@@ -10,7 +10,7 @@ export type DefaultProvider =
     | "base"         // Base
     | "polygon";     // Polygon
 
-const DEFAULT_PROVIDERS: ReadonlyArray<DefaultProvider> = [
+const DEFAULT_PROVIDERS = [
     "mainnet",
     "sepolia",
     "goerli",
@@ -18,17 +18,56 @@ const DEFAULT_PROVIDERS: ReadonlyArray<DefaultProvider> = [
     "optimism",
     "base",
     "polygon"
-] as const;
+];
+
+// Move addressSchema to class level to avoid duplication
+const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
 export class EthersService {
     private defaultProvider: ethers.Provider;
 
     constructor(defaultNetwork: DefaultProvider = "mainnet") {
+        this.defaultProvider = this.createInfuraProvider(defaultNetwork);
+    }
+
+    private getInfuraApiKey(): string {
         const infuraApiKey = process.env.INFURA_API_KEY;
         if (!infuraApiKey) {
             throw new Error("Missing INFURA_API_KEY in environment variables.");
         }
-        this.defaultProvider = new ethers.InfuraProvider(defaultNetwork, infuraApiKey);
+        return infuraApiKey;
+    }
+
+    private createInfuraProvider(network: DefaultProvider): ethers.Provider {
+        try {
+            return new ethers.InfuraProvider(network as ethers.Networkish, this.getInfuraApiKey());
+        } catch (error) {
+            this.handleProviderError(error, `create Infura provider for network ${network}`);
+        }
+    }
+
+    private validateRpcUrl(url: string): void {
+        if (!url.match(/^https?:\/\/.+$/)) {
+            throw new Error(`Invalid RPC URL format: ${url}. URL must start with http:// or https:// and include a valid domain.`);
+        }
+    }
+
+    private handleProviderError(error: unknown, context: string, details?: Record<string, string>): never {
+        if (error instanceof z.ZodError) {
+            const firstError = error.errors[0];
+            const expected = firstError?.expected ? ` expected a string in regex format: ${firstError.expected}` : '';
+            throw new Error(`Invalid input format: ${firstError.message},${expected}`);
+        }
+
+        if (error instanceof ethers.ProviderError) {
+            throw new Error(`Failed to ${context}: Provider error: ${error.message}`);
+        }
+
+        // Generic error with context
+        const err = error as { message?: string };
+        const errorMessage = err.message || String(error);
+        const detailsStr = details ? ` Details: ${Object.entries(details).map(([k, v]) => `${k}=${v}`).join(', ')}` : '';
+        throw new Error(`Failed to ${context}: ${errorMessage}${detailsStr}`);
     }
 
     private getProvider(provider?: string): ethers.Provider {
@@ -38,45 +77,42 @@ export class EthersService {
 
         // Check if it's a default provider
         if (DEFAULT_PROVIDERS.includes(provider as DefaultProvider)) {
-            const infuraApiKey = process.env.INFURA_API_KEY;
-            if (!infuraApiKey) {
-                throw new Error("Missing INFURA_API_KEY in environment variables.");
+            try {
+                return this.createInfuraProvider(provider as DefaultProvider);
+            } catch (error) {
+                this.handleProviderError(error, `create Infura provider for network ${provider}`);
             }
-            return new ethers.InfuraProvider(provider as ethers.Networkish, infuraApiKey);
         }
 
         // Otherwise treat it as an RPC URL
         if (provider.startsWith("http")) {
             try {
+                this.validateRpcUrl(provider);
                 return new ethers.JsonRpcProvider(provider);
-            } catch (error: any) {
-                throw new Error(`Invalid RPC URL: ${provider}. Error: ${error.message}`);
+            } catch (error) {
+                this.handleProviderError(error, `create provider with RPC URL ${provider}`);
             }
         }
 
-        throw new Error(`Invalid provider: ${provider}. Must be a supported network name (${DEFAULT_PROVIDERS.join(", ")}) or valid RPC URL.`);
+        throw new Error(
+            `Invalid provider: ${provider}. Must be either:\n` +
+            `1. A supported network name (${DEFAULT_PROVIDERS.join(", ")})\n` +
+            `2. A valid RPC URL starting with http:// or https://`
+        );
     }
 
     async getBalance(address: string, provider?: string): Promise<string> {
-        const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
         try {
             addressSchema.parse(address);
             const selectedProvider = this.getProvider(provider);
             const balance = await selectedProvider.getBalance(address);
             return ethers.formatEther(balance);
-        } catch (error: any) {
-            if (error instanceof z.ZodError) {
-                throw new Error(`Invalid Ethereum address format: ${error.errors.map(e => e.message).join(', ')}`);
-            }
-            if (error instanceof ethers.ProviderError) {
-                throw new Error(`Provider error: ${error.message}`);
-            }
-            throw new Error(`Failed to fetch balance for ${address}: ${error.message}`);
+        } catch (error) {
+            this.handleProviderError(error, "fetch balance", { address });
         }
     }
 
     async getERC20Balance(address: string, tokenAddress: string, provider?: string): Promise<string> {
-        const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
         try {
             addressSchema.parse(address);
             addressSchema.parse(tokenAddress);
@@ -93,34 +129,19 @@ export class EthersService {
             const decimals = await contract.decimals();
             const balance = await contract.balanceOf(address);
             return ethers.formatUnits(balance, decimals);
-        } catch (error: any) {
-            if (error instanceof z.ZodError) {
-                throw new Error(`Invalid Ethereum address format: ${error.errors.map(e => e.message).join(', ')}`);
-            }
-            if (error instanceof ethers.ProviderError) {
-                throw new Error(`Provider error: ${error.message}`);
-            }
-            if (error.code === 'CALL_EXCEPTION') {
-                throw new Error(`Contract call failed. This might not be a valid ERC20 token address: ${tokenAddress}`);
-            }
-            throw new Error(`Failed to fetch ERC20 balance for ${address} at token address ${tokenAddress}: ${error.message}`);
+        } catch (error) {
+            this.handleProviderError(error, "fetch ERC20 balance", { address, tokenAddress });
         }
     }
 
     async getTransactionCount(address: string, provider?: string): Promise<number> {
-        const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
         try {
             addressSchema.parse(address);
             const selectedProvider = this.getProvider(provider);
-            return await selectedProvider.getTransactionCount(address);
-        } catch (error: any) {
-            if (error instanceof z.ZodError) {
-                throw new Error(`Invalid Ethereum address format: ${error.errors.map(e => e.message).join(', ')}`);
-            }
-            if (error instanceof ethers.ProviderError) {
-                throw new Error(`Provider error: ${error.message}`);
-            }
-            throw new Error(`Failed to fetch transaction count for ${address}: ${error.message}`);
+            const count = await selectedProvider.getTransactionCount(address);
+            return count;
+        } catch (error) {
+            this.handleProviderError(error, "fetch transaction count", { address });
         }
     }
 } 

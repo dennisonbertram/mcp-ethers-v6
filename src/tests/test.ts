@@ -32,13 +32,23 @@ async function testGetBalance() {
             if (!test.shouldSucceed) {
                 console.error('❌ Test failed: Expected error but got success');
             }
-        } catch (error: any) {
-            console.error(`❌ Error for ${test.address}: ${error.message}`);
-            if (test.shouldSucceed) {
-                console.error('❌ Test failed: Expected success but got error');
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.error(`❌ Error for ${test.address}: ${error.message}`);
+                if (test.shouldSucceed) {
+                    console.error('❌ Test failed: Expected success but got error');
+                }
+            } else {
+                console.error(`❌ Error for ${test.address}: Unknown error type`);
             }
         }
     }
 }
 
-testGetBalance().catch(console.error); 
+testGetBalance().catch((error: unknown) => {
+    if (error instanceof Error) {
+        console.error('Test execution failed:', error.message);
+    } else {
+        console.error('Test execution failed with unknown error type');
+    }
+}); 
