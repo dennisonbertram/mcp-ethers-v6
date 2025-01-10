@@ -4,7 +4,7 @@ import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { EthersService } from "./services/ethersService.js";
+import { EthersService, DefaultProvider } from "./services/ethersService.js";
 import { z } from "zod";
 import { config } from "dotenv";
 
@@ -22,112 +22,148 @@ const server = new Server(
     }
 );
 
-// Initialize the ethers service
-const ethersService = new EthersService();
+// Initialize the ethers service with configurable default network
+const defaultNetwork = (process.env.DEFAULT_NETWORK || "mainnet") as DefaultProvider;
+const ethersService = new EthersService(defaultNetwork);
+
+// Tool definitions
+const tools = [
+    {
+        name: "getWalletBalance",
+        description: "Get the ETH balance of a wallet",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The Ethereum address to query",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["address"],
+        },
+    },
+    {
+        name: "getERC20Balance",
+        description: "Get the ERC20 token balance of a wallet",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The Ethereum address to query",
+                },
+                tokenAddress: {
+                    type: "string",
+                    description: "The address of the ERC20 token contract"
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["address", "tokenAddress"]
+        },
+    },
+    {
+        name: "getWalletTransactionCount",
+        description: "Get the number of transactions ever sent by an address",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The Ethereum address to query",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["address"]
+        },
+    },
+];
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return {
-        tools: [
-            {
-                name: "getWalletBalance",
-                description: "Get the ETH balance of a wallet",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        address: {
-                            type: "string",
-                            description: "The Ethereum address to query",
-                        },
-                    },
-                    required: ["address"],
-                },
-            },
-            {
-                name: "getERC20Balance",
-                description: "Get the ERC20 token balance of a wallet",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        address: {
-                            type: "string",
-                            description: "The Ethereum address to query",
-                        },
-                        tokenAddress: {
-                            type: "string",
-                            description: "The address of the ERC20 token contract"
-                        }
-                    },
-                    required: ["address", "tokenAddress"]
-                },
-            },
-            {
-                name: "getWalletTransactionCount",
-                description: "Get the number of transactions ever sent by an address",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        address: {
-                            type: "string",
-                            description: "The Ethereum address to query",
-                        },
-                    },
-                    required: ["address"]
-                },
-            },
-        ],
-    };
+    return { tools };
 });
+
+// Tool handlers
+const toolHandlers = {
+    getWalletBalance: async (args: unknown) => {
+        const schema = z.object({ 
+            address: z.string(),
+            provider: z.string().optional()
+        });
+        const { address, provider } = schema.parse(args);
+        const balance = await ethersService.getBalance(address, provider);
+        
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `The balance of ${address} is ${balance} ETH`,
+                },
+            ],
+        };
+    },
+    
+    getERC20Balance: async (args: unknown) => {
+        const schema = z.object({ 
+            address: z.string(), 
+            tokenAddress: z.string(),
+            provider: z.string().optional()
+        });
+        const { address, tokenAddress, provider } = schema.parse(args);
+        const balance = await ethersService.getERC20Balance(address, tokenAddress, provider);
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: `The balance of ${address} is ${balance} in ${tokenAddress}`
+                },
+            ],
+        };
+    },
+    
+    getWalletTransactionCount: async (args: unknown) => {
+        const schema = z.object({ 
+            address: z.string(),
+            provider: z.string().optional()
+        });
+        const { address, provider } = schema.parse(args);
+        const count = await ethersService.getTransactionCount(address, provider);
+        return {
+            content: [{ type: "text", text: `The transaction count for ${address} is ${count}` }],
+        };
+    },
+};
 
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
     try {
-        if (name === "getWalletBalance") {
-            const addressSchema = z.object({ address: z.string() });
-            const { address } = addressSchema.parse(args);
-            const balance = await ethersService.getBalance(address);
-            
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `The balance of ${address} is ${balance} ETH`,
-                    },
-                ],
-            };
-        } else if (name === "getERC20Balance") {
-            const erc20Schema = z.object({ address: z.string(), tokenAddress: z.string() });
-            const { address, tokenAddress } = erc20Schema.parse(args);
-            const balance = await ethersService.getERC20Balance(address, tokenAddress);
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: `The balance of ${address} is ${balance} in ${tokenAddress}`
-                    },
-                ],
-            };
-        } else if (name === "getWalletTransactionCount") {
-            const addressSchema = z.object({ address: z.string() });
-            const { address } = addressSchema.parse(args);
-            const count = await ethersService.getTransactionCount(address);
-            return {
-                content: [{ type: "text", text: `The transaction count for ${address} is ${count}` }],
-            };
+        const handler = toolHandlers[name as keyof typeof toolHandlers];
+        if (!handler) {
+            throw new Error(`Tool not found: ${name}`);
         }
+        return await handler(args);
     } catch (error: any) {
         return {
             isError: true,
             content: [{ type: "text", text: `Error processing the request: ${error.message}` }]
         };
     }
-    throw new Error("Tool not found");
 });
 
 export async function startServer() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("MCP server running on stdio");
+    console.error(`MCP server running on stdio (default network: ${defaultNetwork})`);
 } 
