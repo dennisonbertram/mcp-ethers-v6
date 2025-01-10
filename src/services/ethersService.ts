@@ -55,11 +55,12 @@ export class EthersService {
     private handleProviderError(error: unknown, context: string, details?: Record<string, string>): never {
         if (error instanceof z.ZodError) {
             const firstError = error.errors[0];
-            const expected = firstError?.expected ? ` expected a string in regex format: ${firstError.expected}` : '';
-            throw new Error(`Invalid input format: ${firstError.message},${expected}`);
+            const message = firstError?.message || 'Invalid input format';
+            throw new Error(`Invalid input format: ${message}. Expected a valid Ethereum address (0x followed by 40 hexadecimal characters)`);
         }
 
-        if (error instanceof ethers.ProviderError) {
+        // Handle provider errors
+        if (error instanceof Error && 'code' in error) {
             throw new Error(`Failed to ${context}: Provider error: ${error.message}`);
         }
 
