@@ -58,4 +58,18 @@ export class EthersService {
             }
         }
     }
+
+    async getTransactionCount(address: string): Promise<number> {
+        const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+        try {
+            addressSchema.parse(address);
+            return await this.provider.getTransactionCount(address);
+        } catch (error: any) {
+            if (error instanceof z.ZodError) {
+                throw new Error(`Invalid Ethereum address format: ${error.errors.map(e => e.message).join(', ')}`);
+            } else {
+                throw new Error(`Failed to fetch transaction count for ${address}: ${error.message}`);
+            }
+        }
+    }
 } 

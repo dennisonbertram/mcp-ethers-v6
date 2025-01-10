@@ -61,6 +61,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     required: ["address", "tokenAddress"]
                 },
             },
+            {
+                name: "getWalletTransactionCount",
+                description: "Get the number of transactions ever sent by an address",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        address: {
+                            type: "string",
+                            description: "The Ethereum address to query",
+                        },
+                    },
+                    required: ["address"]
+                },
+            },
         ],
     };
 });
@@ -94,6 +108,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         text: `The balance of ${address} is ${balance} in ${tokenAddress}`
                     },
                 ],
+            };
+        } else if (name === "getWalletTransactionCount") {
+            const addressSchema = z.object({ address: z.string() });
+            const { address } = addressSchema.parse(args);
+            const count = await ethersService.getTransactionCount(address);
+            return {
+                content: [{ type: "text", text: `The transaction count for ${address} is ${count}` }],
             };
         }
     } catch (error: any) {
