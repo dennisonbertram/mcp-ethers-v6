@@ -161,6 +161,24 @@ const tools = [
             },
         },
     },
+    {
+        name: "getContractCode",
+        description: "Get a contract's bytecode",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The contract's address",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["address"]
+        },
+    },
 ];
 
 // Define available tools
@@ -282,6 +300,26 @@ const toolHandlers = {
         const feeData = await ethersService.getFeeData(provider);
         return {
             content: [{ type: "text", text: JSON.stringify(feeData, null, 2) }],
+        };
+    },
+
+    getContractCode: async (args: unknown) => {
+        const schema = z.object({
+            address: z.string(),
+            provider: z.string().optional()
+        });
+        const { address, provider } = schema.parse(args);
+        const code = await ethersService.getContractCode(address, provider);
+        
+        if (code === null || code === "0x") {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `No code found at address: ${address}` }]
+            };
+        }
+
+        return {
+            content: [{ type: "text", text: `Contract bytecode at ${address}:\n\n${code}` }],
         };
     },
 };

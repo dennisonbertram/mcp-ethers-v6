@@ -194,4 +194,14 @@ export class EthersService {
             this.handleProviderError(error, "get fee data");
         }
     }
+
+    async getContractCode(address: string, provider?: string): Promise<string | null> {
+        try {
+            addressSchema.parse(address);
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.getCode(address);
+        } catch (error) {
+            this.handleProviderError(error, "get contract bytecode", { address });
+        }
+    }
 } 
