@@ -1,0 +1,12 @@
+require("@nomicfoundation/hardhat-toolbox");
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.24",
+  networks: {
+    hardhat: {
+      // This is all we need - Hardhat will create a local network
+      // with pre-funded accounts automatically
+    }
+  }
+}; 
