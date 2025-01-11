@@ -1,6 +1,7 @@
 {
   "name": "mcp-ethers-wallet",
   "version": "1.0.0",
+  "description": "A Model Context Protocol server for interacting with Ethereum wallets using Ethers.js",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -8,25 +9,30 @@
     "mcp-ethers-wallet": "build/index.js"
   },
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc",
     "prepublishOnly": "npm run build",
     "start": "node build/index.js",
-    "test": "tsc && node build/tests/test.js"
+    "dev": "ts-node src/index.ts",
+    "test": "jest 'src/.*\\.ts$'",
+    "test:watch": "jest --watch 'src/.*\\.ts$'"
   },
   "files": [
     "build"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "ethers": "^6.0.0",
     "dotenv": "^16.0.0",
+    "ethers": "^6.0.0",
     "zod": "^3.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18"
   }
-} 
+}
