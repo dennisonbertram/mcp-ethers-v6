@@ -52,7 +52,7 @@ export class EthersService {
         }
     }
 
-    private handleProviderError(error: unknown, context: string, details?: Record<string, string>): never {
+    private handleProviderError(error: unknown, context: string, details?: Record<string, any>): never {
         if (error instanceof z.ZodError) {
             const firstError = error.errors[0];
             const message = firstError?.message || 'Invalid input format';
@@ -65,10 +65,22 @@ export class EthersService {
         }
 
         // Generic error with context
-        const err = error as { message?: string };
+        const err = error as Error;
         const errorMessage = err.message || String(error);
-        const detailsStr = details ? ` Details: ${Object.entries(details).map(([k, v]) => `${k}=${v}`).join(', ')}` : '';
+        const detailsStr = details ? ` Details: ${Object.entries(details).map(([k, v]) => `${k}=${this.serializeValue(v)}`).join(', ')}` : '';
         throw new Error(`Failed to ${context}: ${errorMessage}${detailsStr}`);
+    }
+
+    private serializeValue(value: any): string {
+        if (value === undefined) return 'undefined';
+        if (value === null) return 'null';
+        if (typeof value === 'bigint') return value.toString();
+        if (typeof value === 'object') {
+            return JSON.stringify(value, (_, v) => 
+                typeof v === 'bigint' ? v.toString() : v
+            );
+        }
+        return String(value);
     }
 
     private getProvider(provider?: string): ethers.Provider {
@@ -437,9 +449,9 @@ export class EthersService {
             this.handleProviderError(error, `call contract method with overrides: ${method}`, {
                 contractAddress,
                 abi: JSON.stringify(abi),
-                args: JSON.stringify(args),
+                args: this.serializeValue(args),
                 value,
-                overrides: JSON.stringify(overrides)
+                overrides: this.serializeValue(overrides)
             });
         }
     }
@@ -572,9 +584,9 @@ export class EthersService {
             throw this.handleProviderError(error, `send transaction to contract method with overrides: ${method}`, {
                 contractAddress,
                 abi: JSON.stringify(abi),
-                args: JSON.stringify(args),
+                args: this.serializeValue(args),
                 value,
-                overrides: JSON.stringify(overrides)
+                overrides: this.serializeValue(overrides)
             });
         }
     }
