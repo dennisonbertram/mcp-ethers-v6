@@ -496,7 +496,7 @@ export class EthersService {
         contractAddress: string,
         abi: string,
         method: string,
-        args: any[] = [],
+        args: any[],
         value: string = "0",
         provider?: string
     ): Promise<ethers.TransactionResponse> {
@@ -505,15 +505,35 @@ export class EthersService {
             const contract = new ethers.Contract(parsedAddress, abi, await this.getSigner(provider));
             const parsedValue = ethers.parseEther(value);
 
-            const populatedTx = await contract.populateTransaction[method].apply(contract, [...args, { value: parsedValue }]);
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Encode the function data with value
+            const data = contract.interface.encodeFunctionData(fragment, args);
+            const tx = {
+                to: parsedAddress,
+                data,
+                value: parsedValue
+            };
+
+            // Estimate gas
             const gasEstimate = await contract.getFunction(method).estimateGas(...args, { value: parsedValue });
             
+            // Send transaction with estimated gas
             return await contract.getFunction(method)(...args, {
                 value: parsedValue,
                 gasLimit: gasEstimate
             });
         } catch (error) {
-            throw this.handleProviderError(error);
+            throw this.handleProviderError(error, `send transaction to contract method with estimate: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value
+            });
         }
     }
 
@@ -521,7 +541,7 @@ export class EthersService {
         contractAddress: string,
         abi: string,
         method: string,
-        args: any[] = [],
+        args: any[],
         value: string = "0",
         provider?: string,
         overrides: ethers.Overrides = {}
@@ -531,15 +551,31 @@ export class EthersService {
             const contract = new ethers.Contract(parsedAddress, abi, await this.getSigner(provider));
             const parsedValue = ethers.parseEther(value);
 
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Merge value with other overrides
             const txOverrides = {
                 ...overrides,
                 value: parsedValue
             };
 
-            const populatedTx = await contract.populateTransaction[method].apply(contract, [...args, txOverrides]);
+            // Encode the function data
+            const data = contract.interface.encodeFunctionData(fragment, args);
+            
+            // Send transaction with overrides
             return await contract.getFunction(method)(...args, txOverrides);
         } catch (error) {
-            throw this.handleProviderError(error);
+            throw this.handleProviderError(error, `send transaction to contract method with overrides: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value,
+                overrides: JSON.stringify(overrides)
+            });
         }
     }
 
