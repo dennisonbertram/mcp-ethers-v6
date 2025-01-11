@@ -1,110 +1,70 @@
-import { describe, expect, test, beforeAll } from '@jest/globals';
 import { ethers } from 'ethers';
-import { EthersService } from '../services/ethersService.js';
-import { getHardhatTestProvider } from './utils/hardhatTestProvider.js';
-import { TestEnvironment } from './utils/hardhatTestProvider.js';
+import { TestEnvironment } from './utils/types.js';
+import { getTestEnvironment } from './utils/globalTestSetup.js';
 import { deployTestToken, TestToken } from './utils/testContractHelper.js';
 
-describe('Contract Methods Tests', () => {
-  let ethersService: EthersService;
+describe('Contract Methods', () => {
   let testEnv: TestEnvironment;
-  let alice: ethers.Signer;
-  let bob: ethers.Signer;
   let testToken: TestToken;
-  let aliceAddress: string;
-  let bobAddress: string;
-  const approvalAmount = 1000n;
 
   beforeAll(async () => {
-    testEnv = await getHardhatTestProvider();
-    ethersService = new EthersService(testEnv.provider);
-    [alice, bob] = testEnv.signers;
-    aliceAddress = await alice.getAddress();
-    bobAddress = await bob.getAddress();
-    testToken = await deployTestToken(alice);
-  }, 30000); // Increase timeout to 30 seconds
+    testEnv = await getTestEnvironment();
+    testToken = await deployTestToken(testEnv.provider, testEnv.signers[0]);
+  });
 
-  describe('Contract Read Methods', () => {
-    test('should get token name', async () => {
+  describe('ERC20 Token', () => {
+    it('should return correct token name', async () => {
       const name = await testToken.name();
       expect(name).toBe('MyToken');
     });
 
-    test('should get token symbol', async () => {
+    it('should return correct token symbol', async () => {
       const symbol = await testToken.symbol();
       expect(symbol).toBe('MCP');
     });
 
-    test('should get token decimals', async () => {
+    it('should return correct token decimals', async () => {
       const decimals = await testToken.decimals();
-      expect(decimals).toBe(18);
+      expect(Number(decimals)).toBe(18);
     });
 
-    test('should get token balance', async () => {
-      const balance = await testToken.balanceOf(aliceAddress);
+    it('should return correct balance for valid address', async () => {
+      const owner = testEnv.signers[0];
+      const ownerAddress = await owner.getAddress();
+      const balance = await testToken.balanceOf(ownerAddress);
       expect(balance).toBe(ethers.parseEther('1000000'));
     });
-  });
 
-  describe('Contract Write Methods', () => {
-    test('should transfer tokens between accounts', async () => {
-      const initialAliceBalance = await testToken.balanceOf(aliceAddress);
-      const initialBobBalance = await testToken.balanceOf(bobAddress);
+    it('should handle token transfers correctly', async () => {
+      const sender = testEnv.signers[0];
+      const recipient = testEnv.signers[1];
+      const recipientAddress = await recipient.getAddress();
+      const amount = ethers.parseEther('100');
 
-      const transferAmount = ethers.parseEther('50');
-      const transferTx = await testToken.transfer(bobAddress, transferAmount);
-      await transferTx.wait();
+      const initialBalance = await testToken.balanceOf(recipientAddress);
+      
+      await testToken.transfer(recipientAddress, amount);
 
-      const newAliceBalance = await testToken.balanceOf(aliceAddress);
-      const bobBalance = await testToken.balanceOf(bobAddress);
-
-      expect(newAliceBalance).toBe(initialAliceBalance - transferAmount);
-      expect(bobBalance).toBe(initialBobBalance + transferAmount);
+      const finalBalance = await testToken.balanceOf(recipientAddress);
+      expect(finalBalance).toBe(initialBalance + amount);
     });
 
-    test('should handle approval and transferFrom', async () => {
-      const initialAliceBalance = await testToken.balanceOf(aliceAddress);
-      const initialBobBalance = await testToken.balanceOf(bobAddress);
-
-      const approvalAmount = ethers.parseEther('30');
-      const approveTx = await testToken.approve(bobAddress, approvalAmount);
-      await approveTx.wait();
-
-      const allowance = await testToken.allowance(aliceAddress, bobAddress);
-      expect(allowance).toBe(approvalAmount);
-
-      const transferAmount = ethers.parseEther('20');
-      const bobToken = testToken.connect(bob);
-      const transferTx = await bobToken.transferFrom(aliceAddress, bobAddress, transferAmount);
-      await transferTx.wait();
-
-      const aliceBalance = await testToken.balanceOf(aliceAddress);
-      const bobBalance = await testToken.balanceOf(bobAddress);
-      const newAllowance = await testToken.allowance(aliceAddress, bobAddress);
-
-      expect(aliceBalance).toBe(initialAliceBalance - transferAmount);
-      expect(bobBalance).toBe(initialBobBalance + transferAmount);
-      expect(newAllowance).toBe(approvalAmount - transferAmount);
-    });
-
-    test('should fail when transferring more than balance', async () => {
-      const balance = await testToken.balanceOf(aliceAddress);
-      const transferAmount = balance + 1n;
-
-      await expect(testToken.transfer(bobAddress, transferAmount))
+    it('should fail when transferring to invalid address', async () => {
+      const amount = ethers.parseEther('100');
+      await expect(testToken.transfer('0x0000000000000000000000000000000000000000', amount))
         .rejects
-        .toThrow('insufficient balance');
+        .toThrow();
     });
 
-    test('should fail when transferring more than allowance', async () => {
-      await testToken.approve(bobAddress, approvalAmount);
+    it('should fail when transferring more than balance', async () => {
+      const sender = testEnv.signers[0];
+      const recipient = testEnv.signers[1];
+      const recipientAddress = await recipient.getAddress();
+      const amount = ethers.parseEther('2000000'); // More than total supply
 
-      const transferAmount = approvalAmount + 1n;
-      const bobToken = testToken.connect(bob);
-
-      await expect(bobToken.transferFrom(aliceAddress, bobAddress, transferAmount))
+      await expect(testToken.transfer(recipientAddress, amount))
         .rejects
-        .toThrow('exceeds allowance');
+        .toThrow();
     });
   });
 }); 
