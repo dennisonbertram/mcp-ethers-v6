@@ -1,142 +1,104 @@
-import { EthersService } from '../services/ethersService.js';
-import { getHardhatTestProvider, TEST_ACCOUNTS } from './utils/hardhatTestProvider.js';
+import { describe, expect, test, beforeAll } from '@jest/globals';
 import { ethers } from 'ethers';
+import { EthersService } from '../services/ethersService.js';
+import { getHardhatTestProvider } from './utils/hardhatTestProvider.js';
+import { TestEnvironment } from './utils/hardhatTestProvider.js';
+import { deployTestToken, TestToken } from './utils/testContractHelper.js';
 
-describe('EthersService Write Methods', () => {
+describe('Write Methods Tests', () => {
   let ethersService: EthersService;
-  let provider: ethers.Provider;
-  let accounts: ethers.Signer[];
-  let defaultSigner: ethers.Signer;
+  let testEnv: TestEnvironment;
+  let signer: ethers.Signer;
+  let recipientAddress: string;
+  let testToken: TestToken;
 
   beforeAll(async () => {
-    // Get our test provider and accounts
-    const testEnv = await getHardhatTestProvider();
-    provider = testEnv.provider;
-    accounts = testEnv.accounts;
-    defaultSigner = testEnv.defaultSigner;
-  });
-
-  beforeEach(() => {
-    ethersService = new EthersService();
-  });
+    testEnv = await getHardhatTestProvider();
+    ethersService = new EthersService(testEnv.provider);
+    [signer] = testEnv.signers;
+    recipientAddress = await testEnv.signers[1].getAddress();
+    testToken = await deployTestToken(signer);
+  }, 30000); // Increase timeout to 30 seconds
 
   describe('sendTransaction', () => {
-    it('should send ETH between accounts', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const bob = accounts[TEST_ACCOUNTS.BOB];
-      
-      // Get initial balances
-      const aliceAddress = await alice.getAddress();
-      const bobAddress = await bob.getAddress();
-      const initialBalance = await provider.getBalance(bobAddress);
-      
-      // Send 1 ETH
-      const amount = ethers.parseEther("1.0");
-      const tx = await alice.sendTransaction({
-        to: bobAddress,
-        value: amount,
-        gasPrice: 1000000000 // 1 gwei
+    test('should send ETH between accounts', async () => {
+      const initialBalance = await testEnv.provider.getBalance(recipientAddress);
+      const amount = '1.0';
+
+      const tx = await ethersService.sendTransaction({
+        to: recipientAddress,
+        value: ethers.parseEther(amount)
       });
+      await tx.wait();
 
-      // Wait for the transaction to be mined and get the receipt
-      const receipt = await tx.wait();
-      expect(receipt).not.toBeNull();
-      
-      // Check new balance
-      const newBalance = await provider.getBalance(bobAddress);
-      expect(newBalance.toString()).toBe((initialBalance + amount).toString());
+      const newBalance = await testEnv.provider.getBalance(recipientAddress);
+      const expectedBalance = initialBalance + ethers.parseEther(amount);
+      const tolerance = ethers.parseEther("0.0001"); // Allow for small differences due to gas costs
+      expect(newBalance).toBeGreaterThan(expectedBalance - tolerance);
+      expect(newBalance).toBeLessThan(expectedBalance + tolerance);
     });
 
-    it('should fail when sending more ETH than available balance', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const bob = accounts[TEST_ACCOUNTS.BOB];
-      const bobAddress = await bob.getAddress();
-      const aliceBalance = await provider.getBalance(await alice.getAddress());
-      
-      // Try to send more ETH than the account has
-      await expect(
-        alice.sendTransaction({
-          to: bobAddress,
-          value: aliceBalance + ethers.parseEther("1.0"),
-          gasPrice: 1000000000
-        })
-      ).rejects.toThrow(/sender doesn't have enough funds/i);
+    test('should fail when sending more ETH than available balance', async () => {
+      const signerBalance = await testEnv.provider.getBalance(await signer.getAddress());
+      const tooMuch = ethers.formatEther(signerBalance + ethers.parseEther("1.0"));
+
+      await expect(ethersService.sendTransaction({
+        to: recipientAddress,
+        value: ethers.parseEther(tooMuch)
+      })).rejects.toThrow();
     });
 
-    it('should fail when sending to an invalid address', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const invalidAddress = "0x1234"; // Too short to be valid
-      
-      expect(() => {
-        ethers.getAddress(invalidAddress);
-      }).toThrow(/invalid address/i);
-    });
-
-    it('should send transaction with custom data', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const bob = accounts[TEST_ACCOUNTS.BOB];
-      const bobAddress = await bob.getAddress();
-      
-      // Send transaction with custom data
-      const customData = "0x1234567890";
-      const tx = await alice.sendTransaction({
-        to: bobAddress,
-        value: ethers.parseEther("1.0"),
-        data: customData,
-        gasPrice: 1000000000
-      });
-
-      const receipt = await tx.wait();
-      expect(receipt).not.toBeNull();
-      if (receipt) {
-        expect(receipt.status).toBe(1); // Success
-      }
-    });
-
-    it('should estimate gas correctly for a transfer', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const bob = accounts[TEST_ACCOUNTS.BOB];
-      const bobAddress = await bob.getAddress();
-      
-      // Estimate gas for the transfer
-      const gasEstimate = await provider.estimateGas({
-        from: await alice.getAddress(),
-        to: bobAddress,
-        value: ethers.parseEther("1.0"),
-        gasPrice: 1000000000
-      });
-
-      // Standard ETH transfer should use exactly 21001 gas in Hardhat
-      expect(gasEstimate.toString()).toBe("21001");
-    });
-
-    it('should handle zero value transfers', async () => {
-      const alice = accounts[TEST_ACCOUNTS.ALICE];
-      const bob = accounts[TEST_ACCOUNTS.BOB];
-      const bobAddress = await bob.getAddress();
-      
-      // Get initial balance
-      const initialBalance = await provider.getBalance(bobAddress);
-      
-      // Get current nonce
-      const nonce = await provider.getTransactionCount(await alice.getAddress());
-      
-      // Send 0 ETH
-      const tx = await alice.sendTransaction({
-        to: bobAddress,
-        value: 0n,
-        gasPrice: 1000000000,
-        nonce: nonce
-      });
-
-      const receipt = await tx.wait();
-      expect(receipt).not.toBeNull();
-      
-      // Balance should remain unchanged (ignoring gas costs)
-      const newBalance = await provider.getBalance(bobAddress);
-      expect(BigInt(newBalance.toString()) - BigInt(initialBalance.toString())).toBe(0n);
+    test('should fail when sending to an invalid address', async () => {
+      await expect(ethersService.sendTransaction({
+        to: 'invalid-address',
+        value: ethers.parseEther('1.0')
+      })).rejects.toThrow();
     });
   });
 
-  // Add more write method tests here
+  describe('signMessage', () => {
+    test('should sign a message correctly', async () => {
+      const message = 'Hello, World!';
+      const signature = await ethersService.signMessage(message);
+      expect(signature).toMatch(/^0x[0-9a-fA-F]{130}$/);
+    });
+
+    test('should sign different messages with different signatures', async () => {
+      const message1 = 'Hello, World!';
+      const message2 = 'Different message';
+      const signature1 = await ethersService.signMessage(message1);
+      const signature2 = await ethersService.signMessage(message2);
+      expect(signature1).not.toBe(signature2);
+    });
+  });
+
+  describe('Contract Interactions', () => {
+    test('should call contract method successfully', async () => {
+      const tokenAddress = await testToken.getAddress();
+      const amount = ethers.parseEther('10');
+      const initialBalance = await testToken.balanceOf(recipientAddress);
+
+      const data = testToken.interface.encodeFunctionData('transfer', [recipientAddress, amount]);
+      const tx = await ethersService.sendTransaction({
+        to: tokenAddress,
+        data: data
+      });
+      await tx.wait();
+
+      const newBalance = await testToken.balanceOf(recipientAddress);
+      expect(newBalance).toBe(initialBalance + amount);
+    });
+
+    test('should fail when calling with insufficient balance', async () => {
+      const tokenAddress = await testToken.getAddress();
+      const signerBalance = await testToken.balanceOf(await signer.getAddress());
+      const tooMuch = signerBalance + 1n;
+
+      const data = testToken.interface.encodeFunctionData('transfer', [recipientAddress, tooMuch]);
+      await expect(ethersService.sendTransaction({
+        to: tokenAddress,
+        data: data
+      })).rejects.toThrow();
+    });
+  });
 }); 

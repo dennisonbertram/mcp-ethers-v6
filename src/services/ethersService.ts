@@ -25,9 +25,10 @@ const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
 export class EthersService {
     private defaultProvider: ethers.Provider;
+    private defaultSigner?: ethers.Signer;
 
-    constructor(defaultNetwork: DefaultProvider = "mainnet") {
-        this.defaultProvider = this.createInfuraProvider(defaultNetwork);
+    constructor(provider?: ethers.Provider) {
+        this.defaultProvider = provider || new ethers.JsonRpcProvider('http://localhost:8545');
     }
 
     private getInfuraApiKey(): string {
@@ -269,6 +270,10 @@ export class EthersService {
     }
 
     private getSigner(provider?: string): ethers.Signer {
+        if (this.defaultSigner) {
+            return this.defaultSigner;
+        }
+        
         const privateKey = process.env.PRIVATE_KEY;
         if (!privateKey) {
             throw new Error("Missing PRIVATE_KEY in environment variables.");
@@ -306,13 +311,35 @@ export class EthersService {
         }
     }
 
-    async sendTransaction(to: string, value: string, data?: string, provider?: string): Promise<ethers.TransactionResponse> {
+    async sendTransaction(
+        toOrTx: string | ethers.TransactionRequest,
+        value?: string,
+        data?: string,
+        provider?: string
+    ): Promise<ethers.TransactionResponse> {
         try {
-            const transaction = await this.createTransaction(to, value, data, provider);
+            let tx: ethers.TransactionRequest;
+            
+            if (typeof toOrTx === 'string') {
+                // Handle old-style parameter based call
+                addressSchema.parse(toOrTx);
+                tx = {
+                    to: toOrTx,
+                    value: value ? ethers.parseEther(value) : undefined,
+                    data: data || "0x"
+                };
+            } else {
+                // Handle object-style call
+                if (toOrTx.to) {
+                    addressSchema.parse(toOrTx.to);
+                }
+                tx = toOrTx;
+            }
+
             const signer = this.getSigner(provider);
-            return await signer.sendTransaction(transaction);
+            return await signer.sendTransaction(tx);
         } catch (error) {
-            this.handleProviderError(error, "send transaction", { to, value, data: data || "0x" });
+            this.handleProviderError(error, "send transaction", { tx: toOrTx });
         }
     }
 

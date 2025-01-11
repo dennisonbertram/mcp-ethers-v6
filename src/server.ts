@@ -25,7 +25,8 @@ const server = new Server(
 
 // Initialize the ethers service with configurable default network
 const defaultNetwork = (process.env.DEFAULT_NETWORK || "mainnet") as DefaultProvider;
-const ethersService = new EthersService(defaultNetwork);
+const provider = new ethers.InfuraProvider(defaultNetwork, process.env.INFURA_API_KEY);
+const ethersService = new EthersService(provider);
 
 // Tool definitions
 const tools = [
