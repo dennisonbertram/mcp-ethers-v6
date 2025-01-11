@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { TestEnvironment } from './utils/types.js';
+import { TestEnvironment } from './utils/hardhatTestProvider.js';
 import { getTestEnvironment } from './utils/globalTestSetup.js';
 import { deployTestToken, TestToken } from './utils/testContractHelper.js';
 
@@ -32,7 +32,7 @@ describe('Contract Methods', () => {
       const owner = testEnv.signers[0];
       const ownerAddress = await owner.getAddress();
       const balance = await testToken.balanceOf(ownerAddress);
-      expect(balance).toBe(ethers.parseEther('1000000'));
+      expect(balance.toString()).toBe(ethers.parseEther('1000000').toString());
     });
 
     it('should handle token transfers correctly', async () => {
@@ -46,7 +46,7 @@ describe('Contract Methods', () => {
       await testToken.transfer(recipientAddress, amount);
 
       const finalBalance = await testToken.balanceOf(recipientAddress);
-      expect(finalBalance).toBe(initialBalance + amount);
+      expect(finalBalance.toString()).toBe((initialBalance + amount).toString());
     });
 
     it('should fail when transferring to invalid address', async () => {

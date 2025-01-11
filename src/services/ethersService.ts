@@ -27,8 +27,9 @@ export class EthersService {
     private defaultProvider: ethers.Provider;
     private defaultSigner?: ethers.Signer;
 
-    constructor(provider?: ethers.Provider) {
+    constructor(provider?: ethers.Provider, signer?: ethers.Signer) {
         this.defaultProvider = provider || new ethers.JsonRpcProvider('http://localhost:8545');
+        this.defaultSigner = signer;
     }
 
     private getInfuraApiKey(): string {
@@ -276,7 +277,7 @@ export class EthersService {
         
         const privateKey = process.env.PRIVATE_KEY;
         if (!privateKey) {
-            throw new Error("Missing PRIVATE_KEY in environment variables.");
+            throw new Error("Missing PRIVATE_KEY in environment variables. Either provide a signer in the constructor or set PRIVATE_KEY in environment variables.");
         }
         const selectedProvider = this.getProvider(provider);
         return new ethers.Wallet(privateKey, selectedProvider);
