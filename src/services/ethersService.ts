@@ -612,12 +612,13 @@ export class EthersService {
         provider?: string
     ): Promise<any> {
         try {
+            let checksummedAddress: string | undefined;
             if (address) {
-                addressSchema.parse(address);
+                checksummedAddress = ethers.getAddress(address);
             }
             const selectedProvider = this.getProvider(provider);
             const filter: ethers.Filter = {
-                address: address,
+                address: checksummedAddress,
                 topics: topics
             };
 
@@ -648,11 +649,12 @@ export class EthersService {
         provider?: string
     ): Promise<any> {
         try {
-            addressSchema.parse(contractAddress);
+            // Use ethers.getAddress to get the correct checksummed address
+            const checksummedAddress = ethers.getAddress(contractAddress);
             const selectedProvider = this.getProvider(provider);
 
             const contract = new ethers.Contract(
-                contractAddress,
+                checksummedAddress,
                 abi,
                 selectedProvider
             );
