@@ -12,8 +12,8 @@ process.env.PROVIDER_URL = process.env.PROVIDER_URL || 'https://eth-sepolia.g.al
 // Increase the timeout for all tests
 jest.setTimeout(30000);
 
-// Reset environment before each test
-beforeEach(async () => {
+// Reset environment before all tests
+beforeAll(async () => {
   try {
     await resetTestEnvironment();
   } catch (error) {
