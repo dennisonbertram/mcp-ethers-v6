@@ -1,4 +1,4 @@
-import { cleanupTestEnvironment, resetTestEnvironment } from './src/tests/utils/globalTestSetup.js';
+import { cleanupTestEnvironment, resetTestEnvironment, getTestEnvironment } from './src/tests/utils/globalTestSetup.js';
 import { config } from 'dotenv';
 
 // Load test environment variables
@@ -18,6 +18,20 @@ beforeEach(async () => {
     await resetTestEnvironment();
   } catch (error) {
     console.error('Error during test environment reset:', error);
+    throw error;
+  }
+});
+
+// Mine 10 blocks before each test
+beforeEach(async () => {
+  try {
+    const testEnv = await getTestEnvironment();
+    // Mine 10 blocks
+    for (let i = 0; i < 10; i++) {
+      await testEnv.provider.send('evm_mine', []);
+    }
+  } catch (error) {
+    console.error('Error mining blocks:', error);
     throw error;
   }
 });
