@@ -477,6 +477,104 @@ const tools = [
         },
     },
     {
+        name: "contractCallWithOverrides",
+        description: "Call a method on a smart contract with advanced options",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                gasLimit: {
+                    type: "string",
+                    description: "Optional. A manual gas limit for the transaction",
+                },
+                gasPrice: {
+                    type: "string",
+                    description: "Optional. A manual gas price for legacy transactions",
+                },
+                nonce: {
+                    type: "number",
+                    description: "Optional. A manual nonce for the transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
+    {
+        name: "contractSendTransactionWithOverrides",
+        description: "Call a method on a smart contract and send a transaction with custom parameters",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                gasLimit: {
+                    type: "string",
+                    description: "Optional. The gas limit for the transaction",
+                },
+                gasPrice: {
+                    type: "string",
+                    description: "Optional. A manual gas price for legacy transactions",
+                },
+                nonce: {
+                    type: "number",
+                    description: "Optional. A manual nonce for the transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
+    {
         name: "sendRawTransaction",
         description: "Send a raw transaction",
         inputSchema: {
@@ -907,6 +1005,90 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Send raw transaction failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractCallWithOverrides: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            gasLimit: z.string().optional(),
+            gasPrice: z.string().optional(),
+            nonce: z.number().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", gasLimit, gasPrice, nonce, provider } = schema.parse(args);
+        try {
+            const overrides: ethers.Overrides = {};
+            if (gasLimit) overrides.gasLimit = ethers.getBigInt(gasLimit);
+            if (gasPrice) overrides.gasPrice = ethers.parseUnits(gasPrice, 'gwei');
+            if (nonce !== undefined) overrides.nonce = nonce;
+
+            const result = await ethersService.contractCallWithOverrides(
+                contractAddress,
+                abi,
+                method,
+                methodArgs,
+                value,
+                provider,
+                overrides
+            );
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(result, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract call with overrides failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractSendTransactionWithOverrides: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            gasLimit: z.string().optional(),
+            gasPrice: z.string().optional(),
+            nonce: z.number().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", gasLimit, gasPrice, nonce, provider } = schema.parse(args);
+        try {
+            const overrides: ethers.Overrides = {};
+            if (gasLimit) overrides.gasLimit = ethers.getBigInt(gasLimit);
+            if (gasPrice) overrides.gasPrice = ethers.parseUnits(gasPrice, 'gwei');
+            if (nonce !== undefined) overrides.nonce = nonce;
+
+            const result = await ethersService.contractSendTransactionWithOverrides(
+                contractAddress,
+                abi,
+                method,
+                methodArgs,
+                value,
+                provider,
+                overrides
+            );
+            return {
+                content: [{
+                    type: "text",
+                    text: `Transaction sent with hash ${result.hash}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract send transaction with overrides failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },

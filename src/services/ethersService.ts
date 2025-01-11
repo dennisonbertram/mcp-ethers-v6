@@ -376,21 +376,70 @@ export class EthersService {
                 value: parsedValue
             };
             
-            // Estimate the gas for this transaction
+            // Estimate the gas
             const estimatedGas = await signer.estimateGas(tx);
             
-            // Add the estimated gas to the transaction
-            const txWithGas = { ...tx, gasLimit: estimatedGas };
-            
-            // Send the transaction with the estimated gas
-            const response = await signer.sendTransaction(txWithGas);
-            return response;
+            // Add the estimated gas and send the transaction
+            return await this.contractSendTransaction(
+                contractAddress,
+                abi,
+                method,
+                args,
+                value,
+                provider,
+                { gasLimit: estimatedGas }
+            );
         } catch (error) {
             this.handleProviderError(error, `call contract method with estimate: ${method}`, {
                 contractAddress,
                 abi: JSON.stringify(abi),
                 args: JSON.stringify(args),
                 value
+            });
+        }
+    }
+
+    async contractCallWithOverrides(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string,
+        overrides?: ethers.Overrides
+    ): Promise<any> {
+        try {
+            addressSchema.parse(contractAddress);
+            const signer = this.getSigner(provider);
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                signer
+            );
+            const parsedValue = ethers.parseEther(value);
+            
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Merge value with other overrides
+            const txOverrides = {
+                ...overrides,
+                value: parsedValue
+            };
+            
+            // Call the contract method with overrides
+            const tx = await contract[method](...args, txOverrides);
+            return tx;
+        } catch (error) {
+            this.handleProviderError(error, `call contract method with overrides: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value,
+                overrides: JSON.stringify(overrides)
             });
         }
     }
@@ -452,51 +501,45 @@ export class EthersService {
         provider?: string
     ): Promise<ethers.TransactionResponse> {
         try {
-            addressSchema.parse(contractAddress);
-            const signer = this.getSigner(provider);
-            const contract = new ethers.Contract(
-                contractAddress,
-                abi,
-                signer
-            );
+            const parsedAddress = addressSchema.parse(contractAddress);
+            const contract = new ethers.Contract(parsedAddress, abi, await this.getSigner(provider));
             const parsedValue = ethers.parseEther(value);
+
+            const populatedTx = await contract.populateTransaction[method].apply(contract, [...args, { value: parsedValue }]);
+            const gasEstimate = await contract.getFunction(method).estimateGas(...args, { value: parsedValue });
             
-            // Get the function fragment for the method
-            const fragment = contract.interface.getFunction(method);
-            if (!fragment) {
-                throw new Error(`Method ${method} not found in contract ABI`);
-            }
-            
-            // Encode the function data
-            const data = contract.interface.encodeFunctionData(fragment, args);
-            
-            // Create the transaction request
-            const tx = {
-                to: contractAddress,
-                data,
+            return await contract.getFunction(method)(...args, {
+                value: parsedValue,
+                gasLimit: gasEstimate
+            });
+        } catch (error) {
+            throw this.handleProviderError(error);
+        }
+    }
+
+    async contractSendTransactionWithOverrides(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string,
+        overrides: ethers.Overrides = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            const parsedAddress = addressSchema.parse(contractAddress);
+            const contract = new ethers.Contract(parsedAddress, abi, await this.getSigner(provider));
+            const parsedValue = ethers.parseEther(value);
+
+            const txOverrides = {
+                ...overrides,
                 value: parsedValue
             };
-            
-            // Estimate the gas
-            const estimatedGas = await signer.estimateGas(tx);
-            
-            // Add the estimated gas and send the transaction
-            return await this.contractSendTransaction(
-                contractAddress,
-                abi,
-                method,
-                args,
-                value,
-                provider,
-                { gasLimit: estimatedGas }
-            );
+
+            const populatedTx = await contract.populateTransaction[method].apply(contract, [...args, txOverrides]);
+            return await contract.getFunction(method)(...args, txOverrides);
         } catch (error) {
-            this.handleProviderError(error, `send transaction to contract method with estimate: ${method}`, {
-                contractAddress,
-                abi: JSON.stringify(abi),
-                args: JSON.stringify(args),
-                value
-            });
+            throw this.handleProviderError(error);
         }
     }
 
