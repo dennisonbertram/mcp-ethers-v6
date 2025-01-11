@@ -77,7 +77,13 @@ export class EthersService {
         if (value === undefined) return 'undefined';
         if (value === null) return 'null';
         if (typeof value === 'bigint') return value.toString();
+        if (Array.isArray(value)) {
+            return `[${value.map(v => this.serializeValue(v)).join(', ')}]`;
+        }
         if (typeof value === 'object') {
+            if ('toJSON' in value && typeof value.toJSON === 'function') {
+                return value.toJSON();
+            }
             return JSON.stringify(value, (_, v) => 
                 typeof v === 'bigint' ? v.toString() : v
             );
@@ -355,7 +361,7 @@ export class EthersService {
 
     async contractCall(
         contractAddress: string,
-        abi: string,
+        abi: string | Array<string>,
         method: string,
         args: any[] = [],
         value: string = "0",
@@ -363,20 +369,34 @@ export class EthersService {
     ): Promise<any> {
         try {
             addressSchema.parse(contractAddress);
-            const signer = this.getSigner(provider);
+            const selectedProvider = this.getProvider(provider);
             const contract = new ethers.Contract(
                 contractAddress,
                 abi,
-                signer
+                selectedProvider
             );
-            const parsedValue = ethers.parseEther(value);
-            const tx = await contract[method](...args, { value: parsedValue });
-            return tx;
+
+            // Check if the method is a view/pure function
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+
+            if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
+                // For view/pure functions, use the provider
+                return await contract[method](...args);
+            } else {
+                // For state-changing functions, use the signer
+                const signer = this.getSigner(provider);
+                const contractWithSigner = contract.connect(signer);
+                const parsedValue = ethers.parseEther(value);
+                return await contractWithSigner[method](...args, { value: parsedValue });
+            }
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {
                 contractAddress,
                 abi: JSON.stringify(abi),
-                args: JSON.stringify(args),
+                args: this.serializeValue(args),
                 value
             });
         }
@@ -632,16 +652,34 @@ export class EthersService {
     }
 
     private formatEvent(log: ethers.EventLog | ethers.Log): any {
-        return {
+        const formattedEvent = {
             address: log.address,
-            blockNumber: log.blockNumber,
+            blockNumber: log.blockNumber?.toString(),
             transactionHash: log.transactionHash,
             logIndex: log.index,
             name: 'eventName' in log ? log.eventName : undefined,
-            args: 'args' in log ? log.args : undefined,
+            args: 'args' in log ? this.serializeEventArgs(log.args) : undefined,
             data: log.data,
             topics: log.topics
         };
+        return formattedEvent;
+    }
+
+    private serializeEventArgs(args: any): any {
+        if (args === null || args === undefined) return args;
+        if (typeof args === 'bigint') return args.toString();
+        if (Array.isArray(args)) {
+            return args.map(arg => this.serializeEventArgs(arg));
+        }
+        if (typeof args === 'object') {
+            const serialized: any = {};
+            for (const [key, value] of Object.entries(args)) {
+                if (key === 'length' && Array.isArray(args)) continue;
+                serialized[key] = this.serializeEventArgs(value);
+            }
+            return serialized;
+        }
+        return args;
     }
 
     async queryLogs(
@@ -681,7 +719,7 @@ export class EthersService {
 
     async contractEvents(
         contractAddress: string,
-        abi: string,
+        abi: string | Array<string>,
         eventName?: string,
         topics?: Array<string | null | Array<string>>,
         fromBlock?: string | number,
@@ -689,7 +727,6 @@ export class EthersService {
         provider?: string
     ): Promise<any> {
         try {
-            // Use ethers.getAddress to get the correct checksummed address
             const checksummedAddress = ethers.getAddress(contractAddress);
             const selectedProvider = this.getProvider(provider);
 
@@ -699,17 +736,14 @@ export class EthersService {
                 selectedProvider
             );
 
-            // If eventName is provided, use it to create a filter
             if (eventName) {
                 const fragment = contract.interface.getEvent(eventName);
                 if (!fragment) {
                     throw new Error(`Event ${eventName} not found in contract ABI`);
                 }
-                // Get all events matching the event name and optional block range
                 const events = await contract.queryFilter(eventName as any, fromBlock, toBlock);
                 return events.map((log) => this.formatEvent(log as ethers.EventLog));
             } else {
-                // Get all events from the contract within the block range
                 const events = await contract.queryFilter('*' as any, fromBlock, toBlock);
                 return events.map((log) => this.formatEvent(log as ethers.EventLog));
             }
@@ -718,7 +752,7 @@ export class EthersService {
                 contractAddress,
                 abi: JSON.stringify(abi),
                 eventName: eventName || "any",
-                topics: topics ? JSON.stringify(topics) : "any",
+                topics: topics ? this.serializeValue(topics) : "any",
                 fromBlock: String(fromBlock || "any"),
                 toBlock: String(toBlock || "any")
             });
