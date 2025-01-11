@@ -592,6 +592,81 @@ const tools = [
             required: ["signedTransaction"]
         },
     },
+    {
+        name: "queryLogs",
+        description: "Query historical logs",
+        inputSchema: {
+            type: "object",
+            properties: {
+                address: {
+                    type: "string",
+                    description: "The contract address emitting the events (optional).",
+                },
+                topics: {
+                    type: "array",
+                    description: "A list of topics to filter by. Each item can be a string, null, or an array of strings (optional)",
+                    items: { 
+                        type: ["string", "null", "array"],
+                        items: { type: "string" }
+                    }
+                },
+                fromBlock: {
+                    type: ["string", "number"],
+                    description: "The starting block number (optional).",
+                },
+                toBlock: {
+                    type: ["string", "number"],
+                    description: "The ending block number (optional).",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+        },
+    },
+    {
+        name: "contractEvents",
+        description: "Query historical events from a contract",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the contract to query events from",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                eventName: {
+                    type: "string",
+                    description: "The name of the event to look for. (Optional).",
+                },
+                topics: {
+                    type: "array",
+                    description: "A list of topics to filter by. Each item can be a string, null, or an array of strings (optional)",
+                    items: { 
+                        type: ["string", "null", "array"],
+                        items: { type: "string" }
+                    }
+                },
+                fromBlock: {
+                    type: ["string", "number"],
+                    description: "The starting block number (optional).",
+                },
+                toBlock: {
+                    type: ["string", "number"],
+                    description: "The ending block number (optional).",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi"]
+        },
+    },
 ];
 
 // Define available tools
@@ -1089,6 +1164,57 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Contract send transaction with overrides failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    queryLogs: async (args: unknown) => {
+        const schema = z.object({
+            address: z.string().optional(),
+            topics: z.array(z.union([z.string(), z.null(), z.array(z.string())])).optional(),
+            fromBlock: z.union([z.string(), z.number()]).optional(),
+            toBlock: z.union([z.string(), z.number()]).optional(),
+            provider: z.string().optional()
+        });
+        const { address, topics, fromBlock, toBlock, provider } = schema.parse(args);
+        try {
+            const logs = await ethersService.queryLogs(address, topics, fromBlock, toBlock, provider);
+            return { content: [{ type: "text", text: JSON.stringify(logs, null, 2) }] };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Query logs failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractEvents: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            eventName: z.string().optional(),
+            topics: z.array(z.union([z.string(), z.null(), z.array(z.string())])).optional(),
+            fromBlock: z.union([z.string(), z.number()]).optional(),
+            toBlock: z.union([z.string(), z.number()]).optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, eventName, topics, fromBlock, toBlock, provider } = schema.parse(args);
+
+        try {
+            const events = await ethersService.contractEvents(
+                contractAddress,
+                abi,
+                eventName,
+                topics,
+                fromBlock,
+                toBlock,
+                provider
+            );
+            return { content: [{ type: "text", text: JSON.stringify(events, null, 2) }] };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Query events failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },

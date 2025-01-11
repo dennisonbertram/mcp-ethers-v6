@@ -590,4 +590,96 @@ export class EthersService {
             this.handleProviderError(error, "send raw transaction", { signedTransaction });
         }
     }
+
+    private formatEvent(log: ethers.EventLog | ethers.Log): any {
+        return {
+            address: log.address,
+            blockNumber: log.blockNumber,
+            transactionHash: log.transactionHash,
+            logIndex: log.index,
+            name: 'eventName' in log ? log.eventName : undefined,
+            args: 'args' in log ? log.args : undefined,
+            data: log.data,
+            topics: log.topics
+        };
+    }
+
+    async queryLogs(
+        address?: string,
+        topics?: Array<string | null | Array<string>>,
+        fromBlock?: string | number,
+        toBlock?: string | number,
+        provider?: string
+    ): Promise<any> {
+        try {
+            if (address) {
+                addressSchema.parse(address);
+            }
+            const selectedProvider = this.getProvider(provider);
+            const filter: ethers.Filter = {
+                address: address,
+                topics: topics
+            };
+
+            const logs = await selectedProvider.getLogs({
+                ...filter,
+                fromBlock: fromBlock,
+                toBlock: toBlock
+            });
+
+            return logs.map((log) => this.formatEvent(log));
+        } catch (error) {
+            this.handleProviderError(error, "query logs", {
+                address: address || "any",
+                topics: topics ? JSON.stringify(topics) : "any",
+                fromBlock: String(fromBlock || "any"),
+                toBlock: String(toBlock || "any")
+            });
+        }
+    }
+
+    async contractEvents(
+        contractAddress: string,
+        abi: string,
+        eventName?: string,
+        topics?: Array<string | null | Array<string>>,
+        fromBlock?: string | number,
+        toBlock?: string | number,
+        provider?: string
+    ): Promise<any> {
+        try {
+            addressSchema.parse(contractAddress);
+            const selectedProvider = this.getProvider(provider);
+
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                selectedProvider
+            );
+
+            // If eventName is provided, use it to create a filter
+            if (eventName) {
+                const fragment = contract.interface.getEvent(eventName);
+                if (!fragment) {
+                    throw new Error(`Event ${eventName} not found in contract ABI`);
+                }
+                // Get all events matching the event name and optional block range
+                const events = await contract.queryFilter(eventName as any, fromBlock, toBlock);
+                return events.map((log) => this.formatEvent(log as ethers.EventLog));
+            } else {
+                // Get all events from the contract within the block range
+                const events = await contract.queryFilter('*' as any, fromBlock, toBlock);
+                return events.map((log) => this.formatEvent(log as ethers.EventLog));
+            }
+        } catch (error) {
+            this.handleProviderError(error, "query contract events", {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                eventName: eventName || "any",
+                topics: topics ? JSON.stringify(topics) : "any",
+                fromBlock: String(fromBlock || "any"),
+                toBlock: String(toBlock || "any")
+            });
+        }
+    }
 } 
