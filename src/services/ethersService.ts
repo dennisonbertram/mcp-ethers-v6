@@ -442,4 +442,73 @@ export class EthersService {
             });
         }
     }
+
+    async contractSendTransactionWithEstimate(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            const signer = this.getSigner(provider);
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                signer
+            );
+            const parsedValue = ethers.parseEther(value);
+            
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Encode the function data
+            const data = contract.interface.encodeFunctionData(fragment, args);
+            
+            // Create the transaction request
+            const tx = {
+                to: contractAddress,
+                data,
+                value: parsedValue
+            };
+            
+            // Estimate the gas
+            const estimatedGas = await signer.estimateGas(tx);
+            
+            // Add the estimated gas and send the transaction
+            return await this.contractSendTransaction(
+                contractAddress,
+                abi,
+                method,
+                args,
+                value,
+                provider,
+                { gasLimit: estimatedGas }
+            );
+        } catch (error) {
+            this.handleProviderError(error, `send transaction to contract method with estimate: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value
+            });
+        }
+    }
+
+    async sendRawTransaction(
+        signedTransaction: string,
+        provider?: string
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            const selectedProvider = this.getProvider(provider);
+            return await selectedProvider.broadcastTransaction(signedTransaction);
+        } catch (error) {
+            this.handleProviderError(error, "send raw transaction", { signedTransaction });
+        }
+    }
 } 

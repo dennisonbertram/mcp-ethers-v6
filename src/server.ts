@@ -439,6 +439,61 @@ const tools = [
             required: ["contractAddress", "abi", "method"]
         },
     },
+    {
+        name: "contractSendTransactionWithEstimate",
+        description: "Call a method on a smart contract and send a transaction with automatic gas estimation",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
+    {
+        name: "sendRawTransaction",
+        description: "Send a raw transaction",
+        inputSchema: {
+            type: "object",
+            properties: {
+                signedTransaction: {
+                    type: "string",
+                    description: "A fully serialized and signed transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                }
+            },
+            required: ["signedTransaction"]
+        },
+    },
 ];
 
 // Define available tools
@@ -797,6 +852,61 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Contract send transaction failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractSendTransactionWithEstimate: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", provider } = schema.parse(args);
+        try {
+            const result = await ethersService.contractSendTransactionWithEstimate(
+                contractAddress,
+                abi,
+                method,
+                methodArgs,
+                value,
+                provider
+            );
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(result, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract send transaction with estimate failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    sendRawTransaction: async (args: unknown) => {
+        const schema = z.object({
+            signedTransaction: z.string(),
+            provider: z.string().optional()
+        });
+        const { signedTransaction, provider } = schema.parse(args);
+        try {
+            const tx = await ethersService.sendRawTransaction(signedTransaction, provider);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Transaction sent with hash ${tx.hash}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Send raw transaction failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },
