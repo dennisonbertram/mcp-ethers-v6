@@ -370,32 +370,36 @@ export class EthersService {
         try {
             addressSchema.parse(contractAddress);
             const selectedProvider = this.getProvider(provider);
+            
+            // Create contract instance with provider
             const contract = new ethers.Contract(
                 contractAddress,
                 abi,
                 selectedProvider
             );
 
-            // Check if the method is a view/pure function
+            // Get function fragment to check if it's view/pure
             const fragment = contract.interface.getFunction(method);
             if (!fragment) {
                 throw new Error(`Method ${method} not found in contract ABI`);
             }
 
+            // For view/pure functions, use provider directly
             if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
-                // For view/pure functions, use the provider
-                return await contract[method](...args);
-            } else {
-                // For state-changing functions, use the signer
-                const signer = this.getSigner(provider);
-                const contractWithSigner = contract.connect(signer);
-                const parsedValue = ethers.parseEther(value);
-                return await contractWithSigner[method](...args, { value: parsedValue });
+                const result = await contract[method](...args);
+                return this.serializeEventArgs(result); // Use our serializer for the result
             }
+
+            // For state-changing functions, use signer
+            const signer = this.getSigner(provider);
+            const contractWithSigner = contract.connect(signer);
+            const parsedValue = ethers.parseEther(value);
+            const result = await contractWithSigner[method](...args, { value: parsedValue });
+            return this.serializeEventArgs(result);
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {
                 contractAddress,
-                abi: JSON.stringify(abi),
+                abi: typeof abi === 'string' ? abi : JSON.stringify(abi),
                 args: this.serializeValue(args),
                 value
             });
@@ -675,6 +679,7 @@ export class EthersService {
             const serialized: any = {};
             for (const [key, value] of Object.entries(args)) {
                 if (key === 'length' && Array.isArray(args)) continue;
+                if (key === '_isBigNumber' || key === 'type' || key === 'hash') continue; // Skip internal ethers properties
                 serialized[key] = this.serializeEventArgs(value);
             }
             return serialized;
@@ -727,30 +732,65 @@ export class EthersService {
         provider?: string
     ): Promise<any> {
         try {
+            // Use queryLogs under the hood as it's more reliable
             const checksummedAddress = ethers.getAddress(contractAddress);
             const selectedProvider = this.getProvider(provider);
+            const contract = new ethers.Contract(checksummedAddress, abi, selectedProvider);
 
-            const contract = new ethers.Contract(
+            // If no event name specified, get all events
+            if (!eventName) {
+                return this.queryLogs(
+                    checksummedAddress,
+                    topics,
+                    fromBlock,
+                    toBlock,
+                    provider
+                );
+            }
+
+            // Get the event fragment to encode topics
+            const fragment = contract.interface.getEvent(eventName);
+            if (!fragment) {
+                throw new Error(`Event ${eventName} not found in contract ABI`);
+            }
+
+            // Get the topic hash for this event
+            const topicHash = contract.interface.getEventTopic(fragment);
+            const eventTopics = [topicHash];
+            if (topics && topics.length > 0) {
+                eventTopics.push(...topics);
+            }
+
+            // Use queryLogs with the event-specific topic
+            const logs = await this.queryLogs(
                 checksummedAddress,
-                abi,
-                selectedProvider
+                eventTopics,
+                fromBlock,
+                toBlock,
+                provider
             );
 
-            if (eventName) {
-                const fragment = contract.interface.getEvent(eventName);
-                if (!fragment) {
-                    throw new Error(`Event ${eventName} not found in contract ABI`);
+            // Parse the logs with the contract interface
+            return logs.map(log => {
+                try {
+                    const parsedLog = contract.interface.parseLog({
+                        topics: log.topics,
+                        data: log.data
+                    });
+                    return {
+                        ...log,
+                        name: parsedLog?.name,
+                        args: this.serializeEventArgs(parsedLog?.args)
+                    };
+                } catch (e) {
+                    // If parsing fails, return the raw log
+                    return log;
                 }
-                const events = await contract.queryFilter(eventName as any, fromBlock, toBlock);
-                return events.map((log) => this.formatEvent(log as ethers.EventLog));
-            } else {
-                const events = await contract.queryFilter('*' as any, fromBlock, toBlock);
-                return events.map((log) => this.formatEvent(log as ethers.EventLog));
-            }
+            });
         } catch (error) {
             this.handleProviderError(error, "query contract events", {
                 contractAddress,
-                abi: JSON.stringify(abi),
+                abi: typeof abi === 'string' ? abi : JSON.stringify(abi),
                 eventName: eventName || "any",
                 topics: topics ? this.serializeValue(topics) : "any",
                 fromBlock: String(fromBlock || "any"),
