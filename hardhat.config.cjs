@@ -1,14 +1,13 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-ethers");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.24",
   networks: {
     hardhat: {
-      mining: {
-        auto: true,
-        interval: 0
-      }
+      // This is all we need - Hardhat will create a local network
+      // with pre-funded accounts automatically
     }
   }
 };
