@@ -35,11 +35,16 @@ describe('EthersService Write Methods', () => {
         to: bobAddress,
         value: ethers.parseEther("1.0")
       });
-      await tx.wait();
 
+      // Wait for the transaction to be mined and get the receipt
+      const receipt = await tx.wait();
+      
+      // Calculate expected balance (1 ETH = 1000000000000000000 wei)
+      const expectedBalance = initialBalance + ethers.parseEther("1.0");
+      
       // Check new balance
       const newBalance = await provider.getBalance(bobAddress);
-      expect(newBalance).toBeGreaterThan(initialBalance);
+      expect(newBalance).toBe(expectedBalance);
     });
   });
 
