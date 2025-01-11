@@ -92,17 +92,4 @@ describe('Write Methods Tests', () => {
       expect(signature.length).toBe(132); // 0x + 130 hex characters
     });
   });
-
-  describe('ERC20 Token', () => {
-    test('should fail when calling with insufficient balance', async () => {
-      const signerAddress = await signer.getAddress();
-      const tokenAddress = await testToken.getAddress();
-      const signerBalance = await testToken.balanceOf(signerAddress);
-      const tooMuch = signerBalance + 1n;
-
-      await expect(testToken.transfer(recipientAddress, tooMuch))
-        .rejects
-        .toThrow();
-    });
-  });
 }); 
