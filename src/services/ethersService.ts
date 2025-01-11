@@ -341,4 +341,105 @@ export class EthersService {
             });
         }
     }
+
+    async contractCallWithEstimate(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string
+    ): Promise<any> {
+        try {
+            addressSchema.parse(contractAddress);
+            const signer = this.getSigner(provider);
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                signer
+            );
+            const parsedValue = ethers.parseEther(value);
+            
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Encode the function data
+            const data = contract.interface.encodeFunctionData(fragment, args);
+            
+            // Create the transaction request
+            const tx = {
+                to: contractAddress,
+                data,
+                value: parsedValue
+            };
+            
+            // Estimate the gas for this transaction
+            const estimatedGas = await signer.estimateGas(tx);
+            
+            // Add the estimated gas to the transaction
+            const txWithGas = { ...tx, gasLimit: estimatedGas };
+            
+            // Send the transaction with the estimated gas
+            const response = await signer.sendTransaction(txWithGas);
+            return response;
+        } catch (error) {
+            this.handleProviderError(error, `call contract method with estimate: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value
+            });
+        }
+    }
+
+    async contractSendTransaction(
+        contractAddress: string,
+        abi: string,
+        method: string,
+        args: any[] = [],
+        value: string = "0",
+        provider?: string,
+        overrides?: ethers.Overrides
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            const signer = this.getSigner(provider);
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                signer
+            );
+            const parsedValue = ethers.parseEther(value);
+            
+            // Get the function fragment for the method
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+            
+            // Encode the function data
+            const data = contract.interface.encodeFunctionData(fragment, args);
+            
+            // Create the transaction request with overrides
+            const tx = {
+                to: contractAddress,
+                data,
+                value: parsedValue,
+                ...overrides
+            };
+            
+            // Send the transaction
+            return await signer.sendTransaction(tx);
+        } catch (error) {
+            this.handleProviderError(error, `send transaction to contract method: ${method}`, {
+                contractAddress,
+                abi: JSON.stringify(abi),
+                args: JSON.stringify(args),
+                value
+            });
+        }
+    }
 } 

@@ -253,6 +253,87 @@
                 },
                 "required": ["value", "unit"]
             }
+        },
+        {
+            "name": "sendTransaction",
+            "description": "Send ETH from the server's wallet to a recipient",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "to": {
+                        "type": "string",
+                        "description": "The recipient address"
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "The amount of ETH to send"
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "Optional. Data to include in the transaction"
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL"
+                    }
+                },
+                "required": ["to", "value"]
+            }
+        },
+        {
+            "name": "signMessage",
+            "description": "Sign a message using the server's wallet",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "The message to sign"
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL"
+                    }
+                },
+                "required": ["message"]
+            }
+        },
+        {
+            "name": "contractCall",
+            "description": "Call a method on a smart contract",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "contractAddress": {
+                        "type": "string",
+                        "description": "The address of the smart contract"
+                    },
+                    "abi": {
+                        "type": "string",
+                        "description": "The ABI of the contract as a JSON string"
+                    },
+                    "method": {
+                        "type": "string",
+                        "description": "The method name to invoke"
+                    },
+                    "methodArgs": {
+                        "type": "array",
+                        "description": "An array of arguments to pass to the method",
+                        "items": {
+                            "type": ["string", "number", "boolean", "object"]
+                        }
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "Optional. The amount of ETH to send with the call"
+                    },
+                    "provider": {
+                        "type": "string",
+                        "description": "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL"
+                    }
+                },
+                "required": ["contractAddress", "abi", "method"]
+            }
         }
     ]
 } 

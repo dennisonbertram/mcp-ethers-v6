@@ -7,6 +7,7 @@ import {
 import { EthersService, DefaultProvider } from "./services/ethersService.js";
 import { z } from "zod";
 import { config } from "dotenv";
+import { ethers } from "ethers";
 
 config(); // Load environment variables
 
@@ -360,6 +361,84 @@ const tools = [
             required: ["contractAddress", "abi", "method"]
         },
     },
+    {
+        name: "contractCallWithEstimate",
+        description: "Call a method on a smart contract with automatic gas estimation",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
+    {
+        name: "contractSendTransaction",
+        description: "Call a method on a smart contract and send a transaction with custom parameters",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the smart contract",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The method name to invoke",
+                },
+                methodArgs: {
+                    type: "array",
+                    description: "An array of arguments to pass to the method",
+                    items: {
+                        type: ["string", "number", "boolean", "object"]
+                    }
+                },
+                value: {
+                    type: "string",
+                    description: "Optional. The amount of ETH to send with the call",
+                },
+                gasLimit: {
+                    type: "string",
+                    description: "Optional. The gas limit for the transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
 ];
 
 // Define available tools
@@ -656,6 +735,68 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Contract call failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractCallWithEstimate: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", provider } = schema.parse(args);
+        try {
+            const result = await ethersService.contractCallWithEstimate(contractAddress, abi, method, methodArgs, value, provider);
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(result, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract call with estimate failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractSendTransaction: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            value: z.string().optional(),
+            gasLimit: z.string().optional(),
+            provider: z.string().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], value = "0", gasLimit, provider } = schema.parse(args);
+        try {
+            const overrides = gasLimit ? { gasLimit: ethers.getBigInt(gasLimit) } : undefined;
+            const result = await ethersService.contractSendTransaction(
+                contractAddress,
+                abi,
+                method,
+                methodArgs,
+                value,
+                provider,
+                overrides
+            );
+            return {
+                content: [{
+                    type: "text",
+                    text: `Transaction sent with hash ${result.hash}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract send transaction failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },
