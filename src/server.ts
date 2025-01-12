@@ -12,6 +12,25 @@ import { ethers } from "ethers";
 
 config(); // Load environment variables
 
+// Define schemas for contract calls
+const contractCallSchema = z.object({
+    contractAddress: z.string(),
+    abi: z.union([z.string(), z.array(z.string())]),
+    method: z.string(),
+    methodArgs: z.array(z.any()).optional(),
+    provider: z.string().optional(),
+    chainId: z.number().optional()
+});
+
+const contractCallViewSchema = z.object({
+    address: z.string(),
+    abi: z.union([z.string(), z.array(z.string())]),
+    method: z.string(),
+    args: z.array(z.any()).optional(),
+    provider: z.string().optional(),
+    chainId: z.number().optional()
+});
+
 const server = new Server(
     {
         name: "ethers-wallet-server",
@@ -33,7 +52,7 @@ const ethersService = new EthersService(provider);
 const tools = [
     {
         name: "getWalletBalance",
-        description: "Get the ETH balance of a wallet", // TODO: add support for Native Token per network
+        description: "Get the ETH balance of a wallet",
         inputSchema: {
             type: "object",
             properties: {
@@ -44,6 +63,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
             required: ["address"],
@@ -67,6 +90,10 @@ const tools = [
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                },
             },
             required: ["address", "tokenAddress"]
         },
@@ -85,6 +112,10 @@ const tools = [
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                },
             },
             required: ["address"]
         },
@@ -98,6 +129,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
         },
@@ -115,6 +150,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
             required: ["blockTag"]
@@ -134,6 +173,10 @@ const tools = [
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                },
             },
             required: ["txHash"]
         },
@@ -148,6 +191,10 @@ const tools = [
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                },
             },
         },
     },
@@ -160,6 +207,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
         },
@@ -177,6 +228,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
             required: ["address"]
@@ -196,6 +251,10 @@ const tools = [
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                },
             },
             required: ["address"]
         },
@@ -213,6 +272,10 @@ const tools = [
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
                 },
             },
             required: ["name"]
@@ -746,11 +809,10 @@ const tools = [
     },
     {
         name: "getSupportedNetworks",
-        description: "Get a list of all supported networks and their configurations",
+        description: "Get a list of supported networks and their configurations",
         inputSchema: {
             type: "object",
             properties: {},
-            required: []
         },
     },
 ];
@@ -765,55 +827,50 @@ const toolHandlers = {
     getWalletBalance: async (args: unknown) => {
         const schema = z.object({ 
             address: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { address, provider } = schema.parse(args);
-        const balance = await ethersService.getBalance(address, provider);
-        
+        const { address, provider, chainId } = schema.parse(args);
+        const balance = await ethersService.getBalance(address, provider, chainId);
         return {
-            content: [
-                {
-                    type: "text",
-                    text: `The balance of ${address} is ${balance} ETH`,
-                },
-            ],
+            content: [{ type: "text", text: `The balance of ${address} is ${balance} ETH` }],
         };
     },
     
     getERC20Balance: async (args: unknown) => {
-        const schema = z.object({ 
-            address: z.string(), 
+        const schema = z.object({
+            address: z.string(),
             tokenAddress: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { address, tokenAddress, provider } = schema.parse(args);
-        const balance = await ethersService.getERC20Balance(address, tokenAddress, provider);
+        const { address, tokenAddress, provider, chainId } = schema.parse(args);
+        const balance = await ethersService.getERC20Balance(address, tokenAddress, provider, chainId);
         return {
-            content: [
-                {
-                    type: "text",
-                    text: `The balance of ${address} is ${balance} in ${tokenAddress}`
-                },
-            ],
+            content: [{ type: "text", text: `The ERC20 balance of ${address} is ${balance}` }],
         };
     },
     
     getWalletTransactionCount: async (args: unknown) => {
         const schema = z.object({ 
             address: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { address, provider } = schema.parse(args);
-        const count = await ethersService.getTransactionCount(address, provider);
+        const { address, provider, chainId } = schema.parse(args);
+        const count = await ethersService.getTransactionCount(address, provider, chainId);
         return {
             content: [{ type: "text", text: `The transaction count for ${address} is ${count}` }],
         };
     },
 
     getBlockNumber: async (args: unknown) => {
-        const schema = z.object({ provider: z.string().optional() });
-        const { provider } = schema.parse(args);
-        const blockNumber = await ethersService.getBlockNumber(provider);
+        const schema = z.object({ 
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { provider, chainId } = schema.parse(args);
+        const blockNumber = await ethersService.getBlockNumber(provider, chainId);
         return {
             content: [{ type: "text", text: `The current block number is ${blockNumber}` }],
         };
@@ -822,10 +879,11 @@ const toolHandlers = {
     getBlockDetails: async (args: unknown) => {
         const schema = z.object({
             blockTag: z.union([z.string(), z.number()]),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { blockTag, provider } = schema.parse(args);
-        const blockDetails = await ethersService.getBlockDetails(blockTag, provider);
+        const { blockTag, provider, chainId } = schema.parse(args);
+        const blockDetails = await ethersService.getBlockDetails(blockTag, provider, chainId);
         
         if (blockDetails === null) {
             return {
@@ -842,10 +900,11 @@ const toolHandlers = {
     getTransactionDetails: async (args: unknown) => {
         const schema = z.object({
             txHash: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { txHash, provider } = schema.parse(args);
-        const txDetails = await ethersService.getTransactionDetails(txHash, provider);
+        const { txHash, provider, chainId } = schema.parse(args);
+        const txDetails = await ethersService.getTransactionDetails(txHash, provider, chainId);
         
         if (txDetails === null) {
             return {
@@ -860,18 +919,24 @@ const toolHandlers = {
     },
 
     getGasPrice: async (args: unknown) => {
-        const schema = z.object({ provider: z.string().optional() });
-        const { provider } = schema.parse(args);
-        const gasPrice = await ethersService.getGasPrice(provider);
+        const schema = z.object({ 
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { provider, chainId } = schema.parse(args);
+        const gasPrice = await ethersService.getGasPrice(provider, chainId);
         return {
             content: [{ type: "text", text: `The current gas price is ${gasPrice} gwei` }],
         };
     },
 
     getFeeData: async (args: unknown) => {
-        const schema = z.object({ provider: z.string().optional() });
-        const { provider } = schema.parse(args);
-        const feeData = await ethersService.getFeeData(provider);
+        const schema = z.object({ 
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { provider, chainId } = schema.parse(args);
+        const feeData = await ethersService.getFeeData(provider, chainId);
         return {
             content: [{ type: "text", text: JSON.stringify(feeData, null, 2) }],
         };
@@ -880,10 +945,11 @@ const toolHandlers = {
     getContractCode: async (args: unknown) => {
         const schema = z.object({
             address: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { address, provider } = schema.parse(args);
-        const code = await ethersService.getContractCode(address, provider);
+        const { address, provider, chainId } = schema.parse(args);
+        const code = await ethersService.getContractCode(address, provider, chainId);
         
         if (code === null || code === "0x") {
             return {
@@ -900,10 +966,11 @@ const toolHandlers = {
     lookupAddress: async (args: unknown) => {
         const schema = z.object({
             address: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { address, provider } = schema.parse(args);
-        const ensName = await ethersService.lookupAddress(address, provider);
+        const { address, provider, chainId } = schema.parse(args);
+        const ensName = await ethersService.lookupAddress(address, provider, chainId);
         
         if (ensName === null) {
             return {
@@ -919,10 +986,11 @@ const toolHandlers = {
     resolveName: async (args: unknown) => {
         const schema = z.object({
             name: z.string(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { name, provider } = schema.parse(args);
-        const address = await ethersService.resolveName(name, provider);
+        const { name, provider, chainId } = schema.parse(args);
+        const address = await ethersService.resolveName(name, provider, chainId);
         
         if (address === null) {
             return {
