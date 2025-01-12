@@ -52,7 +52,7 @@ const ethersService = new EthersService(provider);
 const tools = [
     {
         name: "getSupportedNetworks",
-        description: "Get a list of all supported networks and their configurations. Call this first to discover available networks before using other network-related functions.",
+        description: "Get a list of all supported networks and their configurations. Shows which network is the default (used when no provider is specified). Call this first to discover available networks before using other network-related functions.",
         inputSchema: {
             type: "object",
             properties: {},
@@ -66,7 +66,7 @@ const tools = [
             properties: {
                 provider: {
                     type: "string",
-                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks. If not provided, uses the default network.",
                 },
             },
         },

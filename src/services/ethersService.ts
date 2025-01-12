@@ -900,8 +900,10 @@ export class EthersService {
             symbol: string;
             decimals: number;
         };
+        isDefault?: boolean;
     }> {
         try {
+            const defaultNetwork = process.env.DEFAULT_NETWORK || "mainnet";
             return DEFAULT_PROVIDERS.map((network) => ({
                 name: network,
                 chainId: networkList[network]?.chainId,
@@ -912,7 +914,8 @@ export class EthersService {
                     name: network.includes('Ethereum') ? 'Ether' : 'Native Token',
                     symbol: network.includes('Ethereum') ? 'ETH' : 'NATIVE',
                     decimals: 18
-                }
+                },
+                isDefault: network === defaultNetwork
             }));
         } catch (error) {
             throw this.handleProviderError(error, "get supported networks");
