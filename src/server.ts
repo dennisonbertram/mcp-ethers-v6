@@ -669,6 +669,48 @@ const tools = [
             required: ["contractAddress", "abi"]
         },
     },
+    {
+        name: "sendTransactionWithOptions",
+        description: "Send a transaction with advanced options including gas limit, gas price, and nonce",
+        inputSchema: {
+            type: "object",
+            properties: {
+                to: {
+                    type: "string",
+                    description: "The recipient address",
+                },
+                value: {
+                    type: "string",
+                    description: "The amount of ETH to send",
+                },
+                data: {
+                    type: "string",
+                    description: "Optional. Data to include in the transaction",
+                },
+                gasLimit: {
+                    type: "string",
+                    description: "Optional. The gas limit for the transaction",
+                },
+                gasPrice: {
+                    type: "string",
+                    description: "Optional. The gas price in gwei",
+                },
+                nonce: {
+                    type: "number",
+                    description: "Optional. The nonce to use for the transaction",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use for the transaction. If provided, will verify it matches the provider's network.",
+                }
+            },
+            required: ["to", "value"]
+        },
+    },
 ];
 
 // Define available tools
@@ -1217,6 +1259,34 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Query events failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    sendTransactionWithOptions: async (args: unknown) => {
+        const schema = z.object({
+            to: z.string(),
+            value: z.string(),
+            data: z.string().optional(),
+            gasLimit: z.string().optional(),
+            gasPrice: z.string().optional(),
+            nonce: z.number().optional(),
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { to, value, data, gasLimit, gasPrice, nonce, provider, chainId } = schema.parse(args);
+        try {
+            const tx = await ethersService.sendTransactionWithOptions(to, value, data, gasLimit, gasPrice, nonce, provider, chainId);
+            return {
+                content: [{
+                    type: "text",
+                    text: `Transaction sent with hash ${tx.hash}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Send transaction with options failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },
