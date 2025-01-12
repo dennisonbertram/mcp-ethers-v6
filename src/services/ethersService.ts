@@ -927,4 +927,20 @@ export class EthersService {
             this.handleProviderError(error, "get supported networks");
         }
     }
+
+    async getWalletInfo(provider?: string): Promise<{ address: string } | null> {
+        try {
+            if (!this._signer) {
+                return null;
+            }
+            
+            const selectedProvider = provider ? this.getProvider(provider) : this._provider;
+            const signer = this._signer.connect(selectedProvider);
+            const address = await signer.getAddress();
+            
+            return { address };
+        } catch (error) {
+            this.handleProviderError(error, "get wallet info");
+        }
+    }
 } 

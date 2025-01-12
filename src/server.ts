@@ -815,6 +815,19 @@ const tools = [
             properties: {},
         },
     },
+    {
+        name: "checkWalletExists",
+        description: "Check if there is a wallet configured on the server. Returns basic wallet info like address but never exposes private keys.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+                },
+            },
+        },
+    },
 ];
 
 // Define available tools
@@ -1430,6 +1443,40 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Failed to get supported networks: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    checkWalletExists: async (args: unknown) => {
+        const schema = z.object({
+            provider: z.string().optional()
+        });
+        const { provider } = schema.parse(args);
+        
+        try {
+            const walletInfo = await ethersService.getWalletInfo(provider);
+            if (!walletInfo) {
+                return {
+                    content: [{ 
+                        type: "text", 
+                        text: "No wallet is currently configured on the server." 
+                    }]
+                };
+            }
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `Wallet is configured with address: ${walletInfo.address}` 
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error checking wallet: ${error instanceof Error ? error.message : String(error)}` 
+                }]
             };
         }
     },
