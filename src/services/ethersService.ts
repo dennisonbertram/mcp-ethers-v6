@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { z } from "zod";
 import { DefaultProvider, DEFAULT_PROVIDERS } from "../config/networks.js";
-
+import { networkList } from "../config/networkList.js";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
@@ -891,7 +891,7 @@ export class EthersService {
         }
     }
 
-    async getSupportedNetworks(): Promise<Array<{
+    getSupportedNetworks(): Array<{
         name: string;
         chainId?: number;
         isTestnet?: boolean;
@@ -900,33 +900,25 @@ export class EthersService {
             symbol: string;
             decimals: number;
         };
-    }>> {
+    }> {
         try {
-            const networks = DEFAULT_PROVIDERS.map(async (network) => {
-                try {
-                    const provider = this.createAlchemyProvider(network);
-                    const networkInfo = await provider.getNetwork();
-                    return {
-                        name: network,
-                        chainId: Number(networkInfo.chainId),
-                        isTestnet: networkInfo.name.includes('test') || networkInfo.name.includes('goerli') || networkInfo.name.includes('sepolia'),
-                        nativeCurrency: {
-                            name: networkInfo.name.includes('Ethereum') ? 'Ether' : 'Native Token',
-                            symbol: networkInfo.name.includes('Ethereum') ? 'ETH' : 'NATIVE',
-                            decimals: 18
-                        }
-                    };
-                } catch {
-                    // If we can't connect to the network, just return the name
-                    return { name: network };
+            return DEFAULT_PROVIDERS.map((network) => ({
+                name: network,
+                chainId: networkList[network]?.chainId,
+                isTestnet: network.toLowerCase().includes('testnet') || 
+                          network.toLowerCase().includes('goerli') || 
+                          network.toLowerCase().includes('sepolia'),
+                nativeCurrency: {
+                    name: network.includes('Ethereum') ? 'Ether' : 'Native Token',
+                    symbol: network.includes('Ethereum') ? 'ETH' : 'NATIVE',
+                    decimals: 18
                 }
-            });
-
-            return await Promise.all(networks);
+            }));
         } catch (error) {
-            this.handleProviderError(error, "get supported networks");
+            throw this.handleProviderError(error, "get supported networks");
         }
     }
+
 
     async getWalletInfo(provider?: string): Promise<{ address: string } | null> {
         try {

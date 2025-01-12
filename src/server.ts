@@ -1430,9 +1430,9 @@ const toolHandlers = {
         }
     },
 
-    getSupportedNetworks: async () => {
+    getSupportedNetworks: () => {
         try {
-            const networks = await ethersService.getSupportedNetworks();
+            const networks = ethersService.getSupportedNetworks();
             return {
                 content: [{
                     type: "text",
