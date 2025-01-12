@@ -395,7 +395,7 @@ export class EthersService {
 
             // For view/pure functions, use provider directly
             if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
-                const result = await contract[method](...args);
+                const result = await contract.getFunction(method).staticCall(...args);
                 return this.serializeEventArgs(result);
             }
 
@@ -403,7 +403,7 @@ export class EthersService {
             const signer = this.getSigner(provider, chainId, signerOverride);
             const contractWithSigner = contract.connect(signer);
             const parsedValue = ethers.parseEther(value);
-            const result = await contractWithSigner[method](...args, { value: parsedValue });
+            const result = await contractWithSigner.getFunction(method).send(...args, { value: parsedValue });
             return this.serializeEventArgs(result);
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {
