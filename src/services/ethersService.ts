@@ -371,10 +371,8 @@ export class EthersService {
         abi: string | Array<string>,
         method: string,
         args: any[] = [],
-        value: string = "0",
         provider?: string,
-        chainId?: number,
-        signerOverride?: ethers.Signer
+        chainId?: number
     ): Promise<any> {
         try {
             addressSchema.parse(contractAddress);
@@ -396,21 +394,57 @@ export class EthersService {
             // For view/pure functions, use provider directly
             if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
                 const result = await contract.getFunction(method).staticCall(...args);
-                return this.serializeEventArgs(result);
+                return this.serializeEventArgs(result); // Use our serializer for the result
             }
 
-            // For state-changing functions, use signer
-            const signer = this.getSigner(provider, chainId, signerOverride);
-            const contractWithSigner = contract.connect(signer);
-            const parsedValue = ethers.parseEther(value);
-            const result = await contractWithSigner.getFunction(method).send(...args, { value: parsedValue });
-            return this.serializeEventArgs(result);
+            throw new Error(`Use contractSendTransaction for state-changing function: ${method}`);
+        
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {
                 contractAddress,
                 abi: typeof abi === 'string' ? abi : JSON.stringify(abi),
                 args: this.serializeValue(args),
-                value
+            });
+        }
+    }
+
+    async contractCallView(
+        contractAddress: string,
+        abi: string | Array<string>,
+        method: string,
+        args: any[] = [],
+        provider?: string,
+        chainId?: number
+    ): Promise<any> {
+        try {
+            addressSchema.parse(contractAddress);
+            const selectedProvider = this.getProvider(provider, chainId);
+            
+            // Create contract instance with provider
+            const contract = new ethers.Contract(
+                contractAddress,
+                abi,
+                selectedProvider
+            );
+
+            // Get function fragment to check if it's view/pure
+            const fragment = contract.interface.getFunction(method);
+            if (!fragment) {
+                throw new Error(`Method ${method} not found in contract ABI`);
+            }
+
+            // For view/pure functions, use provider directly
+            if (!fragment.constant && fragment.stateMutability !== 'view' && fragment.stateMutability !== 'pure') {
+                throw new Error(`Use contractSendTransaction for state-changing function: ${method}`);
+            }
+
+            const result = await contract.getFunction(method).staticCall(...args);
+            return this.serializeEventArgs(result); // Use our serializer for the result
+        } catch (error) {
+            this.handleProviderError(error, `call contract view method: ${method}`, {
+                contractAddress,
+                abi: typeof abi === 'string' ? abi : JSON.stringify(abi),
+                args: this.serializeValue(args),
             });
         }
     }

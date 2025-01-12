@@ -328,13 +328,13 @@ const tools = [
     },
     {
         name: "contractCall",
-        description: "Call a method on a smart contract",
+        description: "Call a view/pure method on a smart contract (read-only operations)",
         inputSchema: {
             type: "object",
             properties: {
                 contractAddress: {
                     type: "string",
-                    description: "The address of the smart contract",
+                    description: "The address of the contract to call",
                 },
                 abi: {
                     type: "string",
@@ -342,23 +342,56 @@ const tools = [
                 },
                 method: {
                     type: "string",
-                    description: "The method name to invoke",
+                    description: "The name of the method to call",
                 },
-                methodArgs: {
+                args: {
                     type: "array",
-                    description: "An array of arguments to pass to the method",
-                    items: {
-                        type: ["string", "number", "boolean", "object"]
-                    }
-                },
-                value: {
-                    type: "string",
-                    description: "Optional. The amount of ETH to send with the call",
+                    description: "The arguments to pass to the method",
+                    items: { type: "any" },
                 },
                 provider: {
                     type: "string",
                     description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
                 },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use for the call. If provided, will verify it matches the provider's network.",
+                }
+            },
+            required: ["contractAddress", "abi", "method"]
+        },
+    },
+    {
+        name: "contractCallView",
+        description: "Call a view/pure method on a smart contract (read-only operations)",
+        inputSchema: {
+            type: "object",
+            properties: {
+                contractAddress: {
+                    type: "string",
+                    description: "The address of the contract to call",
+                },
+                abi: {
+                    type: "string",
+                    description: "The ABI of the contract as a JSON string",
+                },
+                method: {
+                    type: "string",
+                    description: "The name of the method to call (must be a view/pure function)",
+                },
+                args: {
+                    type: "array",
+                    description: "The arguments to pass to the method",
+                    items: { type: "any" },
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use for the call. If provided, will verify it matches the provider's network.",
+                }
             },
             required: ["contractAddress", "abi", "method"]
         },
@@ -991,18 +1024,13 @@ const toolHandlers = {
             abi: z.string(),
             method: z.string(),
             methodArgs: z.array(z.any()).optional(),
-            value: z.string().optional(),
-            provider: z.string().optional()
+            provider: z.string().optional(),
+            chainId: z.number().optional()
         });
-        const { contractAddress, abi, method, methodArgs = [], value = "0", provider } = schema.parse(args);
+        const { contractAddress, abi, method, methodArgs = [], provider, chainId } = schema.parse(args);
         try {
-            const result = await ethersService.contractCall(contractAddress, abi, method, methodArgs, value, provider);
-            return {
-                content: [{
-                    type: "text",
-                    text: JSON.stringify(result, null, 2)
-                }]
-            };
+            const result = await ethersService.contractCall(contractAddress, abi, method, methodArgs, provider, chainId);
+            return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         } catch (error) {
             return {
                 isError: true,
@@ -1287,6 +1315,27 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Send transaction with options failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    contractCallView: async (args: unknown) => {
+        const schema = z.object({
+            contractAddress: z.string(),
+            abi: z.string(),
+            method: z.string(),
+            methodArgs: z.array(z.any()).optional(),
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { contractAddress, abi, method, methodArgs = [], provider, chainId } = schema.parse(args);
+        try {
+            const result = await ethersService.contractCallView(contractAddress, abi, method, methodArgs, provider, chainId);
+            return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Contract view call failed: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },
