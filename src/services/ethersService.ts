@@ -27,22 +27,6 @@ export class EthersService {
         this._signer = signer;
     }
 
-    private getInfuraApiKey(): string {
-        const infuraApiKey = process.env.INFURA_API_KEY;
-        if (!infuraApiKey) {
-            throw new Error("Missing INFURA_API_KEY in environment variables.");
-        }
-        return infuraApiKey;
-    }
-
-    private createInfuraProvider(network: DefaultProvider): ethers.Provider {
-        try {
-            return new ethers.InfuraProvider(network as ethers.Networkish, this.getInfuraApiKey());
-        } catch (error) {
-            this.handleProviderError(error, `create Infura provider for network ${network}`);
-        }
-    }
-
     private getAlchemyApiKey(): string {
         const alchemyApiKey = process.env.ALCHEMY_API_KEY;
         if (!alchemyApiKey) {
@@ -411,7 +395,7 @@ export class EthersService {
 
             // For view/pure functions, use provider directly
             if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
-                const result = await contract.getFunction(method).staticCall(...args);
+                const result = await contract[method](...args);
                 return this.serializeEventArgs(result);
             }
 
@@ -419,7 +403,7 @@ export class EthersService {
             const signer = this.getSigner(provider, chainId, signerOverride);
             const contractWithSigner = contract.connect(signer);
             const parsedValue = ethers.parseEther(value);
-            const result = await contractWithSigner.getFunction(method).send(...args, { value: parsedValue });
+            const result = await contractWithSigner[method](...args, { value: parsedValue });
             return this.serializeEventArgs(result);
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {

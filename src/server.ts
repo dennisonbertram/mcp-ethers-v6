@@ -26,7 +26,7 @@ const server = new Server(
 
 // Initialize the ethers service with configurable default network
 const defaultNetwork = (process.env.DEFAULT_NETWORK || "mainnet") as DefaultProvider;
-const provider = new ethers.InfuraProvider(defaultNetwork, process.env.INFURA_API_KEY);
+const provider = new ethers.AlchemyProvider(defaultNetwork, process.env.ALCHEMY_API_KEY);
 const ethersService = new EthersService(provider);
 
 // Tool definitions
