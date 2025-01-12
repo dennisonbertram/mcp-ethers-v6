@@ -216,7 +216,17 @@ export class EthersService {
         try {
             const txSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
             txSchema.parse(txHash);
-            const selectedProvider = this.getProvider(provider, chainId);
+            let selectedProvider = this.getProvider(provider, chainId);
+
+            if (!provider && !chainId) {
+                try {
+                    const derivedChainId = await this.getChainIdFromTransaction(txHash);
+                    selectedProvider = this.getProvider(provider, derivedChainId);
+                } catch (error) {
+                    // If we can't get the chainId, continue with the default provider
+                    console.warn("Could not derive chainId from transaction, using default provider");
+                }
+            }
             return await selectedProvider.getTransaction(txHash);
         } catch (error) {
             this.handleProviderError(error, "fetch transaction details", { txHash });
@@ -402,10 +412,20 @@ export class EthersService {
             addressSchema.parse(contractAddress);
             const selectedProvider = this.getProvider(provider, chainId);
             
+            // Parse ABI if it's a string
+            let parsedAbi: any = abi;
+            if (typeof abi === 'string') {
+                try {
+                    parsedAbi = JSON.parse(abi);
+                } catch (e) {
+                    throw new Error(`Invalid ABI: ${abi}. The ABI must be a valid JSON string or array of strings`);
+                }
+            }
+
             // Create contract instance with provider
             const contract = new ethers.Contract(
                 contractAddress,
-                abi,
+                parsedAbi,
                 selectedProvider
             );
 
@@ -444,10 +464,20 @@ export class EthersService {
             addressSchema.parse(contractAddress);
             const selectedProvider = this.getProvider(provider, chainId);
             
+            // Parse ABI if it's a string
+            let parsedAbi: any = abi;
+            if (typeof abi === 'string') {
+                try {
+                    parsedAbi = JSON.parse(abi);
+                } catch (e) {
+                    throw new Error(`Invalid ABI: ${abi}. The ABI must be a valid JSON string or array of strings`);
+                }
+            }
+
             // Create contract instance with provider
             const contract = new ethers.Contract(
                 contractAddress,
-                abi,
+                parsedAbi,
                 selectedProvider
             );
 
@@ -960,6 +990,22 @@ export class EthersService {
             return { address };
         } catch (error) {
             this.handleProviderError(error, "get wallet info");
+        }
+    }
+
+    async getChainIdFromTransaction(txHash: string, provider?: string): Promise<number> {
+        try {
+            const txSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
+            txSchema.parse(txHash);
+            const selectedProvider = this.getProvider(provider);
+            const tx = await selectedProvider.getTransaction(txHash);
+            if (!tx) {
+                throw new Error("Transaction not found");
+            }
+            
+            return Number(tx.chainId);
+        } catch (error) {
+            this.handleProviderError(error, "fetch transaction details", { txHash });
         }
     }
 } 
