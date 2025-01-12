@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 
 config();
 
-startServer().catch((error) => {
+startServer().catch((error: Error) => {
     console.error('Failed to start server:', error);
     process.exit(1);
 }); 

@@ -6,6 +6,19 @@ import { networkList } from "../config/networkList.js";
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
+const networkToEthersMap: Record<string, string> = {
+    "Ethereum": "mainnet",
+    "Polygon PoS": "matic",
+    "Arbitrum": "arbitrum",
+    "Arbitrum Nova": "arbitrum-nova",
+    "Optimism": "optimism",
+    "Avalanche C-Chain": "avalanche",
+    "Base": "base",
+    "BNB Smart Chain": "bnb",
+    "Linea": "linea",
+    "Polygon zkEVM": "polygon-zkevm"
+};
+
 export class EthersService {
     private _provider: ethers.Provider;
     private _signer?: ethers.Signer;
@@ -86,6 +99,10 @@ export class EthersService {
         return String(value);
     }
 
+    private getEthersNetworkName(network: string): string {
+        return networkToEthersMap[network] || network.toLowerCase();
+    }
+
     private getProvider(provider?: string, chainId?: number): ethers.Provider {
         if (!provider) {
             return this._provider;
@@ -94,13 +111,17 @@ export class EthersService {
         // Check if it's a default provider
         if (DEFAULT_PROVIDERS.includes(provider as DefaultProvider)) {
             try {
-                const newProvider = this.createAlchemyProvider(provider as DefaultProvider);
-                if (chainId && (newProvider as any)._network?.chainId !== chainId) {
-                    console.warn("Chain ID specified but does not match provider network, will use the rpc default chain id");
+                const networkName = this.getEthersNetworkName(provider);
+                const newProvider = new ethers.AlchemyProvider(networkName, process.env.ALCHEMY_API_KEY);
+                if (chainId) {
+                    const providerChainId = (newProvider as any)._network?.chainId;
+                    if (providerChainId && providerChainId !== chainId) {
+                        console.warn(`Chain ID mismatch: specified ${chainId} but provider network is ${providerChainId}, using provider's chain ID`);
+                    }
                 }
                 return newProvider;
             } catch (error) {
-                this.handleProviderError(error, `create Alchemy provider for network ${provider}`);
+                throw this.handleProviderError(error, `create Alchemy provider for network ${provider}`);
             }
         }
 
@@ -109,12 +130,15 @@ export class EthersService {
             try {
                 this.validateRpcUrl(provider);
                 const newProvider = new ethers.JsonRpcProvider(provider);
-                if (chainId && (newProvider as any)._network?.chainId !== chainId) {
-                    console.warn("Chain ID specified but does not match provider network, will use the rpc default chain id");
+                if (chainId) {
+                    const providerChainId = (newProvider as any)._network?.chainId;
+                    if (providerChainId && providerChainId !== chainId) {
+                        console.warn(`Chain ID mismatch: specified ${chainId} but provider network is ${providerChainId}, using provider's chain ID`);
+                    }
                 }
                 return newProvider;
             } catch (error) {
-                this.handleProviderError(error, `create provider with RPC URL ${provider}`);
+                throw this.handleProviderError(error, `create provider with RPC URL ${provider}`);
             }
         }
 

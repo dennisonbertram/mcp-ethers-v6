@@ -1,4 +1,4 @@
-{
+export const networkList = {
   "Ethereum": {
     "currency": "ETH",
     "chainId": 1,
@@ -197,4 +197,13 @@
     "RPC": "https://scroll-mainnet.g.alchemy.com/v2/",
     "explorer": ""
   }
+} as const;
+
+export type NetworkInfo = {
+  currency: string;
+  chainId: number;
+  RPC: string;
+  explorer: string;
 }
+
+export type NetworkName = keyof typeof networkList;
