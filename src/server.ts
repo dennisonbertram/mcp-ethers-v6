@@ -51,6 +51,27 @@ const ethersService = new EthersService(provider);
 // Tool definitions
 const tools = [
     {
+        name: "getSupportedNetworks",
+        description: "Get a list of all supported networks and their configurations. Call this first to discover available networks before using other network-related functions.",
+        inputSchema: {
+            type: "object",
+            properties: {},
+        },
+    },
+    {
+        name: "checkWalletExists",
+        description: "Check if there is a wallet configured on the server. Returns basic wallet info like address but never exposes private keys.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+                },
+            },
+        },
+    },
+    {
         name: "getWalletBalance",
         description: "Get the ETH balance of a wallet",
         inputSchema: {
