@@ -811,4 +811,49 @@ export class EthersService {
             });
         }
     }
+
+    async sendTransactionWithOptions(
+        toOrTx: string | ethers.TransactionRequest,
+        value?: string,
+        data?: string,
+        gasLimit?: string,
+        gasPrice?: string,
+        nonce?: number,
+        provider?: string,
+        chainId?: number,
+        signerOverride?: ethers.Signer
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            let tx: ethers.TransactionRequest;
+            
+            if (typeof toOrTx === 'string') {
+                addressSchema.parse(toOrTx);
+                tx = {
+                    to: toOrTx,
+                    value: value ? ethers.parseEther(value) : undefined,
+                    data: data || "0x",
+                    gasLimit: gasLimit ? ethers.getBigInt(gasLimit) : undefined,
+                    gasPrice: gasPrice ? ethers.parseUnits(gasPrice, "gwei") : undefined,
+                    nonce,
+                };
+            } else {
+                if(toOrTx.to) {
+                    addressSchema.parse(toOrTx.to);
+                }
+                tx = {
+                    ...toOrTx,
+                    gasLimit: gasLimit ? ethers.getBigInt(gasLimit) : undefined,
+                    gasPrice: gasPrice ? ethers.parseUnits(gasPrice, "gwei") : undefined,
+                    nonce,
+                }
+            }
+
+            const signer = this.getSigner(provider, chainId, signerOverride);
+            return await signer.sendTransaction(tx);
+        } catch (error) {
+            this.handleProviderError(error, "send transaction with options", {
+                tx: toOrTx, value, data, gasLimit, gasPrice, nonce
+            });
+        }
+    }
 } 
