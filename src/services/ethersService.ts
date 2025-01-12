@@ -1,35 +1,30 @@
 import { ethers } from "ethers";
 import { z } from "zod";
+import { DefaultProvider, DEFAULT_PROVIDERS } from "../config/networks.js";
 
-export type DefaultProvider = 
-    | "mainnet"      // Ethereum Mainnet
-    | "sepolia"      // Sepolia Testnet
-    | "goerli"       // Goerli Testnet
-    | "arbitrum"     // Arbitrum
-    | "optimism"     // Optimism
-    | "base"         // Base
-    | "polygon";     // Polygon
-
-const DEFAULT_PROVIDERS = [
-    "mainnet",
-    "sepolia",
-    "goerli",
-    "arbitrum",
-    "optimism",
-    "base",
-    "polygon"
-];
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
 export class EthersService {
-    private defaultProvider: ethers.Provider;
-    private defaultSigner?: ethers.Signer;
+    private _provider: ethers.Provider;
+    private _signer?: ethers.Signer;
 
     constructor(provider?: ethers.Provider, signer?: ethers.Signer) {
-        this.defaultProvider = provider || new ethers.JsonRpcProvider('http://localhost:8545');
-        this.defaultSigner = signer;
+        this._provider = provider || new ethers.JsonRpcProvider('http://localhost:8545');
+        this._signer = signer;
+    }
+
+    get provider() {
+        return this._provider;
+    }
+
+    setProvider(provider: ethers.Provider): void {
+        this._provider = provider;
+    }
+
+    setSigner(signer: ethers.Signer): void {
+        this._signer = signer;
     }
 
     private getInfuraApiKey(): string {
@@ -45,6 +40,22 @@ export class EthersService {
             return new ethers.InfuraProvider(network as ethers.Networkish, this.getInfuraApiKey());
         } catch (error) {
             this.handleProviderError(error, `create Infura provider for network ${network}`);
+        }
+    }
+
+    private getAlchemyApiKey(): string {
+        const alchemyApiKey = process.env.ALCHEMY_API_KEY;
+        if (!alchemyApiKey) {
+            throw new Error("Missing ALCHEMY_API_KEY in environment variables.");
+        }
+        return alchemyApiKey;
+    }
+
+    private createAlchemyProvider(network: DefaultProvider): ethers.Provider {
+        try {
+            return new ethers.AlchemyProvider(network as ethers.Networkish, this.getAlchemyApiKey());
+        } catch (error) {
+            this.handleProviderError(error, `create Alchemy provider for network ${network}`);
         }
     }
 
@@ -91,17 +102,21 @@ export class EthersService {
         return String(value);
     }
 
-    private getProvider(provider?: string): ethers.Provider {
+    private getProvider(provider?: string, chainId?: number): ethers.Provider {
         if (!provider) {
-            return this.defaultProvider;
+            return this._provider;
         }
 
         // Check if it's a default provider
         if (DEFAULT_PROVIDERS.includes(provider as DefaultProvider)) {
             try {
-                return this.createInfuraProvider(provider as DefaultProvider);
+                const newProvider = this.createAlchemyProvider(provider as DefaultProvider);
+                if (chainId && (newProvider as any)._network?.chainId !== chainId) {
+                    console.warn("Chain ID specified but does not match provider network, will use the rpc default chain id");
+                }
+                return newProvider;
             } catch (error) {
-                this.handleProviderError(error, `create Infura provider for network ${provider}`);
+                this.handleProviderError(error, `create Alchemy provider for network ${provider}`);
             }
         }
 
@@ -109,7 +124,11 @@ export class EthersService {
         if (provider.startsWith("http")) {
             try {
                 this.validateRpcUrl(provider);
-                return new ethers.JsonRpcProvider(provider);
+                const newProvider = new ethers.JsonRpcProvider(provider);
+                if (chainId && (newProvider as any)._network?.chainId !== chainId) {
+                    console.warn("Chain ID specified but does not match provider network, will use the rpc default chain id");
+                }
+                return newProvider;
             } catch (error) {
                 this.handleProviderError(error, `create provider with RPC URL ${provider}`);
             }
@@ -122,10 +141,10 @@ export class EthersService {
         );
     }
 
-    async getBalance(address: string, provider?: string): Promise<string> {
+    async getBalance(address: string, provider?: string, chainId?: number): Promise<string> {
         try {
             addressSchema.parse(address);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const balance = await selectedProvider.getBalance(address);
             return ethers.formatEther(balance);
         } catch (error) {
@@ -133,11 +152,11 @@ export class EthersService {
         }
     }
 
-    async getERC20Balance(address: string, tokenAddress: string, provider?: string): Promise<string> {
+    async getERC20Balance(address: string, tokenAddress: string, provider?: string, chainId?: number): Promise<string> {
         try {
             addressSchema.parse(address);
             addressSchema.parse(tokenAddress);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const contract = new ethers.Contract(
                 tokenAddress,
                 [
@@ -155,10 +174,10 @@ export class EthersService {
         }
     }
 
-    async getTransactionCount(address: string, provider?: string): Promise<number> {
+    async getTransactionCount(address: string, provider?: string, chainId?: number): Promise<number> {
         try {
             addressSchema.parse(address);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const count = await selectedProvider.getTransactionCount(address);
             return count;
         } catch (error) {
@@ -166,18 +185,18 @@ export class EthersService {
         }
     }
 
-    async getBlockNumber(provider?: string): Promise<number> {
+    async getBlockNumber(provider?: string, chainId?: number): Promise<number> {
         try {
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.getBlockNumber();
         } catch (error) {
             this.handleProviderError(error, "fetch latest block number");
         }
     }
 
-    async getBlockDetails(blockTag: string | number, provider?: string): Promise<ethers.Block | null> {
+    async getBlockDetails(blockTag: string | number, provider?: string, chainId?: number): Promise<ethers.Block | null> {
         try {
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const block = await selectedProvider.getBlock(blockTag);
             return block;
         } catch (error) {
@@ -185,20 +204,20 @@ export class EthersService {
         }
     }
 
-    async getTransactionDetails(txHash: string, provider?: string): Promise<ethers.TransactionResponse | null> {
+    async getTransactionDetails(txHash: string, provider?: string, chainId?: number): Promise<ethers.TransactionResponse | null> {
         try {
             const txSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
             txSchema.parse(txHash);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.getTransaction(txHash);
         } catch (error) {
             this.handleProviderError(error, "fetch transaction details", { txHash });
         }
     }
 
-    async getGasPrice(provider?: string): Promise<string> {
+    async getGasPrice(provider?: string, chainId?: number): Promise<string> {
         try {
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const feeData = await selectedProvider.getFeeData();
             return ethers.formatUnits(feeData.gasPrice || 0n, "gwei");
         } catch (error) {
@@ -206,38 +225,38 @@ export class EthersService {
         }
     }
 
-    async getFeeData(provider?: string): Promise<ethers.FeeData> {
+    async getFeeData(provider?: string, chainId?: number): Promise<ethers.FeeData> {
         try {
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.getFeeData();
         } catch (error) {
             this.handleProviderError(error, "get fee data");
         }
     }
 
-    async getContractCode(address: string, provider?: string): Promise<string | null> {
+    async getContractCode(address: string, provider?: string, chainId?: number): Promise<string | null> {
         try {
             addressSchema.parse(address);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.getCode(address);
         } catch (error) {
             this.handleProviderError(error, "get contract bytecode", { address });
         }
     }
 
-    async lookupAddress(address: string, provider?: string): Promise<string | null> {
+    async lookupAddress(address: string, provider?: string, chainId?: number): Promise<string | null> {
         try {
             addressSchema.parse(address);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.lookupAddress(address);
         } catch (error) {
             this.handleProviderError(error, "look up ENS name for address", { address });
         }
     }
 
-    async resolveName(name: string, provider?: string): Promise<string | null> {
+    async resolveName(name: string, provider?: string, chainId?: number): Promise<string | null> {
         try {
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             return await selectedProvider.resolveName(name);
         } catch (error) {
             this.handleProviderError(error, "resolve ENS name", { name });
@@ -276,16 +295,20 @@ export class EthersService {
         }
     }
 
-    private getSigner(provider?: string): ethers.Signer {
-        if (this.defaultSigner) {
-            return this.defaultSigner;
+    private getSigner(provider?: string, chainId?: number, signerOverride?: ethers.Signer): ethers.Signer {
+        if (signerOverride) {
+            return signerOverride;
+        }
+
+        if (this._signer) {
+            return this._signer;
         }
         
         const privateKey = process.env.PRIVATE_KEY;
         if (!privateKey) {
             throw new Error("Missing PRIVATE_KEY in environment variables. Either provide a signer in the constructor or set PRIVATE_KEY in environment variables.");
         }
-        const selectedProvider = this.getProvider(provider);
+        const selectedProvider = this.getProvider(provider, chainId);
         return new ethers.Wallet(privateKey, selectedProvider);
     }
 
@@ -365,11 +388,13 @@ export class EthersService {
         method: string,
         args: any[] = [],
         value: string = "0",
-        provider?: string
+        provider?: string,
+        chainId?: number,
+        signerOverride?: ethers.Signer
     ): Promise<any> {
         try {
             addressSchema.parse(contractAddress);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             
             // Create contract instance with provider
             const contract = new ethers.Contract(
@@ -386,15 +411,15 @@ export class EthersService {
 
             // For view/pure functions, use provider directly
             if (fragment.constant || fragment.stateMutability === 'view' || fragment.stateMutability === 'pure') {
-                const result = await contract[method](...args);
-                return this.serializeEventArgs(result); // Use our serializer for the result
+                const result = await contract.getFunction(method).staticCall(...args);
+                return this.serializeEventArgs(result);
             }
 
             // For state-changing functions, use signer
-            const signer = this.getSigner(provider);
+            const signer = this.getSigner(provider, chainId, signerOverride);
             const contractWithSigner = contract.connect(signer);
             const parsedValue = ethers.parseEther(value);
-            const result = await contractWithSigner[method](...args, { value: parsedValue });
+            const result = await contractWithSigner.getFunction(method).send(...args, { value: parsedValue });
             return this.serializeEventArgs(result);
         } catch (error) {
             this.handleProviderError(error, `call contract method: ${method}`, {
@@ -692,14 +717,15 @@ export class EthersService {
         topics?: Array<string | null | Array<string>>,
         fromBlock?: string | number,
         toBlock?: string | number,
-        provider?: string
+        provider?: string,
+        chainId?: number
     ): Promise<any> {
         try {
             let checksummedAddress: string | undefined;
             if (address) {
                 checksummedAddress = ethers.getAddress(address);
             }
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const filter: ethers.Filter = {
                 address: checksummedAddress,
                 topics: topics
@@ -729,12 +755,13 @@ export class EthersService {
         topics?: Array<string | null | Array<string>>,
         fromBlock?: string | number,
         toBlock?: string | number,
-        provider?: string
+        provider?: string,
+        chainId?: number
     ): Promise<any> {
         try {
             // Use queryLogs under the hood as it's more reliable
             const checksummedAddress = ethers.getAddress(contractAddress);
-            const selectedProvider = this.getProvider(provider);
+            const selectedProvider = this.getProvider(provider, chainId);
             const contract = new ethers.Contract(checksummedAddress, abi, selectedProvider);
 
             // If no event name specified, get all events
@@ -744,7 +771,8 @@ export class EthersService {
                     topics,
                     fromBlock,
                     toBlock,
-                    provider
+                    provider,
+                    chainId
                 );
             }
 
@@ -755,8 +783,8 @@ export class EthersService {
             }
 
             // Get the topic hash for this event
-            const topicHash = contract.interface.getEventTopic(fragment);
-            const eventTopics = [topicHash];
+            const topicHash = fragment.topicHash;
+            const eventTopics: (string | null | Array<string>)[] = [topicHash];
             if (topics && topics.length > 0) {
                 eventTopics.push(...topics);
             }
@@ -767,11 +795,12 @@ export class EthersService {
                 eventTopics,
                 fromBlock,
                 toBlock,
-                provider
+                provider,
+                chainId
             );
 
             // Parse the logs with the contract interface
-            return logs.map(log => {
+            return logs.map((log: ethers.Log) => {
                 try {
                     const parsedLog = contract.interface.parseLog({
                         topics: log.topics,

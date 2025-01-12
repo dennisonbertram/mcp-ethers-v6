@@ -4,7 +4,8 @@ import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { EthersService, DefaultProvider } from "./services/ethersService.js";
+import { EthersService } from "./services/ethersService.js";
+import { DefaultProvider } from "./config/networks.js";
 import { z } from "zod";
 import { config } from "dotenv";
 import { ethers } from "ethers";
