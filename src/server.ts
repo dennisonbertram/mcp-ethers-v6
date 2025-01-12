@@ -32,7 +32,7 @@ const ethersService = new EthersService(provider);
 const tools = [
     {
         name: "getWalletBalance",
-        description: "Get the ETH balance of a wallet",
+        description: "Get the ETH balance of a wallet", // TODO: add support for Native Token per network
         inputSchema: {
             type: "object",
             properties: {
