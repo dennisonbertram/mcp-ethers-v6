@@ -744,6 +744,15 @@ const tools = [
             required: ["to", "value"]
         },
     },
+    {
+        name: "getSupportedNetworks",
+        description: "Get a list of all supported networks and their configurations",
+        inputSchema: {
+            type: "object",
+            properties: {},
+            required: []
+        },
+    },
 ];
 
 // Define available tools
@@ -1336,6 +1345,23 @@ const toolHandlers = {
             return {
                 isError: true,
                 content: [{ type: "text", text: `Contract view call failed: ${error instanceof Error ? error.message : String(error)}` }]
+            };
+        }
+    },
+
+    getSupportedNetworks: async () => {
+        try {
+            const networks = await ethersService.getSupportedNetworks();
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(networks, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Failed to get supported networks: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },

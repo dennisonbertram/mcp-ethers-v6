@@ -890,4 +890,41 @@ export class EthersService {
             });
         }
     }
+
+    async getSupportedNetworks(): Promise<Array<{
+        name: string;
+        chainId?: number;
+        isTestnet?: boolean;
+        nativeCurrency?: {
+            name: string;
+            symbol: string;
+            decimals: number;
+        };
+    }>> {
+        try {
+            const networks = DEFAULT_PROVIDERS.map(async (network) => {
+                try {
+                    const provider = this.createAlchemyProvider(network);
+                    const networkInfo = await provider.getNetwork();
+                    return {
+                        name: network,
+                        chainId: Number(networkInfo.chainId),
+                        isTestnet: networkInfo.name.includes('test') || networkInfo.name.includes('goerli') || networkInfo.name.includes('sepolia'),
+                        nativeCurrency: {
+                            name: networkInfo.name.includes('Ethereum') ? 'Ether' : 'Native Token',
+                            symbol: networkInfo.name.includes('Ethereum') ? 'ETH' : 'NATIVE',
+                            decimals: 18
+                        }
+                    };
+                } catch {
+                    // If we can't connect to the network, just return the name
+                    return { name: network };
+                }
+            });
+
+            return await Promise.all(networks);
+        } catch (error) {
+            this.handleProviderError(error, "get supported networks");
+        }
+    }
 } 
