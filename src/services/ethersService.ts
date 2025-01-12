@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { z } from "zod";
 import { DefaultProvider, DEFAULT_PROVIDERS } from "../config/networks.js";
-import { networkList } from "../config/networkList.js";
+import { networkList, NetworkName, NetworkInfo } from "../config/networkList.js";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
@@ -958,19 +958,22 @@ export class EthersService {
     }> {
         try {
             const defaultNetwork = process.env.DEFAULT_NETWORK || "mainnet";
-            return DEFAULT_PROVIDERS.map((network) => ({
-                name: network,
-                chainId: networkList[network]?.chainId,
-                isTestnet: network.toLowerCase().includes('testnet') || 
-                          network.toLowerCase().includes('goerli') || 
-                          network.toLowerCase().includes('sepolia'),
-                nativeCurrency: {
-                    name: network.includes('Ethereum') ? 'Ether' : 'Native Token',
-                    symbol: network.includes('Ethereum') ? 'ETH' : 'NATIVE',
-                    decimals: 18
-                },
-                isDefault: network === defaultNetwork
-            }));
+            return DEFAULT_PROVIDERS.map((network) => {
+                const networkInfo = networkList[network as NetworkName];
+                return {
+                    name: network,
+                    chainId: networkInfo?.chainId,
+                    isTestnet: network.toLowerCase().includes('testnet') || 
+                              network.toLowerCase().includes('goerli') || 
+                              network.toLowerCase().includes('sepolia'),
+                    nativeCurrency: {
+                        name: networkInfo?.currency || 'Native Token',
+                        symbol: networkInfo?.currency || 'NATIVE',
+                        decimals: 18
+                    },
+                    isDefault: network === defaultNetwork
+                };
+            });
         } catch (error) {
             throw this.handleProviderError(error, "get supported networks");
         }
@@ -1006,6 +1009,20 @@ export class EthersService {
             return Number(tx.chainId);
         } catch (error) {
             this.handleProviderError(error, "fetch transaction details", { txHash });
+        }
+    }
+
+    async getTransactionsByBlock(blockTag: string | number, provider?: string, chainId?: number): Promise<ethers.TransactionResponse[]> {
+        try {
+            const selectedProvider = this.getProvider(provider, chainId);
+            const block = await selectedProvider.getBlock(blockTag, true);
+            if (!block || !block.transactions) {
+                return [];
+            }
+            const transactionRequests = await Promise.all(block.transactions.map(tx => selectedProvider.getTransaction(tx)));
+            return transactionRequests.filter((tx): tx is ethers.TransactionResponse => tx != null);
+        } catch (error) {
+            this.handleProviderError(error, "get transactions by block", { blockTag: String(blockTag) });
         }
     }
 } 

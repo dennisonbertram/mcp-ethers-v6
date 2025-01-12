@@ -827,7 +827,29 @@ const tools = [
             },
             required: ["to", "value"]
         },
-    }
+    },
+    {
+        name: "getTransactionsByBlock",
+        description: "Get details about transactions in a specific block.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                blockTag: {
+                    type: ["string", "number"],
+                    description: "The block number or the string 'latest'",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+                },
+                chainId: {
+                    type: "number",
+                    description: "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+                }
+            },
+            required: ["blockTag"]
+        },
+    },
 ];
 
 // Define available tools
@@ -1477,6 +1499,29 @@ const toolHandlers = {
                     type: "text", 
                     text: `Error checking wallet: ${error instanceof Error ? error.message : String(error)}` 
                 }]
+            };
+        }
+    },
+
+    getTransactionsByBlock: async (args: unknown) => {
+        const schema = z.object({
+            blockTag: z.union([z.string(), z.number()]),
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { blockTag, provider, chainId } = schema.parse(args);
+        try {
+            const txs = await ethersService.getTransactionsByBlock(blockTag, provider, chainId);
+            return {
+                content: [{
+                    type: "text",
+                    text: JSON.stringify(txs, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Failed to get transactions for block: ${error instanceof Error ? error.message : String(error)}` }]
             };
         }
     },
