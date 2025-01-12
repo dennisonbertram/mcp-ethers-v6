@@ -62,7 +62,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -88,7 +88,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -110,7 +110,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -128,7 +128,7 @@ const tools = [
             properties: {
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -149,7 +149,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -171,7 +171,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -189,7 +189,7 @@ const tools = [
             properties: {
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -206,7 +206,7 @@ const tools = [
             properties: {
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -227,7 +227,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -249,7 +249,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -271,7 +271,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -365,7 +365,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["to", "value"]
@@ -383,7 +383,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["message"]
@@ -414,7 +414,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -449,7 +449,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -490,7 +490,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi", "method"]
@@ -531,7 +531,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi", "method"]
@@ -568,7 +568,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi", "method"]
@@ -617,7 +617,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi", "method"]
@@ -666,7 +666,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi", "method"]
@@ -684,7 +684,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 }
             },
             required: ["signedTransaction"]
@@ -718,7 +718,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
         },
@@ -759,7 +759,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
             },
             required: ["contractAddress", "abi"]
@@ -797,7 +797,7 @@ const tools = [
                 },
                 provider: {
                     type: "string",
-                    description: "Optional. Either a supported network name (mainnet, sepolia, goerli, arbitrum, optimism, base, polygon) or a custom RPC URL. Defaults to mainnet if not provided.",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
                 },
                 chainId: {
                     type: "number",
@@ -809,7 +809,7 @@ const tools = [
     },
     {
         name: "getSupportedNetworks",
-        description: "Get a list of supported networks and their configurations",
+        description: "Get a list of all supported networks and their configurations. Call this first to discover available networks before using other network-related functions.",
         inputSchema: {
             type: "object",
             properties: {},
