@@ -37,10 +37,15 @@ startServer().catch((error) => {
 1. Install Claude Desktop
 2. Add a new MCP server with the following configuration:
    ```json
-   {
-     "name": "Ethereum Tools",
-     "command": "npx mcp-ethers-wallet"
-   }
+    "ethers": {
+      "command": "node",
+      "args": [
+        "/path-to-mcp-ethers-wallet/build/src/index.js"
+      ],
+      "env": {
+        "ALCHEMY_API_KEY": "<<your alchemy api key>>"
+      }
+    }
    ```
 3. The tools will now be available in your Claude conversations
 
