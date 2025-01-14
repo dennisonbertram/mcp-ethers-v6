@@ -1,12 +1,13 @@
 {
   "name": "mcp-ethers-wallet",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A Model Context Protocol server for interacting with Ethereum wallets using Ethers.js",
   "author": {
     "name": "Dennison Bertram",
     "email": "dennison@tally.xyz"
   },
   "license": "MIT",
+  "homepage": "https://github.com/dennisonbertram/ModelContextProtocol/tree/main/ethers-server",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
