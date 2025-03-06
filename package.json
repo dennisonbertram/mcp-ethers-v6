@@ -7,7 +7,7 @@
     "email": "dennison@tally.xyz"
   },
   "license": "MIT",
-  "homepage": "https://github.com/dennisonbertram/ModelContextProtocol/tree/main/ethers-server",
+  "homepage": "https://github.com/crazyrabbitLTC/mcp-ethers-server",
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
