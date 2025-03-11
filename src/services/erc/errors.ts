@@ -6,7 +6,7 @@
  * Custom error classes for ERC token standards
  */
 
-import { EthersServerError } from '../../utils/errors';
+import { EthersServerError } from '../../utils/errors.js';
 
 /**
  * Base class for token-related errors

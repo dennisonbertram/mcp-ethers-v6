@@ -7,21 +7,21 @@
  */
 
 import { ethers } from 'ethers';
-import { EthersService } from '../ethersService';
-import { ERC20_ABI, CACHE_KEYS } from './constants';
-import { ERC20Info, TokenOperationOptions } from './types';
+import { EthersService } from '../ethersService.js';
+import { ERC20_ABI, CACHE_KEYS } from './constants.js';
+import { ERC20Info, TokenOperationOptions } from './types.js';
 import { 
   ERC20Error, 
   InsufficientAllowanceError, 
   InsufficientBalanceError,
   TokenNotFoundError, 
   handleTokenError 
-} from './errors';
-import { createTokenCacheKey } from './utils';
-import { balanceCache, contractCache } from '../../utils/cache';
-import { logger } from '../../utils/logger';
-import { metrics, timeAsync } from '../../utils/metrics';
-import { rateLimiter } from '../../utils/rateLimiter';
+} from './errors.js';
+import { createTokenCacheKey } from './utils.js';
+import { balanceCache, contractCache } from '../../utils/cache.js';
+import { logger } from '../../utils/logger.js';
+import { metrics, timeAsync } from '../../utils/metrics.js';
+import { rateLimiter } from '../../utils/rateLimiter.js';
 
 /**
  * Get basic information about an ERC20 token

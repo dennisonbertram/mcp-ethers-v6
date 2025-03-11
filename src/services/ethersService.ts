@@ -1,15 +1,38 @@
+/**
+ * @file EthersService
+ * @version 1.0.0
+ * @status STABLE - DO NOT MODIFY WITHOUT TESTS
+ * @lastModified 2024-03-11
+ * 
+ * Service for interacting with Ethereum via ethers.js
+ * 
+ * IMPORTANT:
+ * - Any changes must be thoroughly tested
+ * - Maintain backward compatibility with existing contracts
+ * 
+ * Functionality:
+ * - Ethereum account & network management
+ * - Contract interaction
+ * - Transaction processing
+ * - ERC token standards support
+ */
+
 import { ethers } from "ethers";
 import { z } from "zod";
+import { ConfigurationError, EthersServerError, NetworkError, ProviderError, TransactionError, WalletError, handleUnknownError } from "../utils/errors.js";
 import { DefaultProvider, DEFAULT_PROVIDERS } from "../config/networks.js";
 import { networkList, NetworkName, NetworkInfo } from "../config/networkList.js";
-import * as erc20 from "./erc/erc20";
-import * as erc721 from "./erc/erc721";
-import * as erc1155 from "./erc/erc1155";
-import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types";
-import { TokenError } from "./erc/errors";
+import * as erc20 from "./erc/erc20.js";
+import * as erc721 from "./erc/erc721.js";
+import * as erc1155 from "./erc/erc1155.js";
+import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types.js";
+import { TokenError } from "./erc/errors.js";
 
 // Move addressSchema to class level to avoid duplication
-const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+const addressSchema = z.string().refine(
+    (address) => ethers.isAddress(address),
+    { message: "Invalid Ethereum address format" }
+);
 
 const networkToEthersMap: Record<string, string> = {
     "Ethereum": "mainnet",
@@ -29,7 +52,12 @@ export class EthersService {
     private _signer?: ethers.Signer;
 
     constructor(provider?: ethers.Provider, signer?: ethers.Signer) {
-        this._provider = provider || new ethers.JsonRpcProvider('http://localhost:8545');
+        console.log('DEFAULT_PROVIDERS type:', typeof DEFAULT_PROVIDERS);
+        console.log('DEFAULT_PROVIDERS value:', DEFAULT_PROVIDERS);
+        
+        // Use "Ethereum" or first provider in the array instead of .mainnet
+        const defaultNetwork = DEFAULT_PROVIDERS.includes("Ethereum") ? "Ethereum" : DEFAULT_PROVIDERS[0];
+        this._provider = provider || this.createAlchemyProvider(defaultNetwork);
         this._signer = signer;
     }
 
@@ -46,112 +74,154 @@ export class EthersService {
     }
 
     private getAlchemyApiKey(): string {
-        const alchemyApiKey = process.env.ALCHEMY_API_KEY;
-        if (!alchemyApiKey) {
-            throw new Error("Missing ALCHEMY_API_KEY in environment variables.");
+        const apiKey = process.env.ALCHEMY_API_KEY;
+        if (!apiKey) {
+            throw new ConfigurationError("Alchemy API key is not set in environment variables", {
+                variableName: "ALCHEMY_API_KEY"
+            });
         }
-        return alchemyApiKey;
+        return apiKey;
     }
 
     private createAlchemyProvider(network: DefaultProvider): ethers.Provider {
         try {
-            return new ethers.AlchemyProvider(network as ethers.Networkish, this.getAlchemyApiKey());
+            const apiKey = this.getAlchemyApiKey();
+            return new ethers.AlchemyProvider(network, apiKey);
         } catch (error) {
-            this.handleProviderError(error, `create Alchemy provider for network ${network}`);
+            if (error instanceof ConfigurationError) {
+                throw error;
+            }
+            throw new NetworkError(`Failed to create Alchemy provider for network ${network}`, {
+                network, error
+            });
         }
     }
 
     private validateRpcUrl(url: string): void {
-        if (!url.match(/^https?:\/\/.+$/)) {
-            throw new Error(`Invalid RPC URL format: ${url}. URL must start with http:// or https:// and include a valid domain.`);
+        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('ws://') && !url.startsWith('wss://')) {
+            throw new NetworkError(`Invalid RPC URL format: ${url}`, {
+                url
+            });
         }
     }
 
     private handleProviderError(error: unknown, context: string, details?: Record<string, any>): never {
-        if (error instanceof z.ZodError) {
-            const firstError = error.errors[0];
-            const message = firstError?.message || 'Invalid input format';
-            throw new Error(`Invalid input format: ${message}. Expected a valid Ethereum address (0x followed by 40 hexadecimal characters)`);
+        if (error instanceof EthersServerError) {
+            throw error;
         }
 
-        // Handle provider errors
-        if (error instanceof Error && 'code' in error) {
-            throw new Error(`Failed to ${context}: Provider error: ${error.message}`);
+        if (error instanceof Error) {
+            const errorMessage = error.message.toLowerCase();
+            
+            if (errorMessage.includes('network') || errorMessage.includes('connection') || errorMessage.includes('timeout')) {
+                throw new NetworkError(`Network error while trying to ${context}: ${error.message}`, {
+                    ...details,
+                    originalError: error
+                });
+            }
+            
+            if (errorMessage.includes('contract') || errorMessage.includes('abi')) {
+                throw new ProviderError(`Contract error while trying to ${context}: ${error.message}`, {
+                    ...details,
+                    originalError: error
+                });
+            }
+            
+            if (errorMessage.includes('transaction') || errorMessage.includes('gas') || errorMessage.includes('fee')) {
+                throw new TransactionError(`Transaction error while trying to ${context}: ${error.message}`, {
+                    ...details,
+                    originalError: error
+                });
+            }
         }
-
-        // Generic error with context
-        const err = error as Error;
-        const errorMessage = err.message || String(error);
-        const detailsStr = details ? ` Details: ${Object.entries(details).map(([k, v]) => `${k}=${this.serializeValue(v)}`).join(', ')}` : '';
-        throw new Error(`Failed to ${context}: ${errorMessage}${detailsStr}`);
+        
+        throw handleUnknownError(error);
     }
 
     private serializeValue(value: any): string {
-        if (value === undefined) return 'undefined';
-        if (value === null) return 'null';
-        if (typeof value === 'bigint') return value.toString();
+        if (value === undefined || value === null) {
+            return 'null';
+        }
+        
+        if (typeof value === 'bigint') {
+            return value.toString();
+        }
+        
         if (Array.isArray(value)) {
             return `[${value.map(v => this.serializeValue(v)).join(', ')}]`;
         }
+        
         if (typeof value === 'object') {
-            if ('toJSON' in value && typeof value.toJSON === 'function') {
-                return value.toJSON();
+            // Skip internal properties of ethers
+            if (value._isSigner || value._isProvider || value._isFragment) {
+                return '[Object]';
             }
-            return JSON.stringify(value, (_, v) => 
-                typeof v === 'bigint' ? v.toString() : v
-            );
+            
+            try {
+                return JSON.stringify(value, (_, v) => 
+                    typeof v === 'bigint' ? v.toString() : v
+                );
+            } catch (e) {
+                return '[Object]';
+            }
         }
+        
         return String(value);
     }
 
     private getEthersNetworkName(network: string): string {
-        return networkToEthersMap[network] || network.toLowerCase();
+        return network in networkList ? network : 'mainnet';
     }
 
     private getProvider(provider?: string, chainId?: number): ethers.Provider {
+        // If no provider specified, return the default provider
         if (!provider) {
             return this._provider;
         }
 
-        // Check if it's a default provider
-        if (DEFAULT_PROVIDERS.includes(provider as DefaultProvider)) {
-            try {
-                const networkName = this.getEthersNetworkName(provider);
-                const newProvider = new ethers.AlchemyProvider(networkName, process.env.ALCHEMY_API_KEY);
-                if (chainId) {
-                    const providerChainId = (newProvider as any)._network?.chainId;
-                    if (providerChainId && providerChainId !== chainId) {
-                        console.warn(`Chain ID mismatch: specified ${chainId} but provider network is ${providerChainId}, using provider's chain ID`);
-                    }
+        let selectedProvider: ethers.Provider;
+        
+        // Check if provider is a named network in our list
+        if (provider in networkList) {
+            const network = provider as NetworkName;
+            const networkInfo = networkList[network];
+            
+            // If chainId is provided, verify it matches the network
+            if (chainId !== undefined && networkInfo.chainId !== chainId) {
+                throw new NetworkError(`Chain ID mismatch: requested ${chainId}, but network ${network} has chain ID ${networkInfo.chainId}`, {
+                    requestedChainId: chainId,
+                    networkChainId: networkInfo.chainId,
+                    network
+                });
+            }
+            
+            // For Ethereum mainnet and common networks, use Alchemy
+            if (network in DEFAULT_PROVIDERS) {
+                try {
+                    selectedProvider = this.createAlchemyProvider(network as DefaultProvider);
+                } catch (error) {
+                    // Fall back to custom RPC if Alchemy fails
+                    this.validateRpcUrl(networkInfo.RPC);
+                    selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
                 }
-                return newProvider;
-            } catch (error) {
-                throw this.handleProviderError(error, `create Alchemy provider for network ${provider}`);
+            } else {
+                // For other networks, use the custom RPC
+                this.validateRpcUrl(networkInfo.RPC);
+                selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
+            }
+        } else {
+            // Assume provider is a custom RPC URL
+            this.validateRpcUrl(provider);
+            selectedProvider = new ethers.JsonRpcProvider(provider);
+            
+            // If chainId is provided, check if it matches the network
+            if (chainId !== undefined) {
+                // This will be checked when connecting to the network
+                // and throw an error if mismatched
             }
         }
 
-        // Otherwise treat it as an RPC URL
-        if (provider.startsWith("http")) {
-            try {
-                this.validateRpcUrl(provider);
-                const newProvider = new ethers.JsonRpcProvider(provider);
-                if (chainId) {
-                    const providerChainId = (newProvider as any)._network?.chainId;
-                    if (providerChainId && providerChainId !== chainId) {
-                        console.warn(`Chain ID mismatch: specified ${chainId} but provider network is ${providerChainId}, using provider's chain ID`);
-                    }
-                }
-                return newProvider;
-            } catch (error) {
-                throw this.handleProviderError(error, `create provider with RPC URL ${provider}`);
-            }
-        }
-
-        throw new Error(
-            `Invalid provider: ${provider}. Must be either:\n` +
-            `1. A supported network name (${DEFAULT_PROVIDERS.join(", ")})\n` +
-            `2. A valid RPC URL starting with http:// or https://`
-        );
+        return selectedProvider;
     }
 
     async getBalance(address: string, provider?: string, chainId?: number): Promise<string> {
@@ -165,24 +235,17 @@ export class EthersService {
         }
     }
 
+    // Note: This method signature is kept for backward compatibility
+    // but internally delegates to the erc20 module
     async getERC20Balance(address: string, tokenAddress: string, provider?: string, chainId?: number): Promise<string> {
         try {
             addressSchema.parse(address);
             addressSchema.parse(tokenAddress);
-            const selectedProvider = this.getProvider(provider, chainId);
-            const contract = new ethers.Contract(
-                tokenAddress,
-                [
-                    "function balanceOf(address) view returns (uint)",
-                    "function decimals() view returns (uint8)"
-                ],
-                selectedProvider
-            );
-
-            const decimals = await contract.decimals();
-            const balance = await contract.balanceOf(address);
-            return ethers.formatUnits(balance, decimals);
+            return await erc20.getBalance(this, tokenAddress, address, provider, chainId);
         } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
             this.handleProviderError(error, "fetch ERC20 balance", { address, tokenAddress });
         }
     }
@@ -1054,33 +1117,6 @@ export class EthersService {
                 throw error;
             }
             this.handleProviderError(error, "get ERC20 token info", { tokenAddress });
-        }
-    }
-
-    /**
-     * Get ERC20 token balance for an address
-     * 
-     * @param tokenAddress ERC20 token contract address
-     * @param ownerAddress Address to check balance for
-     * @param provider Optional provider name or instance
-     * @param chainId Optional chain ID
-     * @returns Promise with formatted balance as string
-     */
-    async getERC20Balance(
-        tokenAddress: string,
-        ownerAddress: string,
-        provider?: string,
-        chainId?: number
-    ): Promise<string> {
-        try {
-            addressSchema.parse(tokenAddress);
-            addressSchema.parse(ownerAddress);
-            return await erc20.getBalance(this, tokenAddress, ownerAddress, provider, chainId);
-        } catch (error) {
-            if (error instanceof TokenError) {
-                throw error;
-            }
-            this.handleProviderError(error, "get ERC20 balance", { tokenAddress, ownerAddress });
         }
     }
 

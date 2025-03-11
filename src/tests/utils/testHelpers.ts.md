@@ -17,7 +17,7 @@
  */
 
 import { ethers } from 'ethers';
-import { EthersService } from '../../services/ethersService';
+import { EthersService } from '../../services/ethersService.js';
 
 // Test networks for testing
 export const TEST_NETWORKS = {

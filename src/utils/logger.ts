@@ -16,7 +16,7 @@
  * - Log formatting
  */
 
-import { config } from '../config/config';
+import { config } from '../config/config.js';
 
 // Log levels with numeric values for comparison
 export enum LogLevel {

@@ -3,10 +3,10 @@
  */
 
 import { ethers } from 'ethers';
-import { EthersService } from '../ethersService';
-import * as erc20 from './erc20';
-import { InsufficientBalanceError, TokenNotFoundError } from './errors';
-import { balanceCache, contractCache } from '../../utils/cache';
+import { EthersService } from '../ethersService.js';
+import * as erc20 from './erc20.js';
+import { InsufficientBalanceError, TokenNotFoundError } from './errors.js';
+import { balanceCache, contractCache } from '../../utils/cache.js';
 
 // Mock EthersService
 jest.mock('../ethersService');

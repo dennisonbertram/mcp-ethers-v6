@@ -7,21 +7,21 @@
  */
 
 import { ethers } from 'ethers';
-import { EthersService } from '../ethersService';
-import { ERC1155_ABI, CACHE_KEYS } from './constants';
-import { ERC1155TokenInfo, NFTMetadata, TokenOperationOptions } from './types';
+import { EthersService } from '../ethersService.js';
+import { ERC1155_ABI, CACHE_KEYS } from './constants.js';
+import { ERC1155TokenInfo, NFTMetadata, TokenOperationOptions } from './types.js';
 import {
   ERC1155Error,
   TokenNotFoundError,
   UnauthorizedTokenActionError,
   TokenMetadataError,
   handleTokenError
-} from './errors';
-import { createTokenCacheKey, fetchMetadata } from './utils';
-import { balanceCache, contractCache, ensCache } from '../../utils/cache';
-import { logger } from '../../utils/logger';
-import { metrics, timeAsync } from '../../utils/metrics';
-import { rateLimiter } from '../../utils/rateLimiter';
+} from './errors.js';
+import { createTokenCacheKey, fetchMetadata } from './utils.js';
+import { balanceCache, contractCache, ensCache } from '../../utils/cache.js';
+import { logger } from '../../utils/logger.js';
+import { metrics, timeAsync } from '../../utils/metrics.js';
+import { rateLimiter } from '../../utils/rateLimiter.js';
 
 /**
  * Get token balance for a specific token ID
@@ -681,17 +681,72 @@ export async function getUserTokens(
         const tokenMap = new Map<string, boolean>();
         
         // Process single transfers
+        console.log('Number of events:', events.length);
+        if (events.length > 0) {
+          console.log('First event type:', Object.prototype.toString.call(events[0]));
+          console.log('First event properties:', Object.keys(events[0]));
+          console.log('Is EventLog?', events[0] instanceof ethers.EventLog);
+          console.log('Event topics:', events[0].topics);
+          try {
+            console.log('First event data:', JSON.stringify(events[0], (key, value) =>
+              typeof value === 'bigint' ? value.toString() : value
+            ));
+          } catch (error) {
+            console.log('Error stringifying event:', error instanceof Error ? error.message : String(error));
+          }
+        }
+        
         events.forEach(event => {
-          const tokenId = event.args[3].toString();
+          // Use type guard to safely access args for EventLog
+          const isEventLog = 'args' in event;
+          
+          // Access token ID safely with fallback to topics
+          const tokenId = isEventLog ? 
+            (event as ethers.EventLog).args[3].toString() : 
+            (event.topics && event.topics.length > 3 ? ethers.dataSlice(event.topics[3], 0) : '0');
+          
           tokenMap.set(tokenId, true);
         });
         
         // Process batch transfers
+        console.log('Number of batch events:', batchEvents.length);
+        if (batchEvents.length > 0) {
+          console.log('First batch event type:', Object.prototype.toString.call(batchEvents[0]));
+          console.log('First batch event properties:', Object.keys(batchEvents[0]));
+          console.log('Is EventLog?', batchEvents[0] instanceof ethers.EventLog);
+          console.log('Batch event topics:', batchEvents[0].topics);
+        }
+        
         batchEvents.forEach(event => {
-          const tokenIds = event.args[3];
-          tokenIds.forEach((id: bigint) => {
-            tokenMap.set(id.toString(), true);
-          });
+          // For batch transfers we need to handle arrays of token IDs
+          // Try to safely access the token IDs or parse from topics/data
+          const isEventLog = 'args' in event;
+          
+          // Extract token IDs either from args (if EventLog) or from topics
+          const tokenIdsFromArgs = isEventLog ? 
+            (event as ethers.EventLog).args[3] : 
+            undefined;
+          
+          const tokenIdsFromTopics = event.topics && event.topics.length > 3 
+            ? [ethers.dataSlice(event.topics[3], 0)]
+            : [];
+          
+          const tokenIds = tokenIdsFromArgs || tokenIdsFromTopics;
+          
+          if (Array.isArray(tokenIds)) {
+            tokenIds.forEach((id: any) => {
+              const idStr = typeof id === 'bigint' ? id.toString() : 
+                            typeof id === 'string' ? id :
+                            id?.toString?.() || '0';
+              tokenMap.set(idStr, true);
+            });
+          } else if (tokenIds) {
+            // Handle single token ID case
+            const idStr = typeof tokenIds === 'bigint' ? tokenIds.toString() : 
+                          typeof tokenIds === 'string' ? tokenIds : 
+                          tokenIds?.toString?.() || '0';
+            tokenMap.set(idStr, true);
+          }
         });
         
         // Check balances for discovered tokens

@@ -7,12 +7,12 @@
  */
 
 import { ethers } from 'ethers';
-import { createCacheKey } from '../../utils/cache';
-import { metrics, timeAsync } from '../../utils/metrics';
-import { logger } from '../../utils/logger';
-import { TokenNotFoundError, handleTokenError } from './errors';
-import { INTERFACE_IDS } from './constants';
-import { NFTMetadata } from './types';
+import { createCacheKey } from '../../utils/cache.js';
+import { metrics, timeAsync } from '../../utils/metrics.js';
+import { logger } from '../../utils/logger.js';
+import { TokenNotFoundError, handleTokenError } from './errors.js';
+import { INTERFACE_IDS } from './constants.js';
+import { NFTMetadata } from './types.js';
 
 /**
  * Interface check result with contract type

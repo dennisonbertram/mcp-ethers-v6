@@ -7,21 +7,21 @@
  */
 
 import { ethers } from 'ethers';
-import { EthersService } from '../ethersService';
-import { ERC721_ABI, CACHE_KEYS } from './constants';
-import { ERC721Info, ERC721TokenInfo, NFTMetadata, TokenOperationOptions } from './types';
+import { EthersService } from '../ethersService.js';
+import { ERC721_ABI, CACHE_KEYS } from './constants.js';
+import { ERC721Info, ERC721TokenInfo, NFTMetadata, TokenOperationOptions } from './types.js';
 import { 
   ERC721Error, 
   TokenNotFoundError, 
   TokenMetadataError,
   UnauthorizedTokenActionError,
   handleTokenError 
-} from './errors';
-import { createTokenCacheKey, fetchMetadata } from './utils';
-import { contractCache, ensCache } from '../../utils/cache';
-import { logger } from '../../utils/logger';
-import { metrics, timeAsync } from '../../utils/metrics';
-import { rateLimiter } from '../../utils/rateLimiter';
+} from './errors.js';
+import { createTokenCacheKey, fetchMetadata } from './utils.js';
+import { contractCache, ensCache } from '../../utils/cache.js';
+import { logger } from '../../utils/logger.js';
+import { metrics, timeAsync } from '../../utils/metrics.js';
+import { rateLimiter } from '../../utils/rateLimiter.js';
 
 /**
  * Get basic information about an ERC721 NFT collection
@@ -805,7 +805,21 @@ export async function getUserNFTs(
         
         // Check current ownership of each token from events
         const ownershipChecks = events.map(async event => {
-          const tokenId = event.args[2].toString();
+          // Debug logs to understand the event structure
+          console.log('Event type:', Object.prototype.toString.call(event));
+          console.log('Event properties:', Object.keys(event));
+          console.log('Is EventLog?', event instanceof ethers.EventLog);
+          console.log('Event data:', JSON.stringify(event, (key, value) => 
+            typeof value === 'bigint' ? value.toString() : value
+          ));
+          
+          // Check event type and use appropriate method to get tokenId
+          const isEventLog = 'args' in event;
+          
+          // Access tokenId safely depending on event type
+          const tokenId = isEventLog ? 
+            (event as ethers.EventLog).args[2].toString() : 
+            (event.topics && event.topics.length > 3 ? ethers.dataSlice(event.topics[3], 0) : '0');
           
           // Skip if we've already processed this token
           if (tokenMap.has(tokenId)) {
