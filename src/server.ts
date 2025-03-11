@@ -10,6 +10,12 @@ import { z } from "zod";
 import { config } from "dotenv";
 import { ethers } from "ethers";
 
+// Import the new tool definitions and handlers
+import { allTools, allHandlers } from "./tools/index.js";
+import { initializeErc20Handlers } from "./tools/handlers/erc20.js";
+import { initializeErc721Handlers } from "./tools/handlers/erc721.js";
+import { initializeErc1155Handlers } from "./tools/handlers/erc1155.js";
+
 config(); // Load environment variables
 
 // Define schemas for contract calls
@@ -48,8 +54,13 @@ const defaultNetwork = (process.env.DEFAULT_NETWORK || "mainnet") as DefaultProv
 const provider = new ethers.AlchemyProvider(defaultNetwork, process.env.ALCHEMY_API_KEY);
 const ethersService = new EthersService(provider);
 
-// Tool definitions
-const tools = [
+// Initialize handlers with ethersService
+initializeErc20Handlers(ethersService);
+initializeErc721Handlers(ethersService);
+initializeErc1155Handlers(ethersService);
+
+// Combine existing tools with the new tools
+const existingTools = [
     {
         name: "getSupportedNetworks",
         description: "Get a list of all supported networks and their configurations. Shows which network is the default (used when no provider is specified). Call this first to discover available networks before using other network-related functions.",
@@ -852,13 +863,16 @@ const tools = [
     },
 ];
 
+// Combine all tools
+const tools = [...existingTools, ...allTools];
+
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return { tools };
 });
 
-// Tool handlers
-const toolHandlers = {
+// Combine existing handlers with new handlers
+const existingHandlers = {
     getWalletBalance: async (args: unknown) => {
         const schema = z.object({ 
             address: z.string(),
@@ -1525,6 +1539,12 @@ const toolHandlers = {
             };
         }
     },
+};
+
+// Combine all handlers
+const toolHandlers = {
+    ...existingHandlers,
+    ...allHandlers
 };
 
 // Handle tool calls
