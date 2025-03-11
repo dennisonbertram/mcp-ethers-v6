@@ -109,7 +109,37 @@ export class EthersService {
     private createAlchemyProvider(network: DefaultProvider): ethers.Provider {
         try {
             const apiKey = this.getAlchemyApiKey();
-            return new ethers.AlchemyProvider(network, apiKey);
+            
+            // Map DefaultProvider names to Alchemy network names
+            let alchemyNetwork: string;
+            switch (network) {
+                case "Ethereum":
+                    alchemyNetwork = "mainnet";
+                    break;
+                case "Polygon PoS":
+                    alchemyNetwork = "polygon";
+                    break;
+                case "Arbitrum":
+                    alchemyNetwork = "arbitrum";
+                    break;
+                case "Arbitrum Nova":
+                    alchemyNetwork = "arbitrum-nova";
+                    break;
+                case "Optimism":
+                    alchemyNetwork = "optimism";
+                    break;
+                case "Avalanche C-Chain":
+                    alchemyNetwork = "avalanche";
+                    break;
+                case "Base":
+                    alchemyNetwork = "base";
+                    break;
+                default:
+                    // For other networks, convert to lowercase and replace spaces with hyphens
+                    alchemyNetwork = network.toLowerCase().replace(/ /g, "-");
+            }
+            
+            return new ethers.AlchemyProvider(alchemyNetwork, apiKey);
         } catch (error) {
             if (error instanceof ConfigurationError) {
                 throw error;
@@ -227,13 +257,41 @@ export class EthersService {
                     selectedProvider = this.createAlchemyProvider(network as DefaultProvider);
                 } catch (error) {
                     // Fall back to custom RPC if Alchemy fails
-                    this.validateRpcUrl(networkInfo.RPC);
-                    selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
+                    // Check if this is an Alchemy URL that needs the API key appended
+                    if (networkInfo.RPC.includes('alchemy.com/v2/')) {
+                        try {
+                            const apiKey = this.getAlchemyApiKey();
+                            const rpcWithApiKey = networkInfo.RPC + apiKey;
+                            this.validateRpcUrl(rpcWithApiKey);
+                            selectedProvider = new ethers.JsonRpcProvider(rpcWithApiKey);
+                        } catch (apiError) {
+                            throw new NetworkError(`Failed to create provider for network ${network}: API key error`, {
+                                network, error: apiError
+                            });
+                        }
+                    } else {
+                        this.validateRpcUrl(networkInfo.RPC);
+                        selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
+                    }
                 }
             } else {
                 // For other networks, use the custom RPC
-                this.validateRpcUrl(networkInfo.RPC);
-                selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
+                // Check if this is an Alchemy URL that needs the API key appended
+                if (networkInfo.RPC.includes('alchemy.com/v2/')) {
+                    try {
+                        const apiKey = this.getAlchemyApiKey();
+                        const rpcWithApiKey = networkInfo.RPC + apiKey;
+                        this.validateRpcUrl(rpcWithApiKey);
+                        selectedProvider = new ethers.JsonRpcProvider(rpcWithApiKey);
+                    } catch (apiError) {
+                        throw new NetworkError(`Failed to create provider for network ${network}: API key error`, {
+                            network, error: apiError
+                        });
+                    }
+                } else {
+                    this.validateRpcUrl(networkInfo.RPC);
+                    selectedProvider = new ethers.JsonRpcProvider(networkInfo.RPC);
+                }
             }
         } else {
             // Assume provider is a custom RPC URL

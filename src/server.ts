@@ -50,8 +50,24 @@ const server = new Server(
 );
 
 // Initialize the ethers service with configurable default network
-const defaultNetwork = (process.env.DEFAULT_NETWORK || "mainnet") as DefaultProvider;
-const provider = new ethers.AlchemyProvider(defaultNetwork, process.env.ALCHEMY_API_KEY);
+const defaultNetworkInput = process.env.DEFAULT_NETWORK || "mainnet";
+// Convert common network names to the official names used in DefaultProvider
+const networkAliasMap: Record<string, DefaultProvider> = {
+    "mainnet": "Ethereum",
+    "ethereum": "Ethereum",
+    "polygon": "Polygon PoS",
+    "arbitrum": "Arbitrum",
+    "optimism": "Optimism",
+    "avalanche": "Avalanche C-Chain",
+    "base": "Base"
+};
+const defaultNetwork = networkAliasMap[defaultNetworkInput.toLowerCase()] || defaultNetworkInput as DefaultProvider;
+
+// Create provider with the correct network name
+const provider = new ethers.AlchemyProvider(
+    defaultNetwork === "Ethereum" ? "mainnet" : defaultNetwork.toLowerCase().replace(" ", "-"), 
+    process.env.ALCHEMY_API_KEY
+);
 const ethersService = new EthersService(provider);
 
 // Initialize handlers with ethersService
