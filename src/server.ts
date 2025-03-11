@@ -925,6 +925,36 @@ const existingHandlers = {
             };
         }
     },
+
+    getFeeData: async (args: unknown) => {
+        const schema = z.object({ 
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        const { provider, chainId } = schema.parse(args);
+        
+        try {
+            const feeData = await ethersService.getFeeData(provider, chainId);
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: JSON.stringify({
+                        gasPrice: feeData.gasPrice ? ethersService.formatUnits(feeData.gasPrice, 'gwei') + ' gwei' : null,
+                        maxFeePerGas: feeData.maxFeePerGas ? ethersService.formatUnits(feeData.maxFeePerGas, 'gwei') + ' gwei' : null,
+                        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? ethersService.formatUnits(feeData.maxPriorityFeePerGas, 'gwei') + ' gwei' : null
+                    }, null, 2)
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error getting fee data: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        }
+    },
 };
 
 // Combine all handlers
