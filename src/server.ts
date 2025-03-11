@@ -931,21 +931,26 @@ const existingHandlers = {
             provider: z.string().optional(),
             chainId: z.number().optional()
         });
-        const { provider, chainId } = schema.parse(args);
         
         try {
+            const { provider, chainId } = schema.parse(args);
             const feeData = await ethersService.getFeeData(provider, chainId);
+            
+            // Format the fee data in a more readable way
+            const formattedFeeData = {
+                gasPrice: feeData.gasPrice ? ethersService.formatUnits(feeData.gasPrice, 'gwei') + ' gwei' : null,
+                maxFeePerGas: feeData.maxFeePerGas ? ethersService.formatUnits(feeData.maxFeePerGas, 'gwei') + ' gwei' : null,
+                maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? ethersService.formatUnits(feeData.maxPriorityFeePerGas, 'gwei') + ' gwei' : null
+            };
+            
             return {
                 content: [{ 
                     type: "text", 
-                    text: JSON.stringify({
-                        gasPrice: feeData.gasPrice ? ethersService.formatUnits(feeData.gasPrice, 'gwei') + ' gwei' : null,
-                        maxFeePerGas: feeData.maxFeePerGas ? ethersService.formatUnits(feeData.maxFeePerGas, 'gwei') + ' gwei' : null,
-                        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? ethersService.formatUnits(feeData.maxPriorityFeePerGas, 'gwei') + ' gwei' : null
-                    }, null, 2)
+                    text: JSON.stringify(formattedFeeData, null, 2)
                 }]
             };
         } catch (error) {
+            // Proper error handling according to MCP protocol
             return {
                 isError: true,
                 content: [{ 
