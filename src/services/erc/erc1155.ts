@@ -681,21 +681,6 @@ export async function getUserTokens(
         const tokenMap = new Map<string, boolean>();
         
         // Process single transfers
-        console.log('Number of events:', events.length);
-        if (events.length > 0) {
-          console.log('First event type:', Object.prototype.toString.call(events[0]));
-          console.log('First event properties:', Object.keys(events[0]));
-          console.log('Is EventLog?', events[0] instanceof ethers.EventLog);
-          console.log('Event topics:', events[0].topics);
-          try {
-            console.log('First event data:', JSON.stringify(events[0], (key, value) =>
-              typeof value === 'bigint' ? value.toString() : value
-            ));
-          } catch (error) {
-            console.log('Error stringifying event:', error instanceof Error ? error.message : String(error));
-          }
-        }
-        
         events.forEach(event => {
           // Use type guard to safely access args for EventLog
           const isEventLog = 'args' in event;
@@ -709,14 +694,6 @@ export async function getUserTokens(
         });
         
         // Process batch transfers
-        console.log('Number of batch events:', batchEvents.length);
-        if (batchEvents.length > 0) {
-          console.log('First batch event type:', Object.prototype.toString.call(batchEvents[0]));
-          console.log('First batch event properties:', Object.keys(batchEvents[0]));
-          console.log('Is EventLog?', batchEvents[0] instanceof ethers.EventLog);
-          console.log('Batch event topics:', batchEvents[0].topics);
-        }
-        
         batchEvents.forEach(event => {
           // For batch transfers we need to handle arrays of token IDs
           // Try to safely access the token IDs or parse from topics/data

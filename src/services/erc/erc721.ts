@@ -805,14 +805,6 @@ export async function getUserNFTs(
         
         // Check current ownership of each token from events
         const ownershipChecks = events.map(async event => {
-          // Debug logs to understand the event structure
-          console.log('Event type:', Object.prototype.toString.call(event));
-          console.log('Event properties:', Object.keys(event));
-          console.log('Is EventLog?', event instanceof ethers.EventLog);
-          console.log('Event data:', JSON.stringify(event, (key, value) => 
-            typeof value === 'bigint' ? value.toString() : value
-          ));
-          
           // Check event type and use appropriate method to get tokenId
           const isEventLog = 'args' in event;
           

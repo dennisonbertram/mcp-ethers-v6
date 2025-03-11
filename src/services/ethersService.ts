@@ -52,11 +52,11 @@ export class EthersService {
     private _signer?: ethers.Signer;
 
     constructor(provider?: ethers.Provider, signer?: ethers.Signer) {
-        console.log('DEFAULT_PROVIDERS type:', typeof DEFAULT_PROVIDERS);
-        console.log('DEFAULT_PROVIDERS value:', DEFAULT_PROVIDERS);
-        
-        // Use "Ethereum" or first provider in the array instead of .mainnet
-        const defaultNetwork = DEFAULT_PROVIDERS.includes("Ethereum") ? "Ethereum" : DEFAULT_PROVIDERS[0];
+        // Find a suitable default network if provider is not provided
+        let defaultNetwork: DefaultProvider = DEFAULT_PROVIDERS.includes("Ethereum") ? 
+            "Ethereum" : 
+            DEFAULT_PROVIDERS.length > 0 ? DEFAULT_PROVIDERS[0] : "Ethereum";
+            
         this._provider = provider || this.createAlchemyProvider(defaultNetwork);
         this._signer = signer;
     }
