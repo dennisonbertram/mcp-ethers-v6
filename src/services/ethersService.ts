@@ -2,6 +2,11 @@ import { ethers } from "ethers";
 import { z } from "zod";
 import { DefaultProvider, DEFAULT_PROVIDERS } from "../config/networks.js";
 import { networkList, NetworkName, NetworkInfo } from "../config/networkList.js";
+import * as erc20 from "./erc/erc20";
+import * as erc721 from "./erc/erc721";
+import * as erc1155 from "./erc/erc1155";
+import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types";
+import { TokenError } from "./erc/errors";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
@@ -1023,6 +1028,549 @@ export class EthersService {
             return transactionRequests.filter((tx): tx is ethers.TransactionResponse => tx != null);
         } catch (error) {
             this.handleProviderError(error, "get transactions by block", { blockTag: String(blockTag) });
+        }
+    }
+
+    // ERC20 Token Methods
+
+    /**
+     * Get basic information about an ERC20 token
+     * 
+     * @param tokenAddress Token contract address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with token information
+     */
+    async getERC20TokenInfo(
+        tokenAddress: string,
+        provider?: string,
+        chainId?: number
+    ): Promise<ERC20Info> {
+        try {
+            addressSchema.parse(tokenAddress);
+            return await erc20.getTokenInfo(this, tokenAddress, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC20 token info", { tokenAddress });
+        }
+    }
+
+    /**
+     * Get ERC20 token balance for an address
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param ownerAddress Address to check balance for
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with formatted balance as string
+     */
+    async getERC20Balance(
+        tokenAddress: string,
+        ownerAddress: string,
+        provider?: string,
+        chainId?: number
+    ): Promise<string> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(ownerAddress);
+            return await erc20.getBalance(this, tokenAddress, ownerAddress, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC20 balance", { tokenAddress, ownerAddress });
+        }
+    }
+
+    /**
+     * Get the allowance amount approved for a spender
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param ownerAddress Token owner address
+     * @param spenderAddress Spender address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with formatted allowance as string
+     */
+    async getERC20Allowance(
+        tokenAddress: string,
+        ownerAddress: string,
+        spenderAddress: string,
+        provider?: string,
+        chainId?: number
+    ): Promise<string> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(ownerAddress);
+            addressSchema.parse(spenderAddress);
+            return await erc20.getAllowance(this, tokenAddress, ownerAddress, spenderAddress, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC20 allowance", { tokenAddress, ownerAddress, spenderAddress });
+        }
+    }
+
+    /**
+     * Transfer ERC20 tokens to a recipient
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param recipientAddress Recipient address
+     * @param amount Amount to transfer in token units (e.g., "1.5" not wei)
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async transferERC20(
+        tokenAddress: string,
+        recipientAddress: string,
+        amount: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(recipientAddress);
+            return await erc20.transfer(this, tokenAddress, recipientAddress, amount, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "transfer ERC20 tokens", { tokenAddress, recipientAddress, amount });
+        }
+    }
+
+    /**
+     * Approve a spender to use ERC20 tokens
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param spenderAddress Spender address to approve
+     * @param amount Amount to approve in token units (e.g., "1.5" not wei)
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async approveERC20(
+        tokenAddress: string,
+        spenderAddress: string,
+        amount: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(spenderAddress);
+            return await erc20.approve(this, tokenAddress, spenderAddress, amount, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "approve ERC20 tokens", { tokenAddress, spenderAddress, amount });
+        }
+    }
+
+    /**
+     * Transfer ERC20 tokens from one address to another (requires approval)
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param senderAddress Address to transfer from
+     * @param recipientAddress Recipient address
+     * @param amount Amount to transfer in token units (e.g., "1.5" not wei)
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async transferFromERC20(
+        tokenAddress: string,
+        senderAddress: string,
+        recipientAddress: string,
+        amount: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(senderAddress);
+            addressSchema.parse(recipientAddress);
+            return await erc20.transferFrom(this, tokenAddress, senderAddress, recipientAddress, amount, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "transfer ERC20 tokens from sender", { tokenAddress, senderAddress, recipientAddress, amount });
+        }
+    }
+
+    // ERC721 NFT Methods
+
+    /**
+     * Get basic information about an ERC721 NFT collection
+     * 
+     * @param contractAddress NFT contract address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with NFT collection information
+     */
+    async getERC721CollectionInfo(
+        contractAddress: string,
+        provider?: string,
+        chainId?: number
+    ): Promise<ERC721Info> {
+        try {
+            addressSchema.parse(contractAddress);
+            return await erc721.getNFTInfo(this, contractAddress, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC721 collection info", { contractAddress });
+        }
+    }
+
+    /**
+     * Get the owner of a specific NFT
+     * 
+     * @param contractAddress NFT contract address
+     * @param tokenId Token ID to check ownership
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with owner address
+     */
+    async getERC721Owner(
+        contractAddress: string,
+        tokenId: string | number,
+        provider?: string,
+        chainId?: number
+    ): Promise<string> {
+        try {
+            addressSchema.parse(contractAddress);
+            return await erc721.ownerOf(this, contractAddress, tokenId, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC721 owner", { contractAddress, tokenId });
+        }
+    }
+
+    /**
+     * Get and parse metadata for a specific NFT
+     * 
+     * @param contractAddress NFT contract address
+     * @param tokenId Token ID
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with parsed metadata
+     */
+    async getERC721Metadata(
+        contractAddress: string,
+        tokenId: string | number,
+        provider?: string,
+        chainId?: number
+    ): Promise<NFTMetadata> {
+        try {
+            addressSchema.parse(contractAddress);
+            return await erc721.getMetadata(this, contractAddress, tokenId, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC721 metadata", { contractAddress, tokenId });
+        }
+    }
+
+    /**
+     * Get all NFTs owned by an address
+     * 
+     * @param contractAddress NFT contract address
+     * @param ownerAddress Owner address to check
+     * @param includeMetadata Whether to include metadata
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with array of owned NFTs
+     */
+    async getERC721TokensOfOwner(
+        contractAddress: string,
+        ownerAddress: string,
+        includeMetadata: boolean = false,
+        provider?: string,
+        chainId?: number
+    ): Promise<ERC721TokenInfo[]> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(ownerAddress);
+            return await erc721.getUserNFTs(this, contractAddress, ownerAddress, includeMetadata, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC721 tokens of owner", { contractAddress, ownerAddress });
+        }
+    }
+
+    /**
+     * Transfer an NFT to a new owner
+     * 
+     * @param contractAddress NFT contract address
+     * @param toAddress Recipient address
+     * @param tokenId Token ID to transfer
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async transferERC721(
+        contractAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(toAddress);
+            return await erc721.transferNFT(this, contractAddress, toAddress, tokenId, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "transfer ERC721 NFT", { contractAddress, toAddress, tokenId });
+        }
+    }
+
+    /**
+     * Safely transfer an NFT to a new owner
+     * 
+     * @param contractAddress NFT contract address
+     * @param toAddress Recipient address
+     * @param tokenId Token ID to transfer
+     * @param data Optional data to include
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async safeTransferERC721(
+        contractAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        data: string = '0x',
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(toAddress);
+            return await erc721.safeTransferNFT(this, contractAddress, toAddress, tokenId, data, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "safe transfer ERC721 NFT", { contractAddress, toAddress, tokenId });
+        }
+    }
+
+    // ERC1155 Multi-Token Methods
+
+    /**
+     * Get token balance for a specific ERC1155 token ID
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param ownerAddress Owner address to check
+     * @param tokenId Token ID to check balance
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with token balance as string
+     */
+    async getERC1155Balance(
+        contractAddress: string,
+        ownerAddress: string,
+        tokenId: string | number,
+        provider?: string,
+        chainId?: number
+    ): Promise<string> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(ownerAddress);
+            return await erc1155.balanceOf(this, contractAddress, ownerAddress, tokenId, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC1155 balance", { contractAddress, ownerAddress, tokenId });
+        }
+    }
+
+    /**
+     * Get token balances for multiple ERC1155 token IDs at once
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param ownerAddresses Array of owner addresses
+     * @param tokenIds Array of token IDs
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with array of token balances
+     */
+    async getERC1155BatchBalances(
+        contractAddress: string,
+        ownerAddresses: string[],
+        tokenIds: (string | number)[],
+        provider?: string,
+        chainId?: number
+    ): Promise<string[]> {
+        try {
+            addressSchema.parse(contractAddress);
+            ownerAddresses.forEach(address => addressSchema.parse(address));
+            return await erc1155.balanceOfBatch(this, contractAddress, ownerAddresses, tokenIds, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC1155 batch balances", { contractAddress, ownerAddresses, tokenIds });
+        }
+    }
+
+    /**
+     * Get and parse metadata for a specific ERC1155 token
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param tokenId Token ID to get metadata for
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with token metadata
+     */
+    async getERC1155Metadata(
+        contractAddress: string,
+        tokenId: string | number,
+        provider?: string,
+        chainId?: number
+    ): Promise<NFTMetadata> {
+        try {
+            addressSchema.parse(contractAddress);
+            return await erc1155.getMetadata(this, contractAddress, tokenId, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC1155 metadata", { contractAddress, tokenId });
+        }
+    }
+
+    /**
+     * Get all ERC1155 tokens owned by an address
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param ownerAddress Owner address to check
+     * @param tokenIds Optional array of specific token IDs to check
+     * @param includeMetadata Whether to include metadata
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with array of token info
+     */
+    async getERC1155TokensOfOwner(
+        contractAddress: string,
+        ownerAddress: string,
+        tokenIds?: (string | number)[],
+        includeMetadata: boolean = false,
+        provider?: string,
+        chainId?: number
+    ): Promise<ERC1155TokenInfo[]> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(ownerAddress);
+            return await erc1155.getUserTokens(this, contractAddress, ownerAddress, tokenIds, includeMetadata, provider, chainId);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "get ERC1155 tokens of owner", { contractAddress, ownerAddress });
+        }
+    }
+
+    /**
+     * Safely transfer ERC1155 tokens to another address
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param fromAddress Sender address
+     * @param toAddress Recipient address
+     * @param tokenId Token ID to transfer
+     * @param amount Amount to transfer
+     * @param data Additional data to include with the transfer
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async safeTransferERC1155(
+        contractAddress: string,
+        fromAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        amount: string,
+        data: string = '0x',
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(fromAddress);
+            addressSchema.parse(toAddress);
+            return await erc1155.safeTransferFrom(this, contractAddress, fromAddress, toAddress, tokenId, amount, data, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "safe transfer ERC1155 tokens", { contractAddress, fromAddress, toAddress, tokenId, amount });
+        }
+    }
+
+    /**
+     * Safely transfer multiple ERC1155 tokens in a batch
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param fromAddress Sender address
+     * @param toAddress Recipient address
+     * @param tokenIds Array of token IDs to transfer
+     * @param amounts Array of amounts to transfer
+     * @param data Additional data to include with the transfer
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with transaction response
+     */
+    async safeBatchTransferERC1155(
+        contractAddress: string,
+        fromAddress: string,
+        toAddress: string,
+        tokenIds: (string | number)[],
+        amounts: string[],
+        data: string = '0x',
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionResponse> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(fromAddress);
+            addressSchema.parse(toAddress);
+            return await erc1155.safeBatchTransferFrom(this, contractAddress, fromAddress, toAddress, tokenIds, amounts, data, provider, chainId, options);
+        } catch (error) {
+            if (error instanceof TokenError) {
+                throw error;
+            }
+            this.handleProviderError(error, "safe batch transfer ERC1155 tokens", { contractAddress, fromAddress, toAddress, tokenIds, amounts });
         }
     }
 } 

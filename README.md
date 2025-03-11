@@ -12,6 +12,7 @@ The MCP Ethers Wallet server implements the [Model Context Protocol](https://mod
 - Resolve ENS names
 - Handle transactions
 - Estimate gas costs
+- Work with ERC20, ERC721, and ERC1155 tokens
 
 ## Installation
 
@@ -98,6 +99,30 @@ startServer().catch((error) => {
 - `lookupAddress`: Resolve an ENS name to an address
 - `resolveName`: Resolve an address to an ENS name
 
+### ERC20 Token Operations
+- `getERC20TokenInfo`: Get basic information about an ERC20 token (name, symbol, decimals, total supply)
+- `getERC20Balance`: Get the token balance for an address
+- `getERC20Allowance`: Get the approved amount for a spender
+- `transferERC20`: Transfer tokens to a recipient
+- `approveERC20`: Approve a spender to use tokens
+- `transferFromERC20`: Transfer tokens from one address to another (requires approval)
+
+### ERC721 NFT Operations
+- `getERC721CollectionInfo`: Get basic information about an NFT collection
+- `getERC721Owner`: Get the owner of a specific NFT
+- `getERC721Metadata`: Get and parse metadata for a specific NFT
+- `getERC721TokensOfOwner`: Get all NFTs owned by an address
+- `transferERC721`: Transfer an NFT to a new owner
+- `safeTransferERC721`: Safely transfer an NFT to a new owner
+
+### ERC1155 Multi-Token Operations
+- `getERC1155Balance`: Get token balance for a specific token ID
+- `getERC1155BatchBalances`: Get token balances for multiple token IDs at once
+- `getERC1155Metadata`: Get and parse metadata for a specific token
+- `getERC1155TokensOfOwner`: Get all tokens owned by an address
+- `safeTransferERC1155`: Safely transfer tokens to another address
+- `safeBatchTransferERC1155`: Safely transfer multiple tokens in a batch
+
 ## Network Support
 
 The server supports multiple networks including:
@@ -117,6 +142,8 @@ The server can be configured using environment variables:
 - `ALCHEMY_API_KEY`: Your Alchemy API key for network access
 - `PRIVATE_KEY`: Private key for transaction signing (optional)
 - `DEFAULT_NETWORK`: Default network to use (defaults to "mainnet")
+- `LOG_LEVEL`: Logging level (error, warn, info, debug) - defaults to "info"
+- `SERVER_PORT`: Port to run the server on (defaults to 3000)
 
 ## Error Handling
 
@@ -126,6 +153,22 @@ The server provides detailed error messages for common issues:
 - Contract interaction failures
 - Transaction errors
 - Network connectivity issues
+- Token-specific errors (insufficient balance, allowance, etc.)
+
+## Caching
+
+The server implements intelligent caching for frequently accessed data:
+- Token metadata (1 hour TTL)
+- Token balances (30 seconds TTL)
+- Block data (10 seconds TTL)
+- Transaction data (1 minute TTL)
+
+## Rate Limiting
+
+To prevent abuse, the server implements rate limiting for various operations:
+- General operations: 120 requests per minute
+- Contract calls: 60 requests per minute
+- Transactions: 20 requests per minute
 
 ## Development
 
