@@ -80,6 +80,7 @@ startServer().catch((error) => {
 
 ### Wallet Operations
 - `generateWallet`: Generate a new Ethereum wallet with a random private key
+- `loadWallet`: Load an existing wallet from a private key for the current session
 - `checkWalletExists`: Check if a wallet is configured (without exposing private keys)
 - `getWalletBalance`: Get the native token balance of a wallet
 - `getWalletTransactionCount`: Get the number of transactions sent from a wallet
@@ -148,7 +149,7 @@ The server can be configured using environment variables:
 
 ### Wallet Setup
 
-There are two ways to set up a wallet for transaction signing:
+There are three ways to set up a wallet for transaction signing:
 
 1. **Environment Variable**: Add your private key to the `.env` file:
    ```
@@ -162,6 +163,14 @@ There are two ways to set up a wallet for transaction signing:
    </invoke>
    ```
    This will generate a new random wallet and optionally save it to the server's environment for the current session.
+
+3. **Load an Existing Wallet**: Use the `loadWallet` tool to load a wallet from an existing private key:
+   ```
+   <invoke name="loadWallet">
+   <parameter name="privateKey">0x123abc...</parameter>
+   </invoke>
+   ```
+   This will load the wallet and make it available for transactions in the current session.
 
 **Important**: Always keep your private keys secure. Never share them or commit them to version control.
 

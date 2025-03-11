@@ -99,6 +99,24 @@ const existingTools = [
         },
     },
     {
+        name: "loadWallet",
+        description: "Load an existing wallet from a private key. The wallet will be used for all transactions in the current session. IMPORTANT: Transmitting private keys is a security risk. Use with caution.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                privateKey: {
+                    type: "string",
+                    description: "The private key of the wallet to load. Should start with '0x'.",
+                },
+                saveToEnv: {
+                    type: "boolean",
+                    description: "Optional. If true, the private key will be saved to the server's environment variables for this session. Default is true.",
+                },
+            },
+            required: ["privateKey"]
+        },
+    },
+    {
         name: "checkWalletExists",
         description: "Check if there is a wallet configured on the server. Returns basic wallet info like address but never exposes private keys.",
         inputSchema: {
@@ -960,6 +978,55 @@ const existingHandlers = {
                 content: [{ 
                     type: "text", 
                     text: `Error generating wallet: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        }
+    },
+    
+    loadWallet: async (args: unknown) => {
+        const schema = z.object({
+            privateKey: z.string().refine(
+                (key) => key.startsWith('0x') && key.length === 66,
+                { message: "Invalid private key format. Must start with '0x' and be 66 characters long." }
+            ),
+            saveToEnv: z.boolean().optional().default(true)
+        });
+        
+        try {
+            const { privateKey, saveToEnv } = schema.parse(args);
+            
+            // Create a wallet from the private key
+            const wallet = new ethers.Wallet(privateKey, ethersService.provider);
+            const address = wallet.address;
+            
+            // Set the wallet as the signer for ethersService
+            ethersService.setSigner(wallet);
+            
+            // Optionally save to environment variables (in-memory only)
+            if (saveToEnv) {
+                process.env.PRIVATE_KEY = privateKey;
+            }
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `Wallet loaded successfully!\n\nAddress: ${address}\n\nThis wallet will be used for all transactions in the current session${
+                        saveToEnv ? " and has been saved to the server's environment variables for this session" : ""
+                    }.\n\nIMPORTANT: The wallet will only persist until the server is restarted.`
+                }]
+            };
+        } catch (error) {
+            // Sanitize error message to ensure it doesn't contain the private key
+            let errorMessage = error instanceof Error ? error.message : String(error);
+            if (errorMessage.includes('0x')) {
+                errorMessage = errorMessage.replace(/0x[a-fA-F0-9]{64}/g, '[PRIVATE_KEY_REDACTED]');
+            }
+            
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error loading wallet: ${errorMessage}` 
                 }]
             };
         }
