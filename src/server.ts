@@ -960,6 +960,37 @@ const existingHandlers = {
             };
         }
     },
+
+    getGasPrice: async (args: unknown) => {
+        const schema = z.object({ 
+            provider: z.string().optional(),
+            chainId: z.number().optional()
+        });
+        
+        try {
+            const { provider, chainId } = schema.parse(args);
+            const gasPrice = await ethersService.getGasPrice(provider, chainId);
+            
+            // Format the gas price in gwei for readability
+            const gasPriceGwei = ethersService.formatUnits(gasPrice, 'gwei');
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `Current gas price: ${gasPriceGwei} gwei`
+                }]
+            };
+        } catch (error) {
+            // Proper error handling according to MCP protocol
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error getting gas price: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        }
+    },
 };
 
 // Combine all handlers

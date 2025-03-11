@@ -47,6 +47,29 @@ const networkToEthersMap: Record<string, string> = {
     "Polygon zkEVM": "polygon-zkevm"
 };
 
+// Add a mapping from common network names to official names
+const NETWORK_ALIASES: Record<string, string> = {
+    "mainnet": "Ethereum",
+    "ethereum": "Ethereum",
+    "eth": "Ethereum",
+    "polygon": "Polygon PoS",
+    "matic": "Polygon PoS",
+    "bsc": "BNB Smart Chain",
+    "binance": "BNB Smart Chain",
+    "avalanche": "Avalanche C-Chain",
+    "avax": "Avalanche C-Chain",
+    "arbitrum": "Arbitrum",
+    "arb": "Arbitrum",
+    "optimism": "Optimism",
+    "op": "Optimism",
+    "base": "Base",
+    "zksync": "ZKsync",
+    "linea": "Linea",
+    "scroll": "Scroll",
+    "zkEVM": "Polygon zkEVM",
+    "polygonZkEVM": "Polygon zkEVM"
+};
+
 export class EthersService {
     private _provider: ethers.Provider;
     private _signer?: ethers.Signer;
@@ -181,9 +204,12 @@ export class EthersService {
 
         let selectedProvider: ethers.Provider;
         
+        // Check if the provider is an alias and convert it to the official name
+        const normalizedProvider = NETWORK_ALIASES[provider.toLowerCase()] || provider;
+        
         // Check if provider is a named network in our list
-        if (provider in networkList) {
-            const network = provider as NetworkName;
+        if (normalizedProvider in networkList) {
+            const network = normalizedProvider as NetworkName;
             const networkInfo = networkList[network];
             
             // If chainId is provided, verify it matches the network
@@ -196,7 +222,7 @@ export class EthersService {
             }
             
             // For Ethereum mainnet and common networks, use Alchemy
-            if (network in DEFAULT_PROVIDERS) {
+            if (DEFAULT_PROVIDERS.includes(network as DefaultProvider)) {
                 try {
                     selectedProvider = this.createAlchemyProvider(network as DefaultProvider);
                 } catch (error) {
@@ -211,8 +237,8 @@ export class EthersService {
             }
         } else {
             // Assume provider is a custom RPC URL
-            this.validateRpcUrl(provider);
-            selectedProvider = new ethers.JsonRpcProvider(provider);
+            this.validateRpcUrl(normalizedProvider);
+            selectedProvider = new ethers.JsonRpcProvider(normalizedProvider);
             
             // If chainId is provided, check if it matches the network
             if (chainId !== undefined) {
