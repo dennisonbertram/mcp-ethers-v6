@@ -74,7 +74,7 @@ Total Supply: ${tokenInfo.totalSupply}`
     
     try {
       const { tokenAddress, ownerAddress, provider, chainId } = schema.parse(args);
-      const balance = await ethersService.getERC20Balance(tokenAddress, ownerAddress, provider, chainId);
+      const balance = await ethersService.getERC20Balance(ownerAddress, tokenAddress, provider, chainId);
       
       // Get token info to format the response
       const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);

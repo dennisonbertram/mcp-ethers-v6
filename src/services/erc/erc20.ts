@@ -148,7 +148,20 @@ export async function getBalance(
       const contract = new ethers.Contract(tokenAddress, ERC20_ABI, ethersProvider);
       
       // Get raw balance
-      const balance = await contract.balanceOf(ownerAddress);
+      let balance;
+      try {
+        balance = await contract.balanceOf(ownerAddress);
+      } catch (error: any) {
+        // Check for empty response (0x) which often indicates a non-ERC20 contract
+        if (error.code === 'BAD_DATA' && error.value === '0x') {
+          logger.debug('Contract returned empty data for balanceOf call', { tokenAddress });
+          throw new ERC20Error(
+            `Contract at ${tokenAddress} does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call.`
+          );
+        }
+        // Re-throw the original error
+        throw error;
+      }
       
       // Get token decimals for formatting
       const tokenInfo = await getTokenInfo(ethersService, tokenAddress, provider, chainId);
