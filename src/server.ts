@@ -117,6 +117,24 @@ const existingTools = [
         },
     },
     {
+        name: "ethSign",
+        description: "Signs data using the Ethereum eth_sign method (legacy). IMPORTANT: This is less secure than signMessage as it can sign transaction-like data. Use with caution.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                data: {
+                    type: "string",
+                    description: "The data to sign. Will be converted to hex if not already in hex format.",
+                },
+                provider: {
+                    type: "string",
+                    description: "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+                },
+            },
+            required: ["data"]
+        },
+    },
+    {
         name: "checkWalletExists",
         description: "Check if there is a wallet configured on the server. Returns basic wallet info like address but never exposes private keys.",
         inputSchema: {
@@ -1131,6 +1149,74 @@ const existingHandlers = {
             };
         }
     },
+
+    signMessage: async (args: unknown) => {
+        const schema = z.object({ 
+            message: z.string(),
+            provider: z.string().optional()
+        });
+        
+        try {
+            const { message, provider } = schema.parse(args);
+            
+            // Check if a wallet is configured
+            const walletInfo = await ethersService.getWalletInfo(provider);
+            if (!walletInfo) {
+                throw new Error("No wallet is configured. Please set up a wallet using loadWallet or generateWallet first.");
+            }
+            
+            // Sign the message
+            const signature = await ethersService.signMessage(message, provider);
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `Message signed successfully!\n\nMessage: "${message}"\nSigner: ${walletInfo.address}\nSignature: ${signature}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error signing message: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        },
+
+    ethSign: async (args: unknown) => {
+        const schema = z.object({ 
+            data: z.string(),
+            provider: z.string().optional()
+        });
+        
+        try {
+            const { data, provider } = schema.parse(args);
+            
+            // Check if a wallet is configured
+            const walletInfo = await ethersService.getWalletInfo(provider);
+            if (!walletInfo) {
+                throw new Error("No wallet is configured. Please set up a wallet using loadWallet or generateWallet first.");
+            }
+            
+            // Sign the data using eth_sign
+            const signature = await ethersService.ethSign(data, provider);
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `Data signed successfully using eth_sign!\n\nData: ${data}\nSigner: ${walletInfo.address}\nSignature: ${signature}\n\nWARNING: eth_sign is a legacy signing method and less secure than personal_sign. Use with caution.`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error signing data with eth_sign: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        },
 };
 
 // Combine all handlers

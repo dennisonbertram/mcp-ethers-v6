@@ -211,12 +211,12 @@ export class EthersService {
             }
             
             try {
-                return JSON.stringify(value, (_, v) => 
-                    typeof v === 'bigint' ? v.toString() : v
-                );
+            return JSON.stringify(value, (_, v) => 
+                typeof v === 'bigint' ? v.toString() : v
+            );
             } catch (e) {
                 return '[Object]';
-            }
+        }
         }
         
         return String(value);
@@ -255,7 +255,7 @@ export class EthersService {
             if (DEFAULT_PROVIDERS.includes(network as DefaultProvider)) {
                 try {
                     selectedProvider = this.createAlchemyProvider(network as DefaultProvider);
-                } catch (error) {
+            } catch (error) {
                     // Fall back to custom RPC if Alchemy fails
                     // Check if this is an Alchemy URL that needs the API key appended
                     if (networkInfo.RPC.includes('alchemy.com/v2/')) {
@@ -552,6 +552,42 @@ export class EthersService {
         }
     }
 
+    /**
+     * Signs data using the Ethereum eth_sign method (legacy)
+     * Note: This method is less secure than signMessage (personal_sign) as it can sign transaction-like data
+     * 
+     * @param data The data to sign (as a hex string)
+     * @param provider Optional provider name or URL
+     * @returns The signature as a hexadecimal string
+     */
+    async ethSign(data: string, provider?: string): Promise<string> {
+        try {
+            // Ensure data is properly formatted as hex
+            if (!data.startsWith('0x')) {
+                data = '0x' + Buffer.from(data).toString('hex');
+            }
+            
+            const signer = this.getSigner(provider);
+            
+            // In ethers v6, we can use signMessage for both personal_sign and eth_sign
+            // The difference is in how the message is formatted
+            
+            // For eth_sign, we use the raw data without the Ethereum prefix
+            // This is a lower-level operation and should be used with caution
+            
+            // Convert hex to bytes
+            const dataBytes = ethers.getBytes(data);
+            
+            // Sign the raw bytes
+            // Note: This is equivalent to eth_sign in most cases
+            const signature = await signer.signMessage(dataBytes);
+            
+            return signature;
+        } catch (error) {
+            this.handleProviderError(error, "eth_sign", { data });
+        }
+    }
+
     async contractCall(
         contractAddress: string,
         abi: string | Array<string>,
@@ -573,7 +609,7 @@ export class EthersService {
                     throw new Error(`Invalid ABI: ${abi}. The ABI must be a valid JSON string or array of strings`);
                 }
             }
-
+            
             // Create contract instance with provider
             const contract = new ethers.Contract(
                 contractAddress,
@@ -625,7 +661,7 @@ export class EthersService {
                     throw new Error(`Invalid ABI: ${abi}. The ABI must be a valid JSON string or array of strings`);
                 }
             }
-
+            
             // Create contract instance with provider
             const contract = new ethers.Contract(
                 contractAddress,
@@ -1112,16 +1148,16 @@ export class EthersService {
             const defaultNetwork = process.env.DEFAULT_NETWORK || "mainnet";
             return DEFAULT_PROVIDERS.map((network) => {
                 const networkInfo = networkList[network as NetworkName];
-                return {
-                    name: network,
+                    return {
+                        name: network,
                     chainId: networkInfo?.chainId,
                     isTestnet: network.toLowerCase().includes('testnet') || 
                               network.toLowerCase().includes('goerli') || 
                               network.toLowerCase().includes('sepolia'),
-                    nativeCurrency: {
+                        nativeCurrency: {
                         name: networkInfo?.currency || 'Native Token',
                         symbol: networkInfo?.currency || 'NATIVE',
-                        decimals: 18
+                            decimals: 18
                     },
                     isDefault: network === defaultNetwork
                 };

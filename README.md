@@ -92,6 +92,10 @@ startServer().catch((error) => {
 - `sendTransactionWithOptions`: Send a transaction with custom options (gas, nonce, etc)
 - `getTransactionsByBlock`: Get all transactions in a specific block
 
+### Signing Operations
+- `signMessage`: Sign a message using personal_sign (the recommended method)
+- `ethSign`: Sign data using the legacy eth_sign method (use with caution)
+
 ### Smart Contract Interaction
 - `contractCall`: Execute a contract write method
 - `contractCallView`: Execute a contract read method
