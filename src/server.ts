@@ -86,6 +86,19 @@ const existingTools = [
         },
     },
     {
+        name: "generateWallet",
+        description: "Generate a new Ethereum wallet with a random private key. Returns the wallet address and private key. IMPORTANT: Store the private key securely as it provides full control over the wallet.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                saveToEnv: {
+                    type: "boolean",
+                    description: "Optional. If true, the private key will be saved to the server's environment variables for future use. Default is false.",
+                },
+            },
+        },
+    },
+    {
         name: "checkWalletExists",
         description: "Check if there is a wallet configured on the server. Returns basic wallet info like address but never exposes private keys.",
         inputSchema: {
@@ -906,6 +919,50 @@ const existingHandlers = {
         return {
             content: [{ type: "text", text: JSON.stringify(networks, null, 2) }],
         };
+    },
+    
+    generateWallet: async (args: unknown) => {
+        const schema = z.object({
+            saveToEnv: z.boolean().optional().default(false)
+        });
+        
+        try {
+            const { saveToEnv } = schema.parse(args);
+            
+            // Generate a new random wallet
+            const wallet = ethers.Wallet.createRandom();
+            const address = wallet.address;
+            const privateKey = wallet.privateKey;
+            
+            // If saveToEnv is true, save the private key to process.env
+            // Note: This only persists for the current session
+            if (saveToEnv) {
+                process.env.PRIVATE_KEY = privateKey;
+                
+                // Update the ethersService with the new wallet
+                const signer = new ethers.Wallet(privateKey, ethersService.provider);
+                ethersService.setSigner(signer);
+            }
+            
+            return {
+                content: [{ 
+                    type: "text", 
+                    text: `New wallet generated:\n\nAddress: ${address}\nPrivate Key: ${privateKey}\n\n${
+                        saveToEnv 
+                            ? "The private key has been saved to the server's environment for this session. It will be used for transactions until the server restarts." 
+                            : "IMPORTANT: Save this private key securely. It has NOT been saved on the server."
+                    }\n\nTo use this wallet permanently, add this private key to your .env file as PRIVATE_KEY=${privateKey}`
+                }]
+            };
+        } catch (error) {
+            return {
+                isError: true,
+                content: [{ 
+                    type: "text", 
+                    text: `Error generating wallet: ${error instanceof Error ? error.message : String(error)}` 
+                }]
+            };
+        }
     },
     
     checkWalletExists: async (args: unknown) => {
