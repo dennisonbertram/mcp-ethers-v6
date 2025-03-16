@@ -229,4 +229,36 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-Dennison Bertram (dennison@tally.xyz) 
+Dennison Bertram (dennison@tally.xyz)
+
+## What's New in v1.1.7
+
+### Improvements
+- **Enhanced Error Handling**: Improved error detection and reporting for invalid ERC20 contracts
+  - Better error messages when contracts return empty data
+  - More detailed error logging for debugging
+  - Added specific error codes in error messages
+- **Fixed Parameter Order**: Corrected parameter order in `getERC20Balance` tool for consistent behavior
+- **Improved Testing**: Added new test cases
+  - Test for valid tokens with zero balance
+  - Test for invalid ERC20 contracts
+  - Verification of parameter order correctness
+
+### Breaking Changes
+None. All changes are backward compatible.
+
+### Usage
+To get an ERC20 token balance:
+```typescript
+const balance = await ethersService.getERC20Balance(
+  ownerAddress,    // The address to check balance for
+  tokenAddress,    // The ERC20 token contract address
+  provider,        // Optional: provider name or instance
+  chainId         // Optional: chain ID
+);
+```
+
+If the contract is not a valid ERC20 token, you'll now get a more descriptive error:
+```typescript
+Error: Contract at 0x... does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call. Error code: BAD_DATA
+``` 

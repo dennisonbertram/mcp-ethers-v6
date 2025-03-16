@@ -154,11 +154,24 @@ export async function getBalance(
       } catch (error: any) {
         // Check for empty response (0x) which often indicates a non-ERC20 contract
         if (error.code === 'BAD_DATA' && error.value === '0x') {
-          logger.debug('Contract returned empty data for balanceOf call', { tokenAddress });
+          logger.debug('Contract returned empty data for balanceOf call', { 
+            tokenAddress,
+            errorCode: error.code,
+            errorValue: error.value,
+            errorMessage: error.message
+          });
           throw new ERC20Error(
-            `Contract at ${tokenAddress} does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call.`
+            `Contract at ${tokenAddress} does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call. Error code: ${error.code}`
           );
         }
+        // Log other errors with full context
+        logger.debug('Error calling balanceOf on contract', {
+          tokenAddress,
+          ownerAddress,
+          errorCode: error.code,
+          errorMessage: error.message,
+          errorValue: error.value
+        });
         // Re-throw the original error
         throw error;
       }
