@@ -22,5 +22,8 @@ export function registerAllTools(server: McpServer, ethersService: any) {
   // registerERC721Tools(server, ethersService);
   // registerERC1155Tools(server, ethersService);
   
-  console.log("All tools registered successfully");
+  server.sendLoggingMessage({
+    level: "info",
+    data: "All tools registered successfully"
+  });
 } 

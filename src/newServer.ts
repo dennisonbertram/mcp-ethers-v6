@@ -8,9 +8,8 @@
 
 import { initializeMcpServer } from "./mcpServer.js";
 
-console.log("Starting refactored Ethers v6 MCP Server...");
-
+// Initialize the MCP server
 initializeMcpServer().catch(error => {
-  console.error("Error starting MCP server:", error);
+  // Exit with error code in case of failure
   process.exit(1);
 }); 

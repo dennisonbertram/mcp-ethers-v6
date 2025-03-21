@@ -60,7 +60,10 @@ export async function initializeMcpServer() {
   // Register all tools
   registerAllTools(server, ethersService);
   
-  console.log(`Initializing Ethers v6 MCP Server with network: ${defaultNetwork}`);
+  server.sendLoggingMessage({
+    level: "info",
+    data: `Initializing Ethers v6 MCP Server with network: ${defaultNetwork}`
+  });
   
   // Setup the transport
   const transport = new StdioServerTransport();
@@ -83,7 +86,7 @@ const isMainModule = async () => {
 isMainModule().then(isMain => {
   if (isMain) {
     initializeMcpServer().catch(error => {
-      console.error("Failed to initialize MCP server:", error);
+      // We can't use the server's logging mechanism here since we don't have access to the server
       process.exit(1);
     });
   }
