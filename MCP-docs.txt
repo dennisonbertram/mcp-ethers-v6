@@ -21,13 +21,16 @@ This page provides an overview of applications that support the Model Context Pr
 | [Goose][Goose]                       | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools.                                                    |
 | [LibreChat][LibreChat]               | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools for Agents                                          |
 | [mcp-agent][mcp-agent]               | ❌           | ❌         | ✅       | ⚠️         | ❌     | Supports tools, server connection management, and agent workflows. |
+| [oterm][oterm]                       | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools.                                                    |
 | [Roo Code][Roo Code]                 | ✅           | ❌         | ✅       | ❌          | ❌     | Supports tools and resources.                                      |
 | [Sourcegraph Cody][Cody]             | ✅           | ❌         | ❌       | ❌          | ❌     | Supports resources through OpenCTX                                 |
 | [Superinterface][Superinterface]     | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools                                                     |
 | [TheiaAI/TheiaIDE][TheiaAI/TheiaIDE] | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools for Agents in Theia AI and the AI-powered Theia IDE |
 | [Windsurf Editor][Windsurf]          | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools with AI Flow for collaborative development.         |
 | [Zed][Zed]                           | ❌           | ✅         | ❌       | ❌          | ❌     | Prompts appear as slash commands                                   |
-| \[OpenSumi]\[OpenSumi]               | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools in OpenSumi                                         |
+| [SpinAI][SpinAI]                     | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools for Typescript AI Agents                            |
+| [OpenSumi][OpenSumi]                 | ❌           | ❌         | ✅       | ❌          | ❌     | Supports tools in OpenSumi                                         |
+| [Daydreams Agents][Daydreams]        | ✅           | ✅         | ✅       | ❌          | ❌     | Support for drop in Servers to Daydreams agents                    |
 
 [Claude]: https://claude.ai/download
 
@@ -64,6 +67,14 @@ This page provides an overview of applications that support the Model Context Pr
 [Goose]: https://block.github.io/goose/docs/goose-architecture/#interoperability-with-extensions
 
 [Windsurf]: https://codeium.com/windsurf
+
+[Daydreams]: https://github.com/daydreamsai/daydreams
+
+[SpinAI]: https://spinai.dev
+
+[OpenSumi]: https://github.com/opensumi/core
+
+[oterm]: https://github.com/ggozad/oterm
 
 [Resources]: https://modelcontextprotocol.io/docs/concepts/resources
 
@@ -205,6 +216,15 @@ Programmatically assemble prompts for LLMs using [GenAIScript](https://microsoft
 * Implements every pattern defined in [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents).
 * Supports workflow pause/resume signals, such as waiting for human feedback.
 
+### oterm
+
+[oterm] is a terminal client for Ollama allowing users to create chats/agents.
+
+**Key features:**
+
+* Support for multiple fully customizable chat sessions with Ollama connected with tools.
+* Support for MCP tools.
+
 ### Roo Code
 
 [Roo Code](https://roocode.com) enables AI coding assistance via MCP.
@@ -225,6 +245,17 @@ Programmatically assemble prompts for LLMs using [GenAIScript](https://microsoft
 * Integration with Sourcegraph's code intelligence
 * Uses OpenCTX as an abstraction layer
 * Future support planned for additional MCP features
+
+### SpinAI
+
+[SpinAI](https://spinai.dev) is an open-source TypeScript framework for building observable AI agents. The framework provides native MCP compatibility, allowing agents to seamlessly integrate with MCP servers and tools.
+
+**Key features:**
+
+* Built-in MCP compatibility for AI agents
+* Open-source TypeScript framework
+* Observable agent architecture
+* Native support for MCP tools integration
 
 ### Superinterface
 
@@ -283,6 +314,15 @@ Theia AI and Theia IDE's MCP integration provide users with flexibility, making 
 * Supports MCP tools in OpenSumi
 * Supports built-in IDE MCP servers and custom MCP servers
 
+### Daydreams
+
+[Daydreams](https://github.com/daydreamsai/daydreams) is a generative agent framework for executing anything onchain
+
+**Key features:**
+
+* Supports MCP Servers in config
+* Exposes MCP Client
+
 ## Adding MCP support to your application
 
 If you've added MCP support to your application, we encourage you to submit a pull request to add it to this list. MCP integration can provide your users with powerful contextual AI capabilities and make your application part of the growing MCP ecosystem.
@@ -326,47 +366,47 @@ We encourage community participation! Each section links to relevant discussions
 
 ## Remote MCP Support
 
-Our top priority is enabling [remote MCP connections](https://github.com/modelcontextprotocol/specification/discussions/102), allowing clients to securely connect to MCP servers over the internet. Key initiatives include:
+Our top priority is improving [remote MCP connections](https://github.com/modelcontextprotocol/specification/discussions/112), allowing clients to securely connect to MCP servers over the internet. Key initiatives include:
 
-*   [**Authentication & Authorization**](https://github.com/modelcontextprotocol/specification/discussions/64): Adding standardized auth capabilities, particularly focused on OAuth 2.0 support.
+* [**Authentication & Authorization**](https://github.com/modelcontextprotocol/specification/discussions/64): Adding standardized auth capabilities, particularly focused on OAuth 2.0 support.
 
-*   [**Service Discovery**](https://github.com/modelcontextprotocol/specification/discussions/69): Defining how clients can discover and connect to remote MCP servers.
+* [**Service Discovery**](https://github.com/modelcontextprotocol/specification/discussions/69): Defining how clients can discover and connect to remote MCP servers.
 
-*   [**Stateless Operations**](https://github.com/modelcontextprotocol/specification/discussions/102): Thinking about whether MCP could encompass serverless environments too, where they will need to be mostly stateless.
+* [**Stateless Operations**](https://github.com/modelcontextprotocol/specification/discussions/102): Thinking about whether MCP could encompass serverless environments too, where they will need to be mostly stateless.
 
 ## Reference Implementations
 
 To help developers build with MCP, we want to offer documentation for:
 
-*   **Client Examples**: Comprehensive reference client implementation(s), demonstrating all protocol features
-*   **Protocol Drafting**: Streamlined process for proposing and incorporating new protocol features
+* **Client Examples**: Comprehensive reference client implementation(s), demonstrating all protocol features
+* **Protocol Drafting**: Streamlined process for proposing and incorporating new protocol features
 
 ## Distribution & Discovery
 
 Looking ahead, we're exploring ways to make MCP servers more accessible. Some areas we may investigate include:
 
-*   **Package Management**: Standardized packaging format for MCP servers
-*   **Installation Tools**: Simplified server installation across MCP clients
-*   **Sandboxing**: Improved security through server isolation
-*   **Server Registry**: A common directory for discovering available MCP servers
+* **Package Management**: Standardized packaging format for MCP servers
+* **Installation Tools**: Simplified server installation across MCP clients
+* **Sandboxing**: Improved security through server isolation
+* **Server Registry**: A common directory for discovering available MCP servers
 
 ## Agent Support
 
 We're expanding MCP's capabilities for [complex agentic workflows](https://github.com/modelcontextprotocol/specification/discussions/111), particularly focusing on:
 
-*   [**Hierarchical Agent Systems**](https://github.com/modelcontextprotocol/specification/discussions/94): Improved support for trees of agents through namespacing and topology awareness.
+* [**Hierarchical Agent Systems**](https://github.com/modelcontextprotocol/specification/discussions/94): Improved support for trees of agents through namespacing and topology awareness.
 
-*   [**Interactive Workflows**](https://github.com/modelcontextprotocol/specification/issues/97): Better handling of user permissions and information requests across agent hierarchies, and ways to send output to users instead of models.
+* [**Interactive Workflows**](https://github.com/modelcontextprotocol/specification/issues/97): Better handling of user permissions and information requests across agent hierarchies, and ways to send output to users instead of models.
 
-*   [**Streaming Results**](https://github.com/modelcontextprotocol/specification/issues/117): Real-time updates from long-running agent operations.
+* [**Streaming Results**](https://github.com/modelcontextprotocol/specification/issues/117): Real-time updates from long-running agent operations.
 
 ## Broader Ecosystem
 
 We're also invested in:
 
-*   **Community-Led Standards Development**: Fostering a collaborative ecosystem where all AI providers can help shape MCP as an open standard through equal participation and shared governance, ensuring it meets the needs of diverse AI applications and use cases.
-*   [**Additional Modalities**](https://github.com/modelcontextprotocol/specification/discussions/88): Expanding beyond text to support audio, video, and other formats.
-*   \[**Standardization**] Considering standardization through a standardization body.
+* **Community-Led Standards Development**: Fostering a collaborative ecosystem where all AI providers can help shape MCP as an open standard through equal participation and shared governance, ensuring it meets the needs of diverse AI applications and use cases.
+* [**Additional Modalities**](https://github.com/modelcontextprotocol/specification/discussions/88): Expanding beyond text to support audio, video, and other formats.
+* \[**Standardization**] Considering standardization through a standardization body.
 
 ## Get Involved
 
@@ -424,7 +464,7 @@ MCP follows a client-server architecture where:
 
 ```mermaid
 flowchart LR
-    subgraph "&nbsp;Host&nbsp;"
+    subgraph "Host"
         client1[MCP Client]
         client2[MCP Client]
     end
@@ -3002,6 +3042,7 @@ These MCP servers are maintained by companies for their platforms:
 * **[Search1API](https://github.com/fatwang2/search1api-mcp)** - Unified API for search, crawling, and sitemaps
 * **[Stripe](https://github.com/stripe/agent-toolkit)** - Interact with the Stripe API
 * **[Tinybird](https://github.com/tinybirdco/mcp-tinybird)** - Interface with the Tinybird serverless ClickHouse platform
+* **[Weaviate](https://github.com/weaviate/mcp-server-weaviate)** - Enable Agentic RAG through your Weaviate collection(s)
 
 ## Community highlights
 
@@ -3167,6 +3208,10 @@ Choose the path that best fits your needs:
   <Card title="MCP Inspector" icon="magnifying-glass" href="/docs/tools/inspector">
     Test and inspect your MCP servers with our interactive debugging tool
   </Card>
+
+  <Card title="MCP Workshop (Video, 2hr)" icon="person-chalkboard" href="https://www.youtube.com/watch?v=kQmXtrmQ5Zg">
+    <iframe src="https://www.youtube.com/embed/kQmXtrmQ5Zg" />
+  </Card>
 </CardGroup>
 
 ## Explore MCP
@@ -3222,7 +3267,7 @@ In this tutorial, you'll learn how to build a LLM-powered chatbot client that co
 
 <Tabs>
   <Tab title="Python">
-    [You can find the complete code for this tutorial here.](https://github.com/modelcontextprotocol/quickstart-resources/tree/main/mcp-client)
+    [You can find the complete code for this tutorial here.](https://github.com/modelcontextprotocol/quickstart-resources/tree/main/mcp-client-python)
 
     ## System Requirements
 
@@ -3380,7 +3425,6 @@ In this tutorial, you'll learn how to build a LLM-powered chatbot client that co
         )
 
         # Process response and handle tool calls
-        tool_results = []
         final_text = []
 
         assistant_message_content = []
@@ -3394,7 +3438,6 @@ In this tutorial, you'll learn how to build a LLM-powered chatbot client that co
 
                 # Execute tool call
                 result = await self.session.call_tool(tool_name, tool_args)
-                tool_results.append({"call": tool_name, "result": result})
                 final_text.append(f"[Calling tool {tool_name} with args {tool_args}]")
 
                 assistant_message_content.append(content)
@@ -3630,6 +3673,405 @@ In this tutorial, you'll learn how to build a LLM-powered chatbot client that co
     * `Timeout error`: Consider increasing the timeout in your client configuration
   </Tab>
 
+  <Tab title="Node">
+    [You can find the complete code for this tutorial here.](https://github.com/modelcontextprotocol/quickstart-resources/tree/main/mcp-client-typescript)
+
+    ## System Requirements
+
+    Before starting, ensure your system meets these requirements:
+
+    * Mac or Windows computer
+    * Node.js 16 or higher installed
+    * Latest version of `npm` installed
+    * Anthropic API key (Claude)
+
+    ## Setting Up Your Environment
+
+    First, let's create and set up our project:
+
+    <CodeGroup>
+      ```bash MacOS/Linux
+      # Create project directory
+      mkdir mcp-client-typescript
+      cd mcp-client-typescript
+
+      # Initialize npm project
+      npm init -y
+
+      # Install dependencies
+      npm install @anthropic-ai/sdk @modelcontextprotocol/sdk dotenv
+
+      # Install dev dependencies
+      npm install -D @types/node typescript
+
+      # Create source file
+      touch index.ts
+      ```
+
+      ```powershell Windows
+      # Create project directory
+      md mcp-client-typescript
+      cd mcp-client-typescript
+
+      # Initialize npm project
+      npm init -y
+
+      # Install dependencies
+      npm install @anthropic-ai/sdk @modelcontextprotocol/sdk dotenv
+
+      # Install dev dependencies
+      npm install -D @types/node typescript
+
+      # Create source file
+      new-item index.ts
+      ```
+    </CodeGroup>
+
+    Update your `package.json` to set `type: "module"` and a build script:
+
+    ```json package.json
+    {
+      "type": "module",
+      "scripts": {
+        "build": "tsc && chmod 755 build/index.js"
+      }
+    }
+    ```
+
+    Create a `tsconfig.json` in the root of your project:
+
+    ```json tsconfig.json
+    {
+      "compilerOptions": {
+        "target": "ES2022",
+        "module": "Node16",
+        "moduleResolution": "Node16",
+        "outDir": "./build",
+        "rootDir": "./",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+      },
+      "include": ["index.ts"],
+      "exclude": ["node_modules"]
+    }
+    ```
+
+    ## Setting Up Your API Key
+
+    You'll need an Anthropic API key from the [Anthropic Console](https://console.anthropic.com/settings/keys).
+
+    Create a `.env` file to store it:
+
+    ```bash
+    echo "ANTHROPIC_API_KEY=<your key here>" > .env
+    ```
+
+    Add `.env` to your `.gitignore`:
+
+    ```bash
+    echo ".env" >> .gitignore
+    ```
+
+    <Warning>
+      Make sure you keep your `ANTHROPIC_API_KEY` secure!
+    </Warning>
+
+    ## Creating the Client
+
+    ### Basic Client Structure
+
+    First, let's set up our imports and create the basic client class in `index.ts`:
+
+    ```typescript
+    import { Anthropic } from "@anthropic-ai/sdk";
+    import {
+      MessageParam,
+      Tool,
+    } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
+    import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+    import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+    import readline from "readline/promises";
+    import dotenv from "dotenv";
+
+    dotenv.config();
+
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error("ANTHROPIC_API_KEY is not set");
+    }
+
+    class MCPClient {
+      private mcp: Client;
+      private anthropic: Anthropic;
+      private transport: StdioClientTransport | null = null;
+      private tools: Tool[] = [];
+
+      constructor() {
+        this.anthropic = new Anthropic({
+          apiKey: ANTHROPIC_API_KEY,
+        });
+        this.mcp = new Client({ name: "mcp-client-cli", version: "1.0.0" });
+      }
+      // methods will go here
+    }
+    ```
+
+    ### Server Connection Management
+
+    Next, we'll implement the method to connect to an MCP server:
+
+    ```typescript
+    async connectToServer(serverScriptPath: string) {
+      try {
+        const isJs = serverScriptPath.endsWith(".js");
+        const isPy = serverScriptPath.endsWith(".py");
+        if (!isJs && !isPy) {
+          throw new Error("Server script must be a .js or .py file");
+        }
+        const command = isPy
+          ? process.platform === "win32"
+            ? "python"
+            : "python3"
+          : process.execPath;
+        
+        this.transport = new StdioClientTransport({
+          command,
+          args: [serverScriptPath],
+        });
+        this.mcp.connect(this.transport);
+        
+        const toolsResult = await this.mcp.listTools();
+        this.tools = toolsResult.tools.map((tool) => {
+          return {
+            name: tool.name,
+            description: tool.description,
+            input_schema: tool.inputSchema,
+          };
+        });
+        console.log(
+          "Connected to server with tools:",
+          this.tools.map(({ name }) => name)
+        );
+      } catch (e) {
+        console.log("Failed to connect to MCP server: ", e);
+        throw e;
+      }
+    }
+    ```
+
+    ### Query Processing Logic
+
+    Now let's add the core functionality for processing queries and handling tool calls:
+
+    ```typescript
+    async processQuery(query: string) {
+      const messages: MessageParam[] = [
+        {
+          role: "user",
+          content: query,
+        },
+      ];
+
+      const response = await this.anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1000,
+        messages,
+        tools: this.tools,
+      });
+
+      const finalText = [];
+      const toolResults = [];
+
+      for (const content of response.content) {
+        if (content.type === "text") {
+          finalText.push(content.text);
+        } else if (content.type === "tool_use") {
+          const toolName = content.name;
+          const toolArgs = content.input as { [x: string]: unknown } | undefined;
+
+          const result = await this.mcp.callTool({
+            name: toolName,
+            arguments: toolArgs,
+          });
+          toolResults.push(result);
+          finalText.push(
+            `[Calling tool ${toolName} with args ${JSON.stringify(toolArgs)}]`
+          );
+
+          messages.push({
+            role: "user",
+            content: result.content as string,
+          });
+
+          const response = await this.anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1000,
+            messages,
+          });
+
+          finalText.push(
+            response.content[0].type === "text" ? response.content[0].text : ""
+          );
+        }
+      }
+
+      return finalText.join("\n");
+    }
+    ```
+
+    ### Interactive Chat Interface
+
+    Now we'll add the chat loop and cleanup functionality:
+
+    ```typescript
+    async chatLoop() {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      try {
+        console.log("\nMCP Client Started!");
+        console.log("Type your queries or 'quit' to exit.");
+
+        while (true) {
+          const message = await rl.question("\nQuery: ");
+          if (message.toLowerCase() === "quit") {
+            break;
+          }
+          const response = await this.processQuery(message);
+          console.log("\n" + response);
+        }
+      } finally {
+        rl.close();
+      }
+    }
+
+    async cleanup() {
+      await this.mcp.close();
+    }
+    ```
+
+    ### Main Entry Point
+
+    Finally, we'll add the main execution logic:
+
+    ```typescript
+    async function main() {
+      if (process.argv.length < 3) {
+        console.log("Usage: node index.ts <path_to_server_script>");
+        return;
+      }
+      const mcpClient = new MCPClient();
+      try {
+        await mcpClient.connectToServer(process.argv[2]);
+        await mcpClient.chatLoop();
+      } finally {
+        await mcpClient.cleanup();
+        process.exit(0);
+      }
+    }
+
+    main();
+    ```
+
+    ## Running the Client
+
+    To run your client with any MCP server:
+
+    ```bash
+    # Build TypeScript
+    npm run build
+
+    # Run the client
+    node build/index.js path/to/server.py # python server
+    node build/index.js path/to/build/index.js # node server
+    ```
+
+    <Note>
+      If you're continuing the weather tutorial from the server quickstart, your command might look something like this: `node build/index.js .../quickstart-resources/weather-server-typescript/build/index.js`
+    </Note>
+
+    **The client will:**
+
+    1. Connect to the specified server
+    2. List available tools
+    3. Start an interactive chat session where you can:
+       * Enter queries
+       * See tool executions
+       * Get responses from Claude
+
+    ## How It Works
+
+    When you submit a query:
+
+    1. The client gets the list of available tools from the server
+    2. Your query is sent to Claude along with tool descriptions
+    3. Claude decides which tools (if any) to use
+    4. The client executes any requested tool calls through the server
+    5. Results are sent back to Claude
+    6. Claude provides a natural language response
+    7. The response is displayed to you
+
+    ## Best practices
+
+    1. **Error Handling**
+       * Use TypeScript's type system for better error detection
+       * Wrap tool calls in try-catch blocks
+       * Provide meaningful error messages
+       * Gracefully handle connection issues
+
+    2. **Security**
+       * Store API keys securely in `.env`
+       * Validate server responses
+       * Be cautious with tool permissions
+
+    ## Troubleshooting
+
+    ### Server Path Issues
+
+    * Double-check the path to your server script is correct
+    * Use the absolute path if the relative path isn't working
+    * For Windows users, make sure to use forward slashes (/) or escaped backslashes (\\) in the path
+    * Verify the server file has the correct extension (.js for Node.js or .py for Python)
+
+    Example of correct path usage:
+
+    ```bash
+    # Relative path
+    node build/index.js ./server/build/index.js
+
+    # Absolute path
+    node build/index.js /Users/username/projects/mcp-server/build/index.js
+
+    # Windows path (either format works)
+    node build/index.js C:/projects/mcp-server/build/index.js
+    node build/index.js C:\\projects\\mcp-server\\build\\index.js
+    ```
+
+    ### Response Timing
+
+    * The first response might take up to 30 seconds to return
+    * This is normal and happens while:
+      * The server initializes
+      * Claude processes the query
+      * Tools are being executed
+    * Subsequent responses are typically faster
+    * Don't interrupt the process during this initial waiting period
+
+    ### Common Error Messages
+
+    If you see:
+
+    * `Error: Cannot find module`: Check your build folder and ensure TypeScript compilation succeeded
+    * `Connection refused`: Ensure the server is running and the path is correct
+    * `Tool execution failed`: Verify the tool's required environment variables are set
+    * `ANTHROPIC_API_KEY is not set`: Check your .env file and environment variables
+    * `TypeError`: Ensure you're using the correct types for tool arguments
+  </Tab>
+
   <Tab title="Java">
     <Note>
       This is a quickstart demo based on Spring AI MCP auto-configuration and boot starters.
@@ -3817,7 +4259,7 @@ In this tutorial, you'll learn how to build a LLM-powered chatbot client that co
     View the list of clients that support MCP integrations
   </Card>
 
-  <Card title="Building MCP with LLMs" icon="comments" href="/building-mcp-with-llms">
+  <Card title="Building MCP with LLMs" icon="comments" href="/tutorials/building-mcp-with-llms">
     Learn how to use LLMs like Claude to speed up your MCP development
   </Card>
 
@@ -4143,7 +4585,7 @@ This tutorial will primarily focus on tools.
     This tells Claude for Desktop:
 
     1. There's an MCP server named "weather"
-    2. To launch it by running `uv --directory /ABSOLUTE/PATH/TO/PARENT/FOLDER/weather run weather`
+    2. To launch it by running `uv --directory /ABSOLUTE/PATH/TO/PARENT/FOLDER/weather run weather.py`
 
     Save the file, and restart **Claude for Desktop**.
   </Tab>
@@ -4221,7 +4663,7 @@ This tutorial will primarily focus on tools.
         "weather": "./build/index.js"
       },
       "scripts": {
-        "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+        "build": "tsc && chmod 755 build/index.js"
       },
       "files": [
         "build"
@@ -4582,7 +5024,7 @@ This tutorial will primarily focus on tools.
 
   <Tab title="Java">
     <Note>
-      This is a quickstart demo based on Spring AI MCP auto-configuraiton and boot starters.
+      This is a quickstart demo based on Spring AI MCP auto-configuration and boot starters.
       To learn how to create sync and async MCP Servers, manually, consult the [Java SDK Server](/sdk/java/mcp-server) documentation.
     </Note>
 
@@ -4995,7 +5437,7 @@ When you ask a question:
     Learn how to effectively debug MCP servers and integrations
   </Card>
 
-  <Card title="Building MCP with LLMs" icon="comments" href="/building-mcp-with-llms">
+  <Card title="Building MCP with LLMs" icon="comments" href="/tutorials/building-mcp-with-llms">
     Learn how to use LLMs like Claude to speed up your MCP development
   </Card>
 </CardGroup>
@@ -6020,12 +6462,25 @@ Supported logging levels (in order of increasing severity): DEBUG (0), INFO (1),
   <Tab title="Sync">
     ```java
     // Sync tool registration
+    var schema = """
+                {
+                  "type" : "object",
+                  "id" : "urn:jsonschema:Operation",
+                  "properties" : {
+                    "operation" : {
+                      "type" : "string"
+                    },
+                    "a" : {
+                      "type" : "number"
+                    },
+                    "b" : {
+                      "type" : "number"
+                    }
+                  }
+                }
+                """;
     var syncToolRegistration = new McpServerFeatures.SyncToolRegistration(
-        new Tool("calculator", "Basic calculator", Map.of(
-            "operation", "string",
-            "a", "number",
-            "b", "number"
-        )),
+        new Tool("calculator", "Basic calculator", schema),
         arguments -> {
             // Tool implementation
             return new CallToolResult(result, false);
@@ -6037,12 +6492,25 @@ Supported logging levels (in order of increasing severity): DEBUG (0), INFO (1),
   <Tab title="Async">
     ```java
     // Async tool registration
+    var schema = """
+                {
+                  "type" : "object",
+                  "id" : "urn:jsonschema:Operation",
+                  "properties" : {
+                    "operation" : {
+                      "type" : "string"
+                    },
+                    "a" : {
+                      "type" : "number"
+                    },
+                    "b" : {
+                      "type" : "number"
+                    }
+                  }
+                }
+                """;
     var asyncToolRegistration = new McpServerFeatures.AsyncToolRegistration(
-        new Tool("calculator", "Basic calculator", Map.of(
-            "operation", "string",
-            "a", "number",
-            "b", "number"
-        )),
+        new Tool("calculator", "Basic calculator", schema),
         arguments -> {
             // Tool implementation
             return Mono.just(new CallToolResult(result, false));

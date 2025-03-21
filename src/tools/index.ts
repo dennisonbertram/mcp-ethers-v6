@@ -1,14 +1,25 @@
-import { erc20Tools, erc721Tools, erc1155Tools } from './definitions/index.js';
-import { erc20Handlers, erc721Handlers, erc1155Handlers } from './handlers/index.js';
+/**
+ * @file Tools Index
+ * @version 1.0.0
+ * @status UNDER DEVELOPMENT
+ * 
+ * Central export point for all tool registrations
+ */
 
-export const allTools = [
-  ...erc20Tools,
-  ...erc721Tools,
-  ...erc1155Tools
-];
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerCoreTools } from "./core.js";
 
-export const allHandlers = {
-  ...erc20Handlers,
-  ...erc721Handlers,
-  ...erc1155Handlers
-}; 
+/**
+ * Registers all tools with the MCP server
+ */
+export function registerAllTools(server: McpServer, ethersService: any) {
+  // Register tool categories
+  registerCoreTools(server, ethersService);
+  
+  // TODO: Add other tool categories as they are refactored
+  // registerERC20Tools(server, ethersService);
+  // registerERC721Tools(server, ethersService);
+  // registerERC1155Tools(server, ethersService);
+  
+  console.log("All tools registered successfully");
+} 
