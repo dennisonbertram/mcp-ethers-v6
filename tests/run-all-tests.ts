@@ -25,7 +25,7 @@ async function runTest(testFile: string): Promise<boolean> {
     console.log(`Running test: ${testFile}`);
     console.log(`${'='.repeat(80)}\n`);
     
-    const testProcess = spawn('npx', ['ts-node', testFile], {
+    const testProcess = spawn('npx', ['ts-node', '--project', 'tsconfig-node.json', testFile], {
       stdio: 'inherit',
       cwd: process.cwd()
     });

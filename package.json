@@ -21,8 +21,10 @@
     "dev": "ts-node src/index.ts",
     "test": "jest --config jest.config.cjs 'src/.*\\.ts$'",
     "test:watch": "jest --watch 'src/.*\\.ts$'",
-    "test:mcp": "npx ts-node tests/run-all-tests.ts",
-    "test:mcp:tools": "npx ts-node tests/tools/list-tools-test.ts"
+    "test:mcp": "npx ts-node --project tsconfig-node.json tests/run-all-tests.ts",
+    "test:mcp:tools": "npx ts-node --project tsconfig-node.json tests/tools/list-tools-test.ts",
+    "test:mcp:erc20": "npx ts-node --project tsconfig-node.json tests/tools/erc20-test.ts",
+    "test:mcp:erc721": "npx ts-node --project tsconfig-node.json tests/tools/erc721-test.ts"
   },
   "files": [
     "build"
