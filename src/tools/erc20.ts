@@ -8,6 +8,7 @@
 
 import { z } from 'zod';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { EthersService } from '../services/ethersService.js';
 
 // Common schemas
 const tokenAddressSchema = z.string().describe(
@@ -51,7 +52,7 @@ const gasOptionsSchema = z.object({
 /**
  * Registers ERC20 token tools with the MCP server
  */
-export function registerERC20Tools(server: McpServer, ethersService: any) {
+export function registerERC20Tools(server: McpServer, ethersService: EthersService) {
   // Get ERC20 Token Info
   server.tool(
     "getERC20TokenInfo",
