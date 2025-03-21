@@ -14,6 +14,7 @@ import { config } from "dotenv";
 import { ethers } from "ethers";
 import { DefaultProvider } from "./config/networks.js";
 import { registerAllTools } from "./tools/index.js";
+import { fileURLToPath } from 'url';
 
 // Load environment variables
 config();
@@ -68,10 +69,22 @@ export async function initializeMcpServer() {
   return { server, ethersService };
 }
 
+// Check if this file is being run directly, in an ES module compatible way
+const isMainModule = async () => {
+  try {
+    const modulePath = fileURLToPath(import.meta.url);
+    return process.argv[1] === modulePath;
+  } catch (e) {
+    return false;
+  }
+};
+
 // If this file is run directly, initialize the server
-if (require.main === module) {
-  initializeMcpServer().catch(error => {
-    console.error("Failed to initialize MCP server:", error);
-    process.exit(1);
-  });
-} 
+isMainModule().then(isMain => {
+  if (isMain) {
+    initializeMcpServer().catch(error => {
+      console.error("Failed to initialize MCP server:", error);
+      process.exit(1);
+    });
+  }
+}); 

@@ -10,19 +10,11 @@ import { z } from "zod";
 import { config } from "dotenv";
 import { ethers } from "ethers";
 
-// Comment out the imports that no longer exist in the refactored version
-// import { allTools, allHandlers } from "./tools/index.js";
+// Import the new tool definitions and handlers
+import { allTools, allHandlers } from "./tools/index.js";
 import { initializeErc20Handlers } from "./tools/handlers/erc20.js";
 import { initializeErc721Handlers } from "./tools/handlers/erc721.js";
 import { initializeErc1155Handlers } from "./tools/handlers/erc1155.js";
-
-// Import legacy tool definitions directly to maintain backward compatibility during refactoring
-import { erc20Tools } from './tools/definitions/erc20.js';
-import { erc721Tools } from './tools/definitions/erc721.js';
-import { erc1155Tools } from './tools/definitions/erc1155.js';
-import { erc20Handlers } from './tools/handlers/erc20.js';
-import { erc721Handlers } from './tools/handlers/erc721.js';
-import { erc1155Handlers } from './tools/handlers/erc1155.js';
 
 config(); // Load environment variables
 
@@ -86,19 +78,6 @@ const ethersService = new EthersService(provider);
 initializeErc20Handlers(ethersService);
 initializeErc721Handlers(ethersService);
 initializeErc1155Handlers(ethersService);
-
-// Create allTools and allHandlers for backward compatibility
-const allTools = [
-  ...erc20Tools,
-  ...erc721Tools,
-  ...erc1155Tools
-];
-
-const allHandlers = {
-  ...erc20Handlers,
-  ...erc721Handlers,
-  ...erc1155Handlers
-};
 
 // Define existing tools
 const existingTools = [
