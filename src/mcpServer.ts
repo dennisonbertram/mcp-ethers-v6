@@ -15,6 +15,7 @@ import { ethers } from "ethers";
 import { DefaultProvider } from "./config/networks.js";
 import { registerAllTools } from "./tools/index.js";
 import { fileURLToPath } from 'url';
+import { silentLogger } from "./utils/silentLogger.js";
 
 // Load environment variables
 config();
@@ -60,10 +61,7 @@ export async function initializeMcpServer() {
   // Register all tools
   registerAllTools(server, ethersService);
   
-  server.sendLoggingMessage({
-    level: "info",
-    data: `Initializing Ethers v6 MCP Server with network: ${defaultNetwork}`
-  });
+  silentLogger.info(`Initializing Ethers v6 MCP Server with network: ${defaultNetwork}`);
   
   // Setup the transport
   const transport = new StdioServerTransport();
@@ -86,7 +84,7 @@ const isMainModule = async () => {
 isMainModule().then(isMain => {
   if (isMain) {
     initializeMcpServer().catch(error => {
-      // We can't use the server's logging mechanism here since we don't have access to the server
+      // Silent error handling
       process.exit(1);
     });
   }

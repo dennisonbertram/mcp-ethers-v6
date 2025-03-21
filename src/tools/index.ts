@@ -9,6 +9,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerCoreTools } from "./core.js";
 import { registerERC20Tools } from "./erc20.js";
+import { silentLogger } from "../utils/silentLogger.js";
 
 /**
  * Registers all tools with the MCP server
@@ -22,8 +23,5 @@ export function registerAllTools(server: McpServer, ethersService: any) {
   // registerERC721Tools(server, ethersService);
   // registerERC1155Tools(server, ethersService);
   
-  server.sendLoggingMessage({
-    level: "info",
-    data: "All tools registered successfully"
-  });
+  silentLogger.info("All tools registered successfully");
 } 
