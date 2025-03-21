@@ -20,7 +20,9 @@
     "start": "node build/index.js",
     "dev": "ts-node src/index.ts",
     "test": "jest --config jest.config.cjs 'src/.*\\.ts$'",
-    "test:watch": "jest --watch 'src/.*\\.ts$'"
+    "test:watch": "jest --watch 'src/.*\\.ts$'",
+    "test:mcp": "npx ts-node tests/run-all-tests.ts",
+    "test:mcp:tools": "npx ts-node tests/tools/list-tools-test.ts"
   },
   "files": [
     "build"

@@ -11,6 +11,6 @@
     "declaration": true,
     "sourceMap": true
   },
-  "include": ["src/**/*", "jest.setup.ts"],
+  "include": ["src/**/*", "jest.setup.ts", "tests/**/*"],
   "exclude": ["node_modules", "build"]
 } 
