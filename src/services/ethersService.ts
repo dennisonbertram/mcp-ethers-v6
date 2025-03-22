@@ -139,7 +139,17 @@ export class EthersService {
                     alchemyNetwork = network.toLowerCase().replace(/ /g, "-");
             }
             
-            return new ethers.AlchemyProvider(alchemyNetwork, apiKey);
+            // Alchemy API has changed its endpoints, try both endpoint patterns
+            try {
+                // First try with standard AlchemyProvider
+                return new ethers.AlchemyProvider(alchemyNetwork, apiKey);
+            } catch (error) {
+                console.warn(`Failed to create provider with standard endpoint, trying legacy format: ${error}`);
+                
+                // If that fails, create a JsonRpcProvider directly with the legacy URL format
+                const url = `https://${alchemyNetwork}.alchemyapi.io/v2/${apiKey}`;
+                return new ethers.JsonRpcProvider(url);
+            }
         } catch (error) {
             if (error instanceof ConfigurationError) {
                 throw error;

@@ -61,9 +61,13 @@ export function registerERC20Tools(server: McpServer, ethersService: EthersServi
       provider: providerSchema,
       chainId: chainIdSchema
     },
-    async ({ tokenAddress, provider, chainId }) => {
+    async (params) => {
       try {
-        const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         return {
           content: [{ 
@@ -98,17 +102,26 @@ Total Supply: ${tokenInfo.totalSupply}`
       provider: providerSchema,
       chainId: chainIdSchema
     },
-    async ({ tokenAddress, ownerAddress, provider, chainId }) => {
+    async (params) => {
       try {
-        const balance = await ethersService.getERC20Balance(ownerAddress, tokenAddress, provider, chainId);
+        const balance = await ethersService.getERC20Balance(
+          params.ownerAddress,
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         // Get token info to format the response
-        const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         return {
           content: [{ 
             type: "text", 
-            text: `${ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
+            text: `${params.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
           }]
         };
       } catch (error) {
@@ -137,23 +150,27 @@ Total Supply: ${tokenInfo.totalSupply}`
       provider: providerSchema,
       chainId: chainIdSchema
     },
-    async ({ tokenAddress, ownerAddress, spenderAddress, provider, chainId }) => {
+    async (params) => {
       try {
         const allowance = await ethersService.getERC20Allowance(
-          tokenAddress, 
-          ownerAddress, 
-          spenderAddress, 
-          provider, 
-          chainId
+          params.tokenAddress,
+          params.ownerAddress,
+          params.spenderAddress,
+          params.provider,
+          params.chainId
         );
         
         // Get token info to format the response
-        const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         return {
           content: [{ 
             type: "text", 
-            text: `${spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${ownerAddress}`
+            text: `${params.spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${params.ownerAddress}`
           }]
         };
       } catch (error) {
@@ -182,23 +199,27 @@ Total Supply: ${tokenInfo.totalSupply}`
       gasLimit: z.string().optional(),
       gasPrice: z.string().optional()
     },
-    async ({ tokenAddress, recipientAddress, amount, provider, chainId, gasLimit, gasPrice }) => {
+    async (params) => {
       try {
         // Get token info to format the response
-        const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         // Prepare gas options
         const options = {
-          gasLimit,
-          gasPrice
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice
         };
         
         const txResult = await ethersService.transferERC20(
-          tokenAddress,
-          recipientAddress,
-          amount,
-          provider,
-          chainId,
+          params.tokenAddress,
+          params.recipientAddress,
+          params.amount,
+          params.provider,
+          params.chainId,
           options
         );
         
@@ -206,7 +227,7 @@ Total Supply: ${tokenInfo.totalSupply}`
           content: [{ 
             type: "text", 
             text: `
-Successfully transferred ${amount} ${tokenInfo.symbol} to ${recipientAddress}
+Successfully transferred ${params.amount} ${tokenInfo.symbol} to ${params.recipientAddress}
 Transaction Hash: ${txResult.hash}
 Waiting for confirmation...`
           }]
@@ -237,23 +258,27 @@ Waiting for confirmation...`
       gasLimit: z.string().optional(),
       gasPrice: z.string().optional()
     },
-    async ({ tokenAddress, spenderAddress, amount, provider, chainId, gasLimit, gasPrice }) => {
+    async (params) => {
       try {
         // Get token info to format the response
-        const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
         
         // Prepare gas options
         const options = {
-          gasLimit,
-          gasPrice
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice
         };
         
         const txResult = await ethersService.approveERC20(
-          tokenAddress,
-          spenderAddress,
-          amount,
-          provider,
-          chainId,
+          params.tokenAddress,
+          params.spenderAddress,
+          params.amount,
+          params.provider,
+          params.chainId,
           options
         );
         
@@ -261,7 +286,7 @@ Waiting for confirmation...`
           content: [{ 
             type: "text", 
             text: `
-Successfully approved ${spenderAddress} to spend ${amount} ${tokenInfo.symbol}
+Successfully approved ${params.spenderAddress} to spend ${params.amount} ${tokenInfo.symbol}
 Transaction Hash: ${txResult.hash}
 Waiting for confirmation...`
           }]
@@ -271,7 +296,7 @@ Waiting for confirmation...`
           isError: true,
           content: [{ 
             type: "text", 
-            text: `Error approving token allowance: ${error instanceof Error ? error.message : String(error)}`
+            text: `Error approving tokens: ${error instanceof Error ? error.message : String(error)}`
           }]
         };
       }

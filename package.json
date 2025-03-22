@@ -21,10 +21,13 @@
     "dev": "ts-node src/index.ts",
     "test": "jest --config jest.config.cjs 'src/.*\\.ts$'",
     "test:watch": "jest --watch 'src/.*\\.ts$'",
-    "test:mcp": "npx ts-node --project tsconfig-node.json tests/run-all-tests.ts",
-    "test:mcp:tools": "npx ts-node --project tsconfig-node.json tests/tools/list-tools-test.ts",
-    "test:mcp:erc20": "npx ts-node --project tsconfig-node.json tests/tools/erc20-test.ts",
-    "test:mcp:erc721": "npx ts-node --project tsconfig-node.json tests/tools/erc721-test.ts"
+    "test:mcp": "bun run tests/test-runner.ts all",
+    "test:mcp:core": "bun run tests/test-runner.ts core",
+    "test:mcp:erc20": "bun run tests/test-runner.ts erc20",
+    "test:mcp:nft": "bun run tests/test-runner.ts nft",
+    "test:mcp:basic": "bun run tests/tools/basic-test.ts",
+    "test:mcp:report": "bun run tests/run-all-tests.ts",
+    "validate:alchemy": "bun run tests/validate-alchemy-key.ts"
   },
   "files": [
     "build"
@@ -40,8 +43,10 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.0.0",
+    "@types/node-fetch": "^2.6.12",
     "hardhat": "^2.22.17",
     "jest": "^29.7.0",
+    "node-fetch": "2.6.12",
     "ts-jest": "^29.2.5",
     "typescript": "^5.0.0"
   },

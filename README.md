@@ -219,6 +219,73 @@ npm run dev
 npm run build
 ```
 
+## Testing MCP Integration
+
+The project includes a comprehensive testing framework for verifying the MCP server functionality:
+
+```bash
+# Run all MCP tests
+npm run test:mcp
+
+# Run specific test suites
+npm run test:mcp:core     # Test core tools
+npm run test:mcp:erc20    # Test ERC20 token tools
+npm run test:mcp:nft      # Test NFT tools
+npm run test:mcp:basic    # Run basic functionality tests
+
+# Run a complete test with detailed reporting
+npm run test:mcp:report
+
+# Validate your Alchemy API key
+npm run validate:alchemy
+```
+
+The testing framework:
+- Verifies server initialization
+- Tests tool discovery and listing
+- Validates individual tool functionality
+- Generates detailed reports of test results
+- Catches API key and authentication issues
+
+### Test Reports
+
+Tests generate a Markdown report with:
+- Test status (pass/fail)
+- Duration of each test 
+- Error details for failed tests
+- Overall success rate
+
+### Alchemy API Setup
+
+For the Ethers server to function correctly, you need a valid Alchemy API key:
+
+1. Create a free account at [Alchemy](https://www.alchemy.com/)
+2. Create a new app and get your API key
+3. Add it to your `.env` file: `ALCHEMY_API_KEY=your_key_here`
+
+For detailed instructions, see [ALCHEMY_SETUP.md](ALCHEMY_SETUP.md).
+
+## Tool Status
+
+Based on comprehensive testing, the following tool categories are available:
+
+### Core Tools
+- Network information (getSupportedNetworks)
+- Wallet generation and management
+- Block and transaction utilities
+
+### ERC20 Token Tools
+- Token information (name, symbol, decimals, supply)
+- Balance checking
+- Allowance management
+- Transfer and approval operations
+
+### NFT Tools
+- Collection information
+- Ownership verification
+- Metadata retrieval
+- Transfer operations
+
 ## Contributing
 
 Issues and pull requests are welcome on GitHub.

@@ -7,6 +7,7 @@
  */
 
 import { createMcpClient } from '../mcp-client.js';
+import { getTestReport, runTest } from '../report-generation.js';
 
 async function testERC721Tools() {
   console.log('Starting ERC721 tools test...');
@@ -23,7 +24,7 @@ async function testERC721Tools() {
     // Call the getNFTInfo tool
     const nftInfoResult = await client.callTool({
       name: 'getNFTInfo',
-      arguments: {
+      parameters: {
         contractAddress,
         provider: 'mainnet'
       }
@@ -39,7 +40,7 @@ async function testERC721Tools() {
     
     const ownerResult = await client.callTool({
       name: 'getNFTOwner',
-      arguments: {
+      parameters: {
         contractAddress,
         tokenId,
         provider: 'mainnet'
@@ -58,7 +59,7 @@ async function testERC721Tools() {
     
     const tokenURIResult = await client.callTool({
       name: 'getNFTTokenURI',
-      arguments: {
+      parameters: {
         contractAddress: baycAddress,
         tokenId: baycTokenId,
         provider: 'mainnet'
@@ -72,7 +73,7 @@ async function testERC721Tools() {
     
     const metadataResult = await client.callTool({
       name: 'getNFTMetadata',
-      arguments: {
+      parameters: {
         contractAddress: baycAddress,
         tokenId: baycTokenId,
         provider: 'mainnet'
@@ -86,13 +87,20 @@ async function testERC721Tools() {
     console.error('Error testing ERC721 tools:', error);
     process.exit(1);
   } finally {
+    // Generate the summary
+    getTestReport().generateSummary();
+    
     // Cleanup resources
     cleanup();
   }
 }
 
-// Run the tests
-testERC721Tools().catch(err => {
-  console.error('Unhandled error in ERC721 tools test:', err);
-  process.exit(1);
-}); 
+// Run the test if this file is executed directly
+if (require.main === module) {
+  testERC721Tools().catch(error => {
+    console.error('Error running ERC721 tools test:', error);
+    process.exit(1);
+  });
+}
+
+export { testERC721Tools }; 
