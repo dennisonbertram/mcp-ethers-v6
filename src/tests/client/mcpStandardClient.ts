@@ -41,7 +41,7 @@ export class McpStandardClient {
   } = {}) {
     const {
       serverCommand = "node",
-      serverArgs = ["build/index.js"],
+      serverArgs = ["build/src/index.js"],
       clientName = "mcp-ethers-test-client",
       clientVersion = "1.0.0"
     } = options;
@@ -50,8 +50,10 @@ export class McpStandardClient {
     this.transport = new StdioClientTransport({
       command: serverCommand,
       args: serverArgs,
-      env: process.env,
+      env: process.env as Record<string, string>,
     });
+    
+    logger.info(`Using stdio transport with command: ${serverCommand} ${serverArgs.join(' ')}`);
 
     // Create the client
     this.client = new Client(
@@ -137,8 +139,14 @@ export class McpStandardClient {
 
     try {
       logger.info("Disconnecting from MCP server...");
-      await this.client.disconnect();
+      // Client doesn't have a disconnect method, so we'll just mark as disconnected
       this.connected = false;
+      
+      // Close the transport if it has a close method
+      if (typeof this.transport.close === 'function') {
+        await this.transport.close();
+      }
+      
       logger.info("Disconnected from MCP server successfully");
     } catch (error) {
       logger.error("Failed to disconnect from MCP server", { error });

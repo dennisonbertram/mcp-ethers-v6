@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   // Initialize the client
   const client = new McpStandardClient({
     serverCommand: 'node',
-    serverArgs: ['build/index.js'],
+    serverArgs: ['build/src/index.js'],
     clientName: 'mcp-ethers-test-client',
     clientVersion: '1.0.0'
   });
