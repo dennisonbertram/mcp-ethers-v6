@@ -328,4 +328,53 @@ const balance = await ethersService.getERC20Balance(
 If the contract is not a valid ERC20 token, you'll now get a more descriptive error:
 ```typescript
 Error: Contract at 0x... does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call. Error code: BAD_DATA
-``` 
+```
+
+## Testing
+
+### Standard Test Client
+
+The MCP Ethers Wallet server includes a standardized test client based on the official MCP TypeScript SDK. This client can be used to run automated tests against the server.
+
+#### Running Tests
+
+To run all tests:
+
+```bash
+npm run test:client
+```
+
+To run specific test suites:
+
+```bash
+# Run basic connectivity tests
+npm run test:client:basic
+
+# Run wallet functionality tests
+npm run test:client:wallet
+```
+
+#### Test Reports
+
+The test client generates detailed reports in multiple formats:
+
+- Console output
+- HTML report (in `reports/mcp-test-report.html`)
+- JSON report (in `reports/mcp-test-report.json`)
+
+#### Creating Custom Tests
+
+You can extend the test client with your own test suites by:
+
+1. Creating a new test suite file in `src/tests/client/suites/`
+2. Updating `src/tests/runTests.ts` to include your test suite
+3. Adding a new npm script to package.json if needed
+
+#### Test Client Architecture
+
+The test client is built using a modular architecture:
+
+- `McpStandardClient`: Main client class using the official MCP SDK
+- Test suites: Collections of related tests
+- Test utilities: Assertions, test running, and reporting
+- Test runner: Command-line interface to run tests 
