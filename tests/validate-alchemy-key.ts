@@ -12,18 +12,26 @@ import fetch from 'node-fetch';
 // Load environment variables
 config();
 
+function log(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
+function logError(message: string): void {
+  process.stderr.write(`ERROR: ${message}\n`);
+}
+
 async function validateAlchemyKey() {
-  console.log('Validating Alchemy API key...');
+  log('Validating Alchemy API key...');
   
   const apiKey = process.env.ALCHEMY_API_KEY;
   
   if (!apiKey) {
-    console.error('❌ Error: ALCHEMY_API_KEY not found in environment variables');
-    console.error('Please make sure you have a .env file with ALCHEMY_API_KEY set');
+    logError('❌ Error: ALCHEMY_API_KEY not found in environment variables');
+    logError('Please make sure you have a .env file with ALCHEMY_API_KEY set');
     process.exit(1);
   }
   
-  console.log(`Testing Alchemy API key: ${apiKey.substring(0, 6)}...${apiKey.substring(apiKey.length - 4)}`);
+  log(`Testing Alchemy API key: ${apiKey.substring(0, 6)}...${apiKey.substring(apiKey.length - 4)}`);
   
   // Different endpoint formats to try
   const endpointFormats = [
@@ -34,12 +42,12 @@ async function validateAlchemyKey() {
     `https://polygonzkevm-mainnet.g.alchemy.com/v2/${apiKey}`  // Try a zkEVM network
   ];
   
-  let lastError = null;
+  let lastError: any = null;
   
   for (const url of endpointFormats) {
     try {
       // Try this endpoint
-      console.log(`Trying endpoint: ${url.replace(apiKey, '***')}`);
+      log(`Trying endpoint: ${url.replace(apiKey, '***')}`);
       
       const response = await fetch(url, {
         method: 'POST',
@@ -57,38 +65,38 @@ async function validateAlchemyKey() {
       const data = await response.json();
       
       if (data.error) {
-        console.log(`Error with this endpoint: ${JSON.stringify(data.error)}`);
+        log(`Error with this endpoint: ${JSON.stringify(data.error)}`);
         lastError = data.error;
         continue;
       }
       
       if (data.result) {
         const blockNumber = parseInt(data.result, 16);
-        console.log('✅ Alchemy API key is valid and working!');
-        console.log(`Successfully fetched latest block number: ${blockNumber}`);
-        console.log(`Working endpoint: ${url.replace(apiKey, '***')}`);
+        log('✅ Alchemy API key is valid and working!');
+        log(`Successfully fetched latest block number: ${blockNumber}`);
+        log(`Working endpoint: ${url.replace(apiKey, '***')}`);
         return; // Success, exit the function
       }
-    } catch (error) {
-      console.log(`Network error with this endpoint: ${error.message}`);
+    } catch (error: any) {
+      log(`Network error with this endpoint: ${error?.message || 'Unknown error'}`);
       lastError = error;
     }
   }
   
   // If we get here, none of the endpoints worked
-  console.error('❌ Alchemy API key validation failed on all endpoints');
+  logError('❌ Alchemy API key validation failed on all endpoints');
   if (lastError) {
-    console.error(`Last error: ${JSON.stringify(lastError)}`);
+    logError(`Last error: ${JSON.stringify(lastError)}`);
   }
-  console.error('\nPlease check your Alchemy API key and make sure it is active');
-  console.error('You can create a new API key at https://dashboard.alchemy.com/');
+  logError('\nPlease check your Alchemy API key and make sure it is active');
+  logError('You can create a new API key at https://dashboard.alchemy.com/');
   process.exit(1);
 }
 
 // Run the validation if this file is executed directly
 if (require.main === module) {
   validateAlchemyKey().catch(error => {
-    console.error('Unhandled error:', error);
+    logError(`Unhandled error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   });
 }

@@ -9,6 +9,15 @@
 import fs from 'fs';
 import path from 'path';
 
+// Safe logging functions that write to stderr to avoid interfering with MCP protocol
+function log(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
+function logError(message: string): void {
+  process.stderr.write(`ERROR: ${message}\n`);
+}
+
 interface TestResult {
   testName: string;
   status: 'PASS' | 'FAIL';
@@ -76,7 +85,7 @@ Test completed at ${new Date().toISOString()}
     
     fs.appendFileSync(this.reportPath, summarySection);
     
-    console.log(`Test report generated at ${this.reportPath}`);
+    log(`Test report generated at ${this.reportPath}`);
   }
 }
 
@@ -99,7 +108,7 @@ export async function runTest(
   const startTime = Date.now();
   
   try {
-    console.log(`Running test: ${testName}`);
+    log(`Running test: ${testName}`);
     await testFn();
     const duration = Date.now() - startTime;
     
@@ -110,7 +119,7 @@ export async function runTest(
       duration
     });
     
-    console.log(`✅ Test passed: ${testName} (${duration}ms)`);
+    log(`✅ Test passed: ${testName} (${duration}ms)`);
   } catch (error) {
     const duration = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.stack || error.message : String(error);
@@ -123,7 +132,7 @@ export async function runTest(
       duration
     });
     
-    console.error(`❌ Test failed: ${testName} (${duration}ms)`);
-    console.error(errorMessage);
+    logError(`❌ Test failed: ${testName} (${duration}ms)`);
+    logError(errorMessage);
   }
 } 

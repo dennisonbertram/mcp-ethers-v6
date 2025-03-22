@@ -9,6 +9,8 @@
  * IMPORTANT:
  * - Keep consistent log formats
  * - Follow log level guidelines
+ * - Never use console.log as it blocks MCP in stdio mode
+ * - Always use process.stderr for logging
  * 
  * Functionality:
  * - Multiple log levels
@@ -52,29 +54,34 @@ function shouldLog(level: LogLevel): boolean {
   return level <= CURRENT_LOG_LEVEL;
 }
 
+// Write to stderr - safe for MCP in stdio mode
+function writeToStderr(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
 // Logger object with methods for each log level
 export const logger = {
   error(message: string, metadata?: Record<string, any>): void {
     if (shouldLog(LogLevel.ERROR)) {
-      console.error(formatLogMessage('error', message, metadata));
+      writeToStderr(formatLogMessage('error', message, metadata));
     }
   },
   
   warn(message: string, metadata?: Record<string, any>): void {
     if (shouldLog(LogLevel.WARN)) {
-      console.warn(formatLogMessage('warn', message, metadata));
+      writeToStderr(formatLogMessage('warn', message, metadata));
     }
   },
   
   info(message: string, metadata?: Record<string, any>): void {
     if (shouldLog(LogLevel.INFO)) {
-      console.info(formatLogMessage('info', message, metadata));
+      writeToStderr(formatLogMessage('info', message, metadata));
     }
   },
   
   debug(message: string, metadata?: Record<string, any>): void {
     if (shouldLog(LogLevel.DEBUG)) {
-      console.debug(formatLogMessage('debug', message, metadata));
+      writeToStderr(formatLogMessage('debug', message, metadata));
     }
   },
   

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { startServer } from './server.js';
 import { config } from 'dotenv';
+import { logger } from './utils/logger.js';
 
 // Load environment variables
 config();
@@ -26,7 +27,7 @@ if (argMap.has('network')) {
 }
 
 if (argMap.has('help')) {
-  console.log(`
+  logger.info(`
 MCP Ethers Wallet Server
 
 Usage:
@@ -41,6 +42,6 @@ Options:
 
 // Start the server
 startServer().catch((error: Error) => {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server:', { error });
     process.exit(1);
 }); 

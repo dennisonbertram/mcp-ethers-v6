@@ -9,8 +9,17 @@
 import { createMcpClient } from '../mcp-client.js';
 import { getTestReport, runTest } from '../report-generation.js';
 
+// Safe logging functions that write to stderr to avoid interfering with MCP protocol
+function log(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
+function logError(message: string): void {
+  process.stderr.write(`ERROR: ${message}\n`);
+}
+
 async function testBasicTools() {
-  console.log('Starting basic tools test...');
+  log('Starting basic tools test...');
   
   // Create an MCP client connected to our server
   const { client, cleanup } = await createMcpClient();
@@ -22,7 +31,7 @@ async function testBasicTools() {
       async () => {
         // The client constructor already handles initialization
         // So if we got this far, initialization was successful
-        console.log('Server initialized successfully');
+        log('Server initialized successfully');
       },
       'Testing if the MCP server initializes correctly'
     );
@@ -35,7 +44,7 @@ async function testBasicTools() {
         if (!toolsResult.tools || toolsResult.tools.length === 0) {
           throw new Error('No tools available from the server');
         }
-        console.log(`Found ${toolsResult.tools.length} tools`);
+        log(`Found ${toolsResult.tools.length} tools`);
       },
       'Testing if the server returns a list of available tools'
     );
@@ -53,14 +62,14 @@ async function testBasicTools() {
           throw new Error('No response received from generateWallet');
         }
         
-        console.log('Generate Wallet Result:', JSON.stringify(result, null, 2));
+        log('Generate Wallet Result: ' + JSON.stringify(result, null, 2));
       },
       'Testing the generateWallet tool'
     );
     
-    console.log('\nBasic tools tests completed successfully!');
+    log('\nBasic tools tests completed successfully!');
   } catch (error) {
-    console.error('Error testing basic tools:', error);
+    logError(`Error testing basic tools: ${error}`);
   } finally {
     // Generate the summary
     getTestReport().generateSummary();
@@ -73,7 +82,7 @@ async function testBasicTools() {
 // Run the test if this file is executed directly
 if (require.main === module) {
   testBasicTools().catch(error => {
-    console.error('Error running basic tools test:', error);
+    logError(`Error running basic tools test: ${error}`);
     process.exit(1);
   });
 }

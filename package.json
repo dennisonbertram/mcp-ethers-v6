@@ -27,7 +27,10 @@
     "test:mcp:nft": "bun run tests/test-runner.ts nft",
     "test:mcp:basic": "bun run tests/tools/basic-test.ts",
     "test:mcp:report": "bun run tests/run-all-tests.ts",
-    "validate:alchemy": "bun run tests/validate-alchemy-key.ts"
+    "validate:alchemy": "bun run tests/validate-alchemy-key.ts",
+    "test:client": "ts-node src/tests/runTests.ts",
+    "test:client:basic": "ts-node src/tests/runTests.ts basic",
+    "test:client:wallet": "ts-node src/tests/runTests.ts wallet"
   },
   "files": [
     "build"

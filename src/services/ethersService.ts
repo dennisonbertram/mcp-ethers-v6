@@ -27,6 +27,7 @@ import * as erc721 from "./erc/erc721.js";
 import * as erc1155 from "./erc/erc1155.js";
 import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types.js";
 import { TokenError } from "./erc/errors.js";
+import { logger } from "../utils/logger.js";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().refine(
@@ -144,7 +145,7 @@ export class EthersService {
                 // First try with standard AlchemyProvider
                 return new ethers.AlchemyProvider(alchemyNetwork, apiKey);
             } catch (error) {
-                console.warn(`Failed to create provider with standard endpoint, trying legacy format: ${error}`);
+                logger.warn(`Failed to create provider with standard endpoint, trying legacy format`, { error });
                 
                 // If that fails, create a JsonRpcProvider directly with the legacy URL format
                 const url = `https://${alchemyNetwork}.alchemyapi.io/v2/${apiKey}`;
@@ -386,7 +387,7 @@ export class EthersService {
                     selectedProvider = this.getProvider(provider, derivedChainId);
                 } catch (error) {
                     // If we can't get the chainId, continue with the default provider
-                    console.warn("Could not derive chainId from transaction, using default provider");
+                    logger.warn("Could not derive chainId from transaction, using default provider");
                 }
             }
             return await selectedProvider.getTransaction(txHash);

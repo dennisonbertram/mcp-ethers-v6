@@ -9,6 +9,7 @@ import { DefaultProvider } from "./config/networks.js";
 import { z } from "zod";
 import { config } from "dotenv";
 import { ethers } from "ethers";
+import { logger } from "./utils/logger.js";
 
 // Comment out the imports that no longer exist in the refactored version
 // import { allTools, allHandlers } from "./tools/index.js";
@@ -1410,7 +1411,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 export async function startServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(
+  logger.info(
     `MCP server running on stdio (default network: ${defaultNetwork})`
   );
 }

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { config as loadEnv } from 'dotenv';
+import { logger } from '../utils/logger.js';
 
 // Load environment variables
 loadEnv();
@@ -21,7 +22,7 @@ const result = configSchema.safeParse(process.env);
 
 // Handle validation errors
 if (!result.success) {
-  console.error('Invalid configuration:', result.error.format());
+  logger.error('Invalid configuration:', { error: result.error.format() });
   process.exit(1);
 }
 

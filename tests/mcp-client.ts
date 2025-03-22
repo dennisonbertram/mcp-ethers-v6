@@ -12,6 +12,15 @@ import { config } from 'dotenv';
 // Load environment variables
 config();
 
+// Safe logging functions that write to stderr to avoid interfering with MCP protocol
+function log(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
+function logError(message: string): void {
+  process.stderr.write(`ERROR: ${message}\n`);
+}
+
 interface McpToolRequest {
   name: string;
   parameters: Record<string, any>;
@@ -57,7 +66,7 @@ export class McpTestClient {
     
     // Handle process exit
     this.serverProcess.on('exit', (code) => {
-      console.log(`Server process exited with code ${code}`);
+      log(`Server process exited with code ${code}`);
     });
     
     // Initialize the connection
@@ -81,12 +90,12 @@ export class McpTestClient {
         }
       });
       
-      console.log('Initialized connection with server:', result.serverInfo.name, result.serverInfo.version);
+      log(`Initialized connection with server: ${result.serverInfo.name} ${result.serverInfo.version}`);
       
       // Send initialized notification
       await this.makeRequest('initialized', {});
     } catch (error) {
-      console.error('Failed to initialize connection:', error);
+      logError(`Failed to initialize connection: ${error}`);
     }
   }
   
@@ -120,7 +129,7 @@ export class McpTestClient {
           }
         }
       } catch (err) {
-        console.error('Error parsing JSON-RPC message:', err, 'Line:', line);
+        logError(`Error parsing JSON-RPC message: ${err} Line: ${line}`);
       }
     }
   }
@@ -165,28 +174,21 @@ export class McpTestClient {
   }
   
   /**
-   * Cleanup resources
+   * Closes the connection and cleans up resources
    */
-  cleanup(): void {
-    if (this.serverProcess) {
-      this.serverProcess.kill();
-    }
+  close(): void {
+    this.serverProcess.kill();
   }
 }
 
 /**
- * Creates an MCP test client
+ * Creates an MCP client and returns a cleanup function
  */
-export async function createMcpClient() {
+export async function createMcpClient(): Promise<{ client: McpTestClient, cleanup: () => void }> {
   const client = new McpTestClient();
-  
-  // Wait for the server to start
-  await new Promise(resolve => setTimeout(resolve, 2000));
   
   return {
     client,
-    cleanup: () => {
-      client.cleanup();
-    }
+    cleanup: () => client.close()
   };
 } 

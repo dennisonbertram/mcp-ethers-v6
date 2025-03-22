@@ -17,21 +17,30 @@ import fs from 'fs';
 // Load environment variables
 config();
 
+// Safe logging functions that write to stderr to avoid interfering with MCP protocol
+function log(message: string): void {
+  process.stderr.write(message + '\n');
+}
+
+function logError(message: string): void {
+  process.stderr.write(`ERROR: ${message}\n`);
+}
+
 // Check if Alchemy API key is set
 async function validateEnvironment() {
   if (!process.env.ALCHEMY_API_KEY) {
-    console.error('❌ ALCHEMY_API_KEY is not defined in your .env file');
-    console.error('Please add your Alchemy API key to the .env file: ALCHEMY_API_KEY=your_api_key');
+    logError('❌ ALCHEMY_API_KEY is not defined in your .env file');
+    logError('Please add your Alchemy API key to the .env file: ALCHEMY_API_KEY=your_api_key');
     process.exit(1);
   }
   
-  console.log('✅ ALCHEMY_API_KEY found in .env file');
-  console.log(`API Key: ${process.env.ALCHEMY_API_KEY.substring(0, 6)}...${process.env.ALCHEMY_API_KEY.substring(process.env.ALCHEMY_API_KEY.length - 4)}`);
+  log('✅ ALCHEMY_API_KEY found in .env file');
+  log(`API Key: ${process.env.ALCHEMY_API_KEY.substring(0, 6)}...${process.env.ALCHEMY_API_KEY.substring(process.env.ALCHEMY_API_KEY.length - 4)}`);
   
   // Check if .env file exists
   if (!fs.existsSync('.env')) {
-    console.error('❌ .env file not found');
-    console.error('Please create a .env file with your ALCHEMY_API_KEY');
+    logError('❌ .env file not found');
+    logError('Please create a .env file with your ALCHEMY_API_KEY');
     process.exit(1);
   }
   
@@ -39,8 +48,8 @@ async function validateEnvironment() {
   try {
     await validateAlchemyKey();
   } catch (error) {
-    console.error('❌ Failed to validate Alchemy API key.');
-    console.error('Please check your key and make sure it is active.');
+    logError('❌ Failed to validate Alchemy API key.');
+    logError('Please check your key and make sure it is active.');
     process.exit(1);
   }
 }
@@ -67,17 +76,17 @@ getTestReport(reportPath);
 
 // Check if the requested test suite exists
 if (!testSuites[testSuite]) {
-  console.error(`Error: Unknown test suite "${testSuite}"`);
-  console.error('Available test suites:');
+  logError(`Error: Unknown test suite "${testSuite}"`);
+  logError('Available test suites:');
   Object.keys(testSuites).forEach(name => {
-    console.error(`  - ${name}`);
+    logError(`  - ${name}`);
   });
   process.exit(1);
 }
 
-console.log(`Running test suite: ${testSuite}`);
-console.log(`Report will be generated at: ${reportPath}`);
-console.log('-'.repeat(60));
+log(`Running test suite: ${testSuite}`);
+log(`Report will be generated at: ${reportPath}`);
+log('-'.repeat(60));
 
 // Validate environment and then run the test suite
 validateEnvironment()
@@ -85,11 +94,11 @@ validateEnvironment()
     return testSuites[testSuite]();
   })
   .then(() => {
-    console.log('-'.repeat(60));
-    console.log(`Test suite "${testSuite}" completed.`);
-    console.log(`See report at: ${reportPath}`);
+    log('-'.repeat(60));
+    log(`Test suite "${testSuite}" completed.`);
+    log(`See report at: ${reportPath}`);
   })
   .catch(error => {
-    console.error(`Error running test suite "${testSuite}":`, error);
+    logError(`Error running test suite "${testSuite}": ${error}`);
     process.exit(1);
   }); 
