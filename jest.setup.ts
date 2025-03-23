@@ -1,4 +1,4 @@
-import { cleanupTestEnvironment, resetTestEnvironment, getTestEnvironment } from './src/tests/utils/globalTestSetup.js';
+import { getTestEnvironment } from './src/tests/utils/globalTestSetup.js';
 import { config } from 'dotenv';
 
 // Load test environment variables
@@ -12,12 +12,12 @@ process.env.PROVIDER_URL = process.env.PROVIDER_URL || 'https://eth-sepolia.g.al
 // Increase the timeout for all tests
 jest.setTimeout(30000);
 
-// Reset environment before all tests
+// Initialize test environment before all tests
 beforeAll(async () => {
   try {
-    await resetTestEnvironment();
+    await getTestEnvironment();
   } catch (error) {
-    console.error('Error during test environment reset:', error);
+    console.error('Error during test environment initialization:', error);
     throw error;
   }
 });
@@ -36,15 +36,6 @@ beforeEach(async () => {
   }
 });
 
-// Clean up after all tests
-afterAll(async () => {
-  try {
-    await cleanupTestEnvironment();
-  } catch (error) {
-    console.error('Error during test environment cleanup:', error);
-  }
-});
-
 // Add BigInt serialization support
 declare global {
   interface BigInt {
@@ -53,9 +44,13 @@ declare global {
 }
 
 // Add BigInt serialization support
-(BigInt.prototype as any).toJSON = function() {
-  return this.toString();
-};
+if (typeof BigInt.prototype.toJSON !== 'function') {
+  Object.defineProperty(BigInt.prototype, 'toJSON', {
+    value: function() {
+      return this.toString();
+    }
+  });
+}
 
 // Extend Jest's expect
 declare global {
