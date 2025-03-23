@@ -39,7 +39,8 @@
     "test:bun:erc721": "bun test src/tests/erc721-methods.test.ts src/services/erc/erc721.test.ts",
     "test:bun:erc1155": "bun test src/tests/erc1155-methods.test.ts src/services/erc/erc1155.test.ts",
     "test:mcp:client": "bun run build/src/tests/mcp-client/runClientTests.js",
-    "test:mcp:client:network": "bun run build/src/tests/mcp-client/suites/networkTests.js"
+    "test:mcp:client:network": "bun run build/src/tests/mcp-client/suites/networkTests.js",
+    "test:client:mcp": "npm run build && bun run src/tests/mcp-client/runClientTests.ts"
   },
   "files": [
     "build"
