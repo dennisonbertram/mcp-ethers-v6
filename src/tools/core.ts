@@ -938,17 +938,17 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           // Get nonce for the wallet
           const nonce = await ethProvider.getTransactionCount(fromAddress);
           
-          // Create a mock transaction response
+          // Create a mock transaction response with all BigInt values converted to strings
           const mockTxResult = {
             hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
             from: fromAddress,
             to,
-            value: ethers.parseEther(value).toString(),
+            value: tx.value.toString(),
             nonce,
             gasLimit: 21000, // Basic ETH transfer
-            gasPrice: feeData.gasPrice?.toString() || "unknown",
-            maxFeePerGas: feeData.maxFeePerGas?.toString() || "unknown",
-            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString() || "unknown",
+            gasPrice: feeData.gasPrice ? feeData.gasPrice.toString() : "unknown",
+            maxFeePerGas: feeData.maxFeePerGas ? feeData.maxFeePerGas.toString() : "unknown",
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? feeData.maxPriorityFeePerGas.toString() : "unknown",
             data: data || "0x",
             chainId: (await ethProvider.getNetwork()).chainId,
             type: 2, // EIP-1559
@@ -1055,14 +1055,17 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
             tx.nonce = await ethProvider.getTransactionCount(fromAddress);
           }
           
-          // Create a mock transaction response
+          // Convert all BigInt values to strings for JSON serialization
           const mockTxResult = {
             hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
             from: fromAddress,
-            ...tx,
+            to: tx.to,
             value: tx.value.toString(),
-            maxFeePerGas: tx.maxFeePerGas?.toString() || undefined,
-            maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString() || undefined,
+            nonce: tx.nonce,
+            gasLimit: tx.gasLimit ? tx.gasLimit.toString() : undefined,
+            maxFeePerGas: tx.maxFeePerGas ? tx.maxFeePerGas.toString() : undefined,
+            maxPriorityFeePerGas: tx.maxPriorityFeePerGas ? tx.maxPriorityFeePerGas.toString() : undefined,
+            data: tx.data,
             chainId: (await ethProvider.getNetwork()).chainId,
             type: 2, // EIP-1559
             mockTransaction: true
