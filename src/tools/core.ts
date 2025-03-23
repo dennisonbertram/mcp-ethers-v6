@@ -655,4 +655,436 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       }
     }
   );
+
+  // Sign Message tool
+  server.tool(
+    "signMessage",
+    {
+      message: z.string().describe(
+        "The message to sign"
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      )
+    },
+    async ({ message, provider }) => {
+      try {
+        // First check if a wallet exists
+        const wallet = await ethersService.getWallet(provider);
+        if (!wallet) {
+          return {
+            isError: true,
+            content: [{ 
+              type: "text", 
+              text: "No wallet available to sign message. Please create or load a wallet first."
+            }]
+          };
+        }
+        
+        // Sign the message
+        const signature = await wallet.signMessage(message);
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({
+              message,
+              signature,
+              signer: wallet.address
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error signing message: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Eth Sign tool (legacy signing method)
+  server.tool(
+    "ethSign",
+    {
+      data: z.string().describe(
+        "The data to sign. Will be converted to hex if not already in hex format."
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      )
+    },
+    async ({ data, provider }) => {
+      try {
+        // First check if a wallet exists
+        const wallet = await ethersService.getWallet(provider);
+        if (!wallet) {
+          return {
+            isError: true,
+            content: [{ 
+              type: "text", 
+              text: "No wallet available to sign data. Please create or load a wallet first."
+            }]
+          };
+        }
+        
+        // Ensure data is in hex format
+        let hexData = data;
+        if (!data.startsWith("0x")) {
+          // Convert string to hex
+          hexData = "0x" + Buffer.from(data).toString("hex");
+        }
+        
+        // Sign the data using eth_sign
+        // Note: ethers.js v6 doesn't have a direct eth_sign method, so we're using signMessage as an alternative
+        // In a real implementation, you'd use a provider's send method with eth_sign
+        const signature = await wallet.signMessage(ethers.getBytes(hexData));
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({
+              data: hexData,
+              signature,
+              signer: wallet.address
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error using eth_sign: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // ENS resolveName tool
+  server.tool(
+    "resolveName",
+    {
+      name: z.string().describe(
+        "The ENS name to resolve"
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ name, provider, chainId }) => {
+      try {
+        const ethProvider = await ethersService.getProvider(provider, chainId);
+        
+        // Resolve the ENS name to an address
+        const address = await ethProvider.resolveName(name);
+        
+        if (!address) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: JSON.stringify({
+                name,
+                resolved: false,
+                message: "Name could not be resolved"
+              }, null, 2)
+            }]
+          };
+        }
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({
+              name,
+              address,
+              resolved: true
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error resolving ENS name: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // ENS lookupAddress tool
+  server.tool(
+    "lookupAddress",
+    {
+      address: z.string().describe(
+        "The Ethereum address to resolve"
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ address, provider, chainId }) => {
+      try {
+        const ethProvider = await ethersService.getProvider(provider, chainId);
+        
+        // Look up the ENS name for an address
+        const name = await ethProvider.lookupAddress(address);
+        
+        if (!name) {
+          return {
+            content: [{ 
+              type: "text", 
+              text: JSON.stringify({
+                address,
+                resolved: false,
+                message: "No ENS name found for this address"
+              }, null, 2)
+            }]
+          };
+        }
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: JSON.stringify({
+              address,
+              name,
+              resolved: true
+            }, null, 2)
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error looking up ENS address: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Send Transaction tool (mock mode only for testing)
+  server.tool(
+    "sendTransaction",
+    {
+      to: z.string().describe(
+        "The Ethereum address to send to"
+      ),
+      value: z.string().describe(
+        "The amount to send in ether"
+      ),
+      data: z.string().optional().describe(
+        "Optional. The hex data to include in the transaction"
+      ),
+      mockMode: z.boolean().optional().default(false).describe(
+        "Optional. If true, just simulates the transaction without sending it. Default is false."
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ to, value, data, mockMode = false, provider, chainId }) => {
+      try {
+        // First check if a wallet exists
+        const wallet = await ethersService.getWallet(provider);
+        if (!wallet) {
+          return {
+            isError: true,
+            content: [{ 
+              type: "text", 
+              text: "No wallet available to send transaction. Please create or load a wallet first."
+            }]
+          };
+        }
+        
+        // Create transaction object
+        const tx = {
+          to,
+          value: ethers.parseEther(value),
+          data: data || "0x"
+        };
+        
+        if (mockMode) {
+          // Simulate the transaction without actually sending it
+          const ethProvider = await ethersService.getProvider(provider, chainId);
+          const feeData = await ethProvider.getFeeData();
+          const fromAddress = wallet.address;
+          
+          // Get nonce for the wallet
+          const nonce = await ethProvider.getTransactionCount(fromAddress);
+          
+          // Create a mock transaction response
+          const mockTxResult = {
+            hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
+            from: fromAddress,
+            to,
+            value: ethers.parseEther(value).toString(),
+            nonce,
+            gasLimit: 21000, // Basic ETH transfer
+            gasPrice: feeData.gasPrice?.toString() || "unknown",
+            maxFeePerGas: feeData.maxFeePerGas?.toString() || "unknown",
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toString() || "unknown",
+            data: data || "0x",
+            chainId: (await ethProvider.getNetwork()).chainId,
+            type: 2, // EIP-1559
+            mockTransaction: true
+          };
+          
+          return {
+            content: [{ 
+              type: "text", 
+              text: `MOCK TRANSACTION (not sent): \n${JSON.stringify(mockTxResult, null, 2)}`
+            }]
+          };
+        }
+        
+        // If not in mock mode, we should reject since we don't want to actually send transactions from tests
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: "Non-mock transactions are not supported in this implementation. Set mockMode: true to simulate transactions."
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error sending transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+  
+  // Send Transaction with Options tool (mock mode only for testing)
+  server.tool(
+    "sendTransactionWithOptions",
+    {
+      to: z.string().describe(
+        "The Ethereum address to send to"
+      ),
+      value: z.string().describe(
+        "The amount to send in ether"
+      ),
+      data: z.string().optional().describe(
+        "Optional. The hex data to include in the transaction"
+      ),
+      gasLimit: z.string().optional().describe(
+        "Optional. The gas limit for the transaction"
+      ),
+      maxFeePerGas: z.string().optional().describe(
+        "Optional. The maximum fee per gas (in gwei)"
+      ),
+      maxPriorityFeePerGas: z.string().optional().describe(
+        "Optional. The maximum priority fee per gas (in gwei)"
+      ),
+      nonce: z.number().optional().describe(
+        "Optional. The nonce to use for the transaction"
+      ),
+      mockMode: z.boolean().optional().default(false).describe(
+        "Optional. If true, just simulates the transaction without sending it. Default is false."
+      ),
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ to, value, data, gasLimit, maxFeePerGas, maxPriorityFeePerGas, nonce, mockMode = false, provider, chainId }) => {
+      try {
+        // First check if a wallet exists
+        const wallet = await ethersService.getWallet(provider);
+        if (!wallet) {
+          return {
+            isError: true,
+            content: [{ 
+              type: "text", 
+              text: "No wallet available to send transaction. Please create or load a wallet first."
+            }]
+          };
+        }
+        
+        // Create transaction object with options
+        const tx: any = {
+          to,
+          value: ethers.parseEther(value),
+          data: data || "0x"
+        };
+        
+        // Add optional parameters if provided
+        if (gasLimit) tx.gasLimit = gasLimit;
+        if (maxFeePerGas) tx.maxFeePerGas = ethers.parseUnits(maxFeePerGas, "gwei");
+        if (maxPriorityFeePerGas) tx.maxPriorityFeePerGas = ethers.parseUnits(maxPriorityFeePerGas, "gwei");
+        if (nonce !== undefined) tx.nonce = nonce;
+        
+        if (mockMode) {
+          // Simulate the transaction without actually sending it
+          const ethProvider = await ethersService.getProvider(provider, chainId);
+          const fromAddress = wallet.address;
+          
+          // Get nonce for the wallet if not provided
+          if (nonce === undefined) {
+            tx.nonce = await ethProvider.getTransactionCount(fromAddress);
+          }
+          
+          // Create a mock transaction response
+          const mockTxResult = {
+            hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
+            from: fromAddress,
+            ...tx,
+            value: tx.value.toString(),
+            maxFeePerGas: tx.maxFeePerGas?.toString() || undefined,
+            maxPriorityFeePerGas: tx.maxPriorityFeePerGas?.toString() || undefined,
+            chainId: (await ethProvider.getNetwork()).chainId,
+            type: 2, // EIP-1559
+            mockTransaction: true
+          };
+          
+          return {
+            content: [{ 
+              type: "text", 
+              text: `MOCK TRANSACTION WITH OPTIONS (not sent): \n${JSON.stringify(mockTxResult, null, 2)}`
+            }]
+          };
+        }
+        
+        // If not in mock mode, we should reject since we don't want to actually send transactions from tests
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: "Non-mock transactions are not supported in this implementation. Set mockMode: true to simulate transactions."
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error sending transaction with options: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
 } 
