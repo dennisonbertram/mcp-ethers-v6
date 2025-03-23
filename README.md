@@ -244,6 +244,20 @@ npm run test:bun:methods  # Only contract and write method tests
 
 The tests use a real Hardhat blockchain node instead of mocks, providing more reliable and accurate testing.
 
+### MCP Client Tests
+
+We've implemented a dedicated testing framework for validating the MCP protocol functionality:
+
+```bash
+# Run MCP client tests (tests the MCP server via the client protocol)
+npm run test:mcp:client
+
+# Run specific MCP client test categories
+npm run test:mcp:client:network  # Network-related MCP tools
+```
+
+These tests help ensure that the MCP protocol implementation works correctly and that tools are properly exposed through the standardized interface.
+
 ### Testing MCP Integration
 
 The project includes a comprehensive testing framework for verifying the MCP server functionality:

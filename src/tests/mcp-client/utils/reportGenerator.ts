@@ -107,6 +107,22 @@ function generateJsonReport(results: TestSuiteResult[]): any {
   };
 }
 
+// Define an interface for the suite shape in the HTML report
+interface ReportSuite {
+  name: string;
+  totalTests: number;
+  passed: number;
+  failed: number;
+  duration: number;
+  successRate: number;
+  tests: Array<{
+    name: string;
+    status: string;
+    duration: number;
+    error?: string;
+  }>;
+}
+
 /**
  * Generate an HTML report from test results
  * 
@@ -286,7 +302,7 @@ function generateHtmlReport(results: TestSuiteResult[], jsonReport: any): string
   
   <h2>Test Suites</h2>
   
-  ${suites.map(suite => `
+  ${(suites as ReportSuite[]).map((suite: ReportSuite) => `
     <div class="test-suite">
       <div class="suite-header">
         <h3 class="suite-title">${suite.name}</h3>
@@ -298,7 +314,7 @@ function generateHtmlReport(results: TestSuiteResult[], jsonReport: any): string
       </div>
       
       <ul class="test-list">
-        ${suite.tests.map(test => `
+        ${suite.tests.map((test) => `
           <li class="test-item">
             <span class="test-name">${test.name}</span>
             <span class="test-status status-${test.status}">${test.status}</span>
