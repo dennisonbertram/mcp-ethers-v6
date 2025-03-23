@@ -985,6 +985,59 @@ const existingTools = [
       required: ["blockTag"],
     },
   },
+  // ERC20 Token Tools
+  {
+    name: "erc20_balanceOf",
+    description: "Get the ERC20 token balance of a wallet",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tokenAddress: {
+          type: "string",
+          description: "The address of the ERC20 token contract",
+        },
+        ownerAddress: {
+          type: "string",
+          description: "The Ethereum address whose balance to check",
+        },
+        provider: {
+          type: "string",
+          description:
+            "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+        },
+        chainId: {
+          type: "number",
+          description:
+            "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+        }
+      },
+      required: ["tokenAddress", "ownerAddress"],
+    },
+  },
+  {
+    name: "erc20_getTokenInfo",
+    description: "Get basic information about an ERC20 token including name, symbol, decimals, and total supply",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tokenAddress: {
+          type: "string",
+          description: "The address of the ERC20 token contract",
+        },
+        provider: {
+          type: "string",
+          description:
+            "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks.",
+        },
+        chainId: {
+          type: "number",
+          description:
+            "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used.",
+        }
+      },
+      required: ["tokenAddress"],
+    },
+  },
 ];
 
 // Combine all tools
@@ -1719,6 +1772,95 @@ Result: ${formattedResult}`
           {
             type: "text",
             text: `Error calling contract method: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+
+  // ERC20 Token Tools
+  erc20_balanceOf: async (args: unknown) => {
+    const schema = z.object({
+      tokenAddress: z.string(),
+      ownerAddress: z.string(),
+      provider: z.string().optional(),
+      chainId: z.number().optional()
+    });
+
+    try {
+      const { tokenAddress, ownerAddress, provider, chainId } = schema.parse(args);
+      
+      // Import the ERC20 service functions dynamically
+      const { getBalance, getTokenInfo } = await import('./services/erc/erc20.js');
+      
+      // Get the balance and token info
+      const balance = await getBalance(ethersService, tokenAddress, ownerAddress, provider, chainId);
+      const tokenInfo = await getTokenInfo(ethersService, tokenAddress, provider, chainId);
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Balance: ${balance} ${tokenInfo.symbol}\nAddress: ${ownerAddress}\nToken: ${tokenInfo.name} (${tokenInfo.symbol})`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error getting ERC20 token balance: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+  
+  erc20_getTokenInfo: async (args: unknown) => {
+    const schema = z.object({
+      tokenAddress: z.string(),
+      provider: z.string().optional(),
+      chainId: z.number().optional()
+    });
+
+    try {
+      const { tokenAddress, provider, chainId } = schema.parse(args);
+      
+      // Import the ERC20 service function dynamically
+      const { getTokenInfo } = await import('./services/erc/erc20.js');
+      
+      // Get the token info
+      const tokenInfo = await getTokenInfo(ethersService, tokenAddress, provider, chainId);
+      
+      // Format total supply with proper decimal places
+      const formattedTotalSupply = ethers.formatUnits(tokenInfo.totalSupply, tokenInfo.decimals);
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Token Information:
+Name: ${tokenInfo.name}
+Symbol: ${tokenInfo.symbol}
+Decimals: ${tokenInfo.decimals}
+Total Supply: ${formattedTotalSupply} ${tokenInfo.symbol}
+Contract Address: ${tokenAddress}`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error getting ERC20 token information: ${
               error instanceof Error ? error.message : String(error)
             }`
           },

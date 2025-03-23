@@ -19,8 +19,8 @@ This document tracks the tools that need to be implemented in the MCP Ethers ser
 - [x] `contractCall` - Call contract read-only methods
 
 ## ERC20 Token Tools
-- [ ] `erc20_balanceOf` - Get ERC20 token balance 
-- [ ] `erc20_getTokenInfo` - Get ERC20 token information
+- [x] `erc20_balanceOf` - Get ERC20 token balance 
+- [x] `erc20_getTokenInfo` - Get ERC20 token information
 
 ## ERC721 (NFT) Tools
 - [ ] `erc721_balanceOf` - Get NFT balance
