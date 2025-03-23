@@ -15,7 +15,7 @@ export const networkList = {
     "explorer": ""
   },
   "Polygon PoS": {
-    "currency": "MATIC",
+    "currency": "POL",
     "chainId": 137,
     "RPC": "https://polygon-mainnet.g.alchemy.com/v2/",
     "explorer": ""
@@ -75,7 +75,7 @@ export const networkList = {
     "explorer": ""
   },
   "Monad Testnet": {
-    "currency": "ETH",
+    "currency": "MON",
     "chainId": 10143,
     "RPC": "https://testnet-rpc.monad.xyz",
     "explorer": ""
