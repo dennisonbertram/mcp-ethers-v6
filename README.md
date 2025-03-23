@@ -209,8 +209,11 @@ To prevent abuse, the server implements rate limiting for various operations:
 # Install dependencies
 npm install
 
-# Run tests
+# Run tests with Jest
 npm test
+
+# Run tests with Bun (faster)
+npm run test:bun:all
 
 # Start in development mode
 npm run dev
@@ -219,7 +222,29 @@ npm run dev
 npm run build
 ```
 
-## Testing MCP Integration
+## Testing
+
+### Unit and Integration Tests
+
+The project includes comprehensive test suites that can be run with either Jest or Bun:
+
+```bash
+# Run all tests with Jest
+npm test
+
+# Run all tests with Bun (recommended)
+npm run test:bun:all
+
+# Run specific test suites with Bun
+npm run test:bun:erc20    # Only ERC20 tests
+npm run test:bun:erc721   # Only ERC721 tests
+npm run test:bun:erc1155  # Only ERC1155 tests
+npm run test:bun:methods  # Only contract and write method tests
+```
+
+The tests use a real Hardhat blockchain node instead of mocks, providing more reliable and accurate testing.
+
+### Testing MCP Integration
 
 The project includes a comprehensive testing framework for verifying the MCP server functionality:
 

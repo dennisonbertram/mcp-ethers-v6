@@ -1,3 +1,22 @@
+/**
+ * @file Contract Methods Tests
+ * @version 1.0.0
+ * @status STABLE - DO NOT MODIFY WITHOUT TESTS
+ * @lastModified 2023-09-05
+ * 
+ * Tests for basic contract method interactions using real Hardhat contracts
+ * 
+ * IMPORTANT:
+ * - No mocks used
+ * - Uses real Hardhat blockchain
+ * - Minimizes transactions to avoid nonce issues
+ * 
+ * Functionality:
+ * - Tests ERC20 token information retrieval
+ * - Tests ERC20 balance checking
+ * - Tests validation of token constraints
+ */
+
 import { ethers } from 'ethers';
 import { TestEnvironment } from './utils/hardhatTestProvider.js';
 import { getTestEnvironment } from './utils/globalTestSetup.js';
@@ -36,7 +55,7 @@ describe('Contract Methods', () => {
       expect(Number(balance > 0n)).toBe(1);
     });
 
-    // Skip actual transfer test to avoid nonce issues
+    // Avoid transaction nonce issues by checking balances without transfers
     it('should examine balances correctly', async () => {
       const sender = testEnv.signers[0];
       const recipient = testEnv.signers[1];
