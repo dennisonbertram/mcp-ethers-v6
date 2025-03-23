@@ -17,6 +17,27 @@ The MCP Ethers Wallet exposes Ethereum functionality to LLM applications through
 
 This server follows the MCP specification, making it compatible with any MCP client, such as Claude Desktop.
 
+## Using with MCP Tools
+
+To use this as an MCP server with tools like Claude Desktop, use the following configuration:
+
+```json
+{
+  "ethers": {
+    "command": "node",
+    "args": [
+      "pathTo/ethers-server/build/src/mcpServer.js"
+    ],
+    "env": {
+      "ALCHEMY_API_KEY": "key goes here",
+      "INFURA_API_KEY": "key goes here"
+    }
+  }
+}
+```
+
+Replace `pathTo/ethers-server` with the actual path to your installation directory, and add your API keys.
+
 ## Installation
 
 ```bash
@@ -310,4 +331,4 @@ MIT
 
 ## Author
 
-Your Name 
+Dennison Bertram (dennison@tally.xyz) 
