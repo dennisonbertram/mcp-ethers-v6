@@ -1,0 +1,377 @@
+
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>MCP Test Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          h1 { color: #333; }
+          .summary { background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+          .suite { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+          .test { margin: 5px 0; padding: 10px; border-radius: 3px; }
+          .passed { background: #e6ffe6; }
+          .failed { background: #ffe6e6; }
+          .error { font-family: monospace; white-space: pre-wrap; margin-top: 10px; }
+          .timestamp { color: #666; font-size: 0.8em; }
+        </style>
+      </head>
+      <body>
+        <h1>MCP Test Report</h1>
+        <div class="timestamp">Generated on 2025-03-23T17:52:55.771Z</div>
+        
+        <div class="summary">
+          <h2>Summary</h2>
+          <p>Total Suites: 12</p>
+          <p>Total Tests: 47</p>
+          <p>Passed: 47 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Total Duration: 2759ms</p>
+        </div>
+    
+        <div class="suite">
+          <h2>Connection</h2>
+          <p>Tests: 3</p>
+          <p>Passed: 3 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 4ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Connection initialization</strong> (3ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Capability negotiation</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Error handling</strong> (0ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Basic</h2>
+          <p>Tests: 4</p>
+          <p>Passed: 4 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 137ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ List available tools</strong> (2ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Verify core tools exist</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get network information</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get gas price</strong> (134ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Wallet</h2>
+          <p>Tests: 4</p>
+          <p>Passed: 4 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 275ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get wallet balance</strong> (61ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get Foundation wallet balance</strong> (112ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Generate new wallet</strong> (36ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Generate wallet and check its balance</strong> (66ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Transaction</h2>
+          <p>Tests: 5</p>
+          <p>Passed: 5 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 329ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get transaction details</strong> (98ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get historical transaction (genesis)</strong> (170ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get transaction count for address</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get gas price for transactions</strong> (59ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get detailed fee data</strong> (1ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>TransactionSend</h2>
+          <p>Tests: 2</p>
+          <p>Passed: 2 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 108ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Send transaction in mock mode</strong> (102ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Send transaction with options in mock mode</strong> (6ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Network</h2>
+          <p>Tests: 4</p>
+          <p>Passed: 4 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 60ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get supported networks</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get block number</strong> (57ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get gas price</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get fee data</strong> (1ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Block</h2>
+          <p>Tests: 4</p>
+          <p>Passed: 4 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 194ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get current block number</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get latest block details</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get specific block by number</strong> (107ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get block with transactions</strong> (85ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Utility</h2>
+          <p>Tests: 5</p>
+          <p>Passed: 5 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 1ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Format wei to ether</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Parse ether to wei</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Format units to gwei</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Format units with decimal places</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Handle large numbers</strong> (0ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>ENS</h2>
+          <p>Tests: 2</p>
+          <p>Passed: 2 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 722ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Resolve ENS name to address</strong> (327ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Lookup address to ENS name</strong> (395ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Signature</h2>
+          <p>Tests: 2</p>
+          <p>Passed: 2 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 11ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Sign a simple message</strong> (9ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Sign data with ethSign</strong> (2ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Contract</h2>
+          <p>Tests: 5</p>
+          <p>Passed: 5 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 422ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get contract code</strong> (113ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Read USDC contract name</strong> (67ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Read USDC contract symbol</strong> (85ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Read USDC contract decimals</strong> (79ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Read balance of address on USDC contract</strong> (78ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>Token</h2>
+          <p>Tests: 7</p>
+          <p>Passed: 7 (100%)</p>
+          <p>Failed: 0</p>
+          <p>Duration: 496ms</p>
+          
+          <h3>Failed Tests</h3>
+          <p>None</p>
+      
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ ERC20 token balance</strong> (167ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC20 token information</strong> (2ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC721 balance</strong> (124ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC721 token URI</strong> (2ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC1155 balance</strong> (94ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC1155 URI</strong> (1ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ ERC1155 balance of batch</strong> (105ms)
+          </div>
+        </div>
+      </body>
+      </html>
+    

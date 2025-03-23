@@ -1,0 +1,331 @@
+{
+  "timestamp": "2025-03-23T17:52:55.770Z",
+  "results": [
+    {
+      "suiteName": "Connection",
+      "passed": [
+        {
+          "name": "Connection initialization",
+          "passed": true,
+          "duration": 3
+        },
+        {
+          "name": "Capability negotiation",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Error handling",
+          "passed": true,
+          "duration": 0
+        }
+      ],
+      "failed": [],
+      "duration": 4
+    },
+    {
+      "suiteName": "Basic",
+      "passed": [
+        {
+          "name": "List available tools",
+          "passed": true,
+          "duration": 2
+        },
+        {
+          "name": "Verify core tools exist",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Get network information",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Get gas price",
+          "passed": true,
+          "duration": 134
+        }
+      ],
+      "failed": [],
+      "duration": 137
+    },
+    {
+      "suiteName": "Wallet",
+      "passed": [
+        {
+          "name": "Get wallet balance",
+          "passed": true,
+          "duration": 61
+        },
+        {
+          "name": "Get Foundation wallet balance",
+          "passed": true,
+          "duration": 112
+        },
+        {
+          "name": "Generate new wallet",
+          "passed": true,
+          "duration": 36
+        },
+        {
+          "name": "Generate wallet and check its balance",
+          "passed": true,
+          "duration": 66
+        }
+      ],
+      "failed": [],
+      "duration": 275
+    },
+    {
+      "suiteName": "Transaction",
+      "passed": [
+        {
+          "name": "Get transaction details",
+          "passed": true,
+          "duration": 98
+        },
+        {
+          "name": "Get historical transaction (genesis)",
+          "passed": true,
+          "duration": 170
+        },
+        {
+          "name": "Get transaction count for address",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Get gas price for transactions",
+          "passed": true,
+          "duration": 59
+        },
+        {
+          "name": "Get detailed fee data",
+          "passed": true,
+          "duration": 1
+        }
+      ],
+      "failed": [],
+      "duration": 329
+    },
+    {
+      "suiteName": "TransactionSend",
+      "passed": [
+        {
+          "name": "Send transaction in mock mode",
+          "passed": true,
+          "duration": 102
+        },
+        {
+          "name": "Send transaction with options in mock mode",
+          "passed": true,
+          "duration": 6
+        }
+      ],
+      "failed": [],
+      "duration": 108
+    },
+    {
+      "suiteName": "Network",
+      "passed": [
+        {
+          "name": "Get supported networks",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Get block number",
+          "passed": true,
+          "duration": 57
+        },
+        {
+          "name": "Get gas price",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Get fee data",
+          "passed": true,
+          "duration": 1
+        }
+      ],
+      "failed": [],
+      "duration": 60
+    },
+    {
+      "suiteName": "Block",
+      "passed": [
+        {
+          "name": "Get current block number",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Get latest block details",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Get specific block by number",
+          "passed": true,
+          "duration": 107
+        },
+        {
+          "name": "Get block with transactions",
+          "passed": true,
+          "duration": 85
+        }
+      ],
+      "failed": [],
+      "duration": 194
+    },
+    {
+      "suiteName": "Utility",
+      "passed": [
+        {
+          "name": "Format wei to ether",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Parse ether to wei",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "Format units to gwei",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Format units with decimal places",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Handle large numbers",
+          "passed": true,
+          "duration": 0
+        }
+      ],
+      "failed": [],
+      "duration": 1
+    },
+    {
+      "suiteName": "ENS",
+      "passed": [
+        {
+          "name": "Resolve ENS name to address",
+          "passed": true,
+          "duration": 327
+        },
+        {
+          "name": "Lookup address to ENS name",
+          "passed": true,
+          "duration": 395
+        }
+      ],
+      "failed": [],
+      "duration": 722
+    },
+    {
+      "suiteName": "Signature",
+      "passed": [
+        {
+          "name": "Sign a simple message",
+          "passed": true,
+          "duration": 9
+        },
+        {
+          "name": "Sign data with ethSign",
+          "passed": true,
+          "duration": 2
+        }
+      ],
+      "failed": [],
+      "duration": 11
+    },
+    {
+      "suiteName": "Contract",
+      "passed": [
+        {
+          "name": "Get contract code",
+          "passed": true,
+          "duration": 113
+        },
+        {
+          "name": "Read USDC contract name",
+          "passed": true,
+          "duration": 67
+        },
+        {
+          "name": "Read USDC contract symbol",
+          "passed": true,
+          "duration": 85
+        },
+        {
+          "name": "Read USDC contract decimals",
+          "passed": true,
+          "duration": 79
+        },
+        {
+          "name": "Read balance of address on USDC contract",
+          "passed": true,
+          "duration": 78
+        }
+      ],
+      "failed": [],
+      "duration": 422
+    },
+    {
+      "suiteName": "Token",
+      "passed": [
+        {
+          "name": "ERC20 token balance",
+          "passed": true,
+          "duration": 167
+        },
+        {
+          "name": "ERC20 token information",
+          "passed": true,
+          "duration": 2
+        },
+        {
+          "name": "ERC721 balance",
+          "passed": true,
+          "duration": 124
+        },
+        {
+          "name": "ERC721 token URI",
+          "passed": true,
+          "duration": 2
+        },
+        {
+          "name": "ERC1155 balance",
+          "passed": true,
+          "duration": 94
+        },
+        {
+          "name": "ERC1155 URI",
+          "passed": true,
+          "duration": 1
+        },
+        {
+          "name": "ERC1155 balance of batch",
+          "passed": true,
+          "duration": 105
+        }
+      ],
+      "failed": [],
+      "duration": 496
+    }
+  ],
+  "summary": {
+    "totalSuites": 12,
+    "totalTests": 47,
+    "totalPassed": 47,
+    "totalFailed": 0,
+    "totalDuration": 2759
+  }
+}
