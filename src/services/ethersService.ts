@@ -1196,6 +1196,25 @@ export class EthersService {
         }
     }
 
+    /**
+     * Get the current wallet signer
+     * 
+     * @param provider Optional provider to connect the signer to
+     * @returns The ethers wallet signer or null if no wallet is set
+     */
+    async getWallet(provider?: string): Promise<ethers.Signer | null> {
+        try {
+            if (!this._signer) {
+                return null;
+            }
+            
+            const selectedProvider = provider ? this.getProvider(provider) : this._provider;
+            return this._signer.connect(selectedProvider);
+        } catch (error) {
+            this.handleProviderError(error, "get wallet");
+        }
+    }
+
     async getChainIdFromTransaction(txHash: string, provider?: string): Promise<number> {
         try {
             const txSchema = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
