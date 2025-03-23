@@ -922,6 +922,23 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           };
         }
         
+        // Helper function to handle BigInt serialization
+        const serializeData = (obj: any): any => {
+          if (obj === null || obj === undefined) return null;
+          if (typeof obj === 'bigint') return obj.toString();
+          if (typeof obj !== 'object') return obj;
+          
+          if (Array.isArray(obj)) {
+            return obj.map(item => serializeData(item));
+          }
+          
+          const result: Record<string, any> = {};
+          for (const [key, value] of Object.entries(obj)) {
+            result[key] = serializeData(value);
+          }
+          return result;
+        };
+        
         // Create transaction object
         const tx = {
           to,
@@ -937,23 +954,24 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           
           // Get nonce for the wallet
           const nonce = await ethProvider.getTransactionCount(fromAddress);
+          const networkInfo = await ethProvider.getNetwork();
           
           // Create a mock transaction response with all BigInt values converted to strings
-          const mockTxResult = {
+          const mockTxResult = serializeData({
             hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
             from: fromAddress,
             to,
-            value: tx.value.toString(),
+            value: tx.value,
             nonce,
             gasLimit: 21000, // Basic ETH transfer
-            gasPrice: feeData.gasPrice ? feeData.gasPrice.toString() : "unknown",
-            maxFeePerGas: feeData.maxFeePerGas ? feeData.maxFeePerGas.toString() : "unknown",
-            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? feeData.maxPriorityFeePerGas.toString() : "unknown",
+            gasPrice: feeData.gasPrice,
+            maxFeePerGas: feeData.maxFeePerGas,
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
             data: data || "0x",
-            chainId: Number((await ethProvider.getNetwork()).chainId),
+            chainId: networkInfo.chainId,
             type: 2, // EIP-1559
             mockTransaction: true
-          };
+          });
           
           return {
             content: [{ 
@@ -1032,6 +1050,23 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           };
         }
         
+        // Helper function to handle BigInt serialization
+        const serializeData = (obj: any): any => {
+          if (obj === null || obj === undefined) return null;
+          if (typeof obj === 'bigint') return obj.toString();
+          if (typeof obj !== 'object') return obj;
+          
+          if (Array.isArray(obj)) {
+            return obj.map(item => serializeData(item));
+          }
+          
+          const result: Record<string, any> = {};
+          for (const [key, value] of Object.entries(obj)) {
+            result[key] = serializeData(value);
+          }
+          return result;
+        };
+        
         // Create transaction object with options
         const tx: any = {
           to,
@@ -1049,27 +1084,28 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           // Simulate the transaction without actually sending it
           const ethProvider = await ethersService.getProvider(provider, chainId);
           const fromAddress = wallet.address;
+          const networkInfo = await ethProvider.getNetwork();
           
           // Get nonce for the wallet if not provided
           if (nonce === undefined) {
             tx.nonce = await ethProvider.getTransactionCount(fromAddress);
           }
           
-          // Convert all BigInt values to strings for JSON serialization
-          const mockTxResult = {
+          // Create a properly serialized mock transaction result
+          const mockTxResult = serializeData({
             hash: `0x${Math.random().toString(16).substring(2).padStart(64, '0')}`,
             from: fromAddress,
             to: tx.to,
-            value: tx.value.toString(),
+            value: tx.value,
             nonce: tx.nonce,
-            gasLimit: tx.gasLimit ? tx.gasLimit.toString() : undefined,
-            maxFeePerGas: tx.maxFeePerGas ? tx.maxFeePerGas.toString() : undefined,
-            maxPriorityFeePerGas: tx.maxPriorityFeePerGas ? tx.maxPriorityFeePerGas.toString() : undefined,
+            gasLimit: tx.gasLimit,
+            maxFeePerGas: tx.maxFeePerGas,
+            maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
             data: tx.data,
-            chainId: Number((await ethProvider.getNetwork()).chainId),
+            chainId: networkInfo.chainId,
             type: 2, // EIP-1559
             mockTransaction: true
-          };
+          });
           
           return {
             content: [{ 
