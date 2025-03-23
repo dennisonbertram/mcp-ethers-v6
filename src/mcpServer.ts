@@ -37,6 +37,9 @@ async function main() {
     // Create EthersService
     const ethersService = new EthersService();
     
+    // For debugging - log server and service initialization
+    console.log('MCP Server created and EthersService initialized');
+    
     // Register all Ethereum tools
     registerAllTools(server, ethersService);
     
