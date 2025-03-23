@@ -950,7 +950,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
             maxFeePerGas: feeData.maxFeePerGas ? feeData.maxFeePerGas.toString() : "unknown",
             maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? feeData.maxPriorityFeePerGas.toString() : "unknown",
             data: data || "0x",
-            chainId: (await ethProvider.getNetwork()).chainId,
+            chainId: Number((await ethProvider.getNetwork()).chainId),
             type: 2, // EIP-1559
             mockTransaction: true
           };
@@ -1066,7 +1066,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
             maxFeePerGas: tx.maxFeePerGas ? tx.maxFeePerGas.toString() : undefined,
             maxPriorityFeePerGas: tx.maxPriorityFeePerGas ? tx.maxPriorityFeePerGas.toString() : undefined,
             data: tx.data,
-            chainId: (await ethProvider.getNetwork()).chainId,
+            chainId: Number((await ethProvider.getNetwork()).chainId),
             type: 2, // EIP-1559
             mockTransaction: true
           };
