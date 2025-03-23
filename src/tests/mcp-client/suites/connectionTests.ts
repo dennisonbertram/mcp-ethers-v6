@@ -67,28 +67,50 @@ export function getConnectionTests(client: McpStandardClient): Array<{ name: str
     {
       name: 'Reconnection',
       test: async () => {
-        // Disconnect and reconnect the client
-        // Note: This test is more involved and assumes the client can handle reconnection
+        // Create a new client to test reconnection without affecting the main test client
+        const testClient = new McpStandardClient({
+          serverCommand: 'node',
+          serverArgs: ['build/src/mcpServer.js'],
+          clientName: 'mcp-ethers-test-client-reconnect',
+          clientVersion: '1.0.0'
+        });
         
-        // First, verify the connection works with a simple tool call
-        await client.callTool('getSupportedNetworks', {});
-        
-        // Disconnect
-        await client.disconnect();
-        logger.debug('Client disconnected for reconnection test');
-        
-        // Try to reconnect
-        await client.connect();
-        logger.debug('Client reconnected for reconnection test');
-        
-        // Verify the reconnection worked with another tool call
-        const result = await client.callTool('getSupportedNetworks', {});
-        assert(
-          result && !result.isError,
-          'Failed to call tool after reconnection'
-        );
-        
-        logger.debug('Reconnection test completed successfully');
+        try {
+          // Connect the test client
+          await testClient.connect();
+          logger.debug('Test client connected for reconnection test');
+          
+          // Verify connection works
+          const initialResult = await testClient.callTool('getSupportedNetworks', {});
+          assert(
+            initialResult && !initialResult.isError,
+            'Failed to call tool on test client'
+          );
+          
+          // Disconnect
+          await testClient.disconnect();
+          logger.debug('Test client disconnected for reconnection test');
+          
+          // Reconnect
+          await testClient.connect();
+          logger.debug('Test client reconnected for reconnection test');
+          
+          // Verify reconnection worked
+          const result = await testClient.callTool('getSupportedNetworks', {});
+          assert(
+            result && !result.isError,
+            'Failed to call tool after reconnection'
+          );
+          
+          logger.debug('Reconnection test completed successfully');
+        } finally {
+          // Always clean up the test client
+          try {
+            await testClient.disconnect();
+          } catch (error) {
+            logger.warn('Error disconnecting test client', { error });
+          }
+        }
       }
     },
     
