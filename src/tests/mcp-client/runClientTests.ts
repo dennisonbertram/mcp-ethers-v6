@@ -21,14 +21,21 @@ import { runTestSuites, formatTestResults } from '../client/utils/testRunner.js'
 import { logger } from '../../utils/logger.js';
 import { getBasicTests } from '../client/suites/basicTests.js';
 import { getWalletTests } from '../client/suites/walletTests.js';
-// Import additional test suites as they're implemented
+// Import existing test suites
 import { getNetworkTests } from './suites/networkTests.js';
 import { getBlockTests } from './suites/blockTests.js';
 import { getTransactionTests } from './suites/transactionTests.js';
 import { getUtilityTests } from './suites/utilityTests.js';
 import { getContractTests } from './suites/contractTests.js';
 import { getTokenTests } from './suites/tokenTests.js';
-// import { generateTestReport } from './utils/reportGenerator.js';
+// Import new test suites
+import { getConnectionTests } from './suites/connectionTests.js';
+import { getTransactionSendTests } from './suites/transactionSendTests.js';
+import { getEnsTests } from './suites/ensTests.js';
+import { getSignTests } from './suites/signTests.js';
+import { generateReports } from '../client/utils/reportGenerator.js';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Main entry point for running MCP client tests
@@ -56,15 +63,25 @@ async function main() {
     // Organize test suites
     const testSuites = new Map();
     
-    // Add existing test suites
+    // Add core functionality test suites
+    testSuites.set('Connection', getConnectionTests(client));
     testSuites.set('Basic', getBasicTests(client));
-    testSuites.set('Wallet', getWalletTests(client));
     
-    // Add new test suites
+    // Add wallet and transaction tests
+    testSuites.set('Wallet', getWalletTests(client));
+    testSuites.set('Transaction', getTransactionTests(client));
+    testSuites.set('TransactionSend', getTransactionSendTests(client));
+    
+    // Add blockchain data tests
     testSuites.set('Network', getNetworkTests(client));
     testSuites.set('Block', getBlockTests(client));
-    testSuites.set('Transaction', getTransactionTests(client));
+    
+    // Add utility tests
     testSuites.set('Utility', getUtilityTests(client));
+    testSuites.set('ENS', getEnsTests(client));
+    testSuites.set('Signature', getSignTests(client));
+    
+    // Add contract and token tests
     testSuites.set('Contract', getContractTests(client));
     testSuites.set('Token', getTokenTests(client));
     
@@ -77,8 +94,17 @@ async function main() {
       console.log(formatTestResults(result));
     }
     
+    // Ensure reports directory exists
+    const reportsDir = 'reports';
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+    
     // Generate a comprehensive test report
-    // generateTestReport(results, 'mcp-client-tests');
+    generateReports(results, {
+      jsonPath: 'reports/mcp-client-tests.json',
+      htmlPath: 'reports/mcp-client-tests.html',
+    });
     
     // Calculate overall success rate
     const totalTests = results.reduce((sum, suite) => sum + suite.passed.length + suite.failed.length, 0);
