@@ -1377,6 +1377,355 @@ const existingHandlers = {
       };
     }
   },
+
+  getBlockDetails: async (args: unknown) => {
+    const schema = z.object({
+      blockTag: z.union([z.string(), z.number()]),
+      provider: z.string().optional(),
+      chainId: z.number().optional(),
+    });
+
+    try {
+      const { blockTag, provider, chainId } = schema.parse(args);
+      const blockDetails = await ethersService.getBlockDetails(blockTag, provider, chainId);
+
+      if (!blockDetails) {
+        throw new Error(`Block not found: ${blockTag}`);
+      }
+
+      // Format the block data for display
+      const formattedBlock = {
+        number: blockDetails.number,
+        hash: blockDetails.hash,
+        parentHash: blockDetails.parentHash,
+        timestamp: new Date(Number(blockDetails.timestamp) * 1000).toISOString(),
+        miner: blockDetails.miner,
+        gasLimit: blockDetails.gasLimit.toString(),
+        gasUsed: blockDetails.gasUsed.toString(),
+        baseFeePerGas: blockDetails.baseFeePerGas ? ethersService.formatUnits(blockDetails.baseFeePerGas, 'gwei') + ' gwei' : 'Not applicable',
+        transactions: blockDetails.transactions.length
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Block Details:
+Number: ${formattedBlock.number}
+Hash: ${formattedBlock.hash}
+Parent Hash: ${formattedBlock.parentHash}
+Timestamp: ${formattedBlock.timestamp}
+Miner: ${formattedBlock.miner}
+Gas Limit: ${formattedBlock.gasLimit}
+Gas Used: ${formattedBlock.gasUsed}
+Base Fee: ${formattedBlock.baseFeePerGas}
+Transactions: ${formattedBlock.transactions} txs`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error getting block details: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+      };
+    }
+  },
+
+  getTransactionDetails: async (args: unknown) => {
+    const schema = z.object({
+      txHash: z.string(),
+      provider: z.string().optional(),
+      chainId: z.number().optional(),
+    });
+
+    try {
+      const { txHash, provider, chainId } = schema.parse(args);
+      const txDetails = await ethersService.getTransactionDetails(txHash, provider, chainId);
+
+      if (!txDetails) {
+        throw new Error(`Transaction not found: ${txHash}`);
+      }
+
+      // Format the transaction data for display
+      const formattedTx = {
+        hash: txDetails.hash,
+        blockNumber: txDetails.blockNumber,
+        blockHash: txDetails.blockHash,
+        from: txDetails.from,
+        to: txDetails.to || 'Contract Creation',
+        value: ethersService.formatEther(txDetails.value),
+        gasLimit: txDetails.gasLimit.toString(),
+        gasPrice: txDetails.gasPrice ? ethersService.formatUnits(txDetails.gasPrice, 'gwei') + ' gwei' : 'Not available',
+        maxFeePerGas: txDetails.maxFeePerGas ? ethersService.formatUnits(txDetails.maxFeePerGas, 'gwei') + ' gwei' : 'Not applicable',
+        maxPriorityFeePerGas: txDetails.maxPriorityFeePerGas ? ethersService.formatUnits(txDetails.maxPriorityFeePerGas, 'gwei') + ' gwei' : 'Not applicable',
+        nonce: txDetails.nonce,
+        data: txDetails.data && txDetails.data.length > 66 
+          ? `${txDetails.data.substring(0, 66)}... (${txDetails.data.length} bytes)` 
+          : txDetails.data || '0x'
+      };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Transaction Details:
+Hash: ${formattedTx.hash}
+Block: ${formattedTx.blockNumber} (${formattedTx.blockHash})
+From: ${formattedTx.from}
+To: ${formattedTx.to}
+Value: ${formattedTx.value} ETH
+Gas Limit: ${formattedTx.gasLimit}
+Gas Price: ${formattedTx.gasPrice}
+Max Fee: ${formattedTx.maxFeePerGas}
+Priority Fee: ${formattedTx.maxPriorityFeePerGas}
+Nonce: ${formattedTx.nonce}
+Data: ${formattedTx.data}`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error getting transaction details: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+      };
+    }
+  },
+
+  formatEther: async (args: unknown) => {
+    const schema = z.object({
+      wei: z.string()
+    });
+
+    try {
+      const { wei } = schema.parse(args);
+      const etherValue = ethersService.formatEther(wei);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `${wei} wei = ${etherValue} ETH`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error formatting wei to ether: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+  
+  parseEther: async (args: unknown) => {
+    const schema = z.object({
+      ether: z.string()
+    });
+
+    try {
+      const { ether } = schema.parse(args);
+      const weiValue = ethersService.parseEther(ether);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `${ether} ETH = ${weiValue.toString()} wei`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error parsing ether to wei: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+  
+  formatUnits: async (args: unknown) => {
+    const schema = z.object({
+      value: z.string(),
+      unit: z.union([z.string(), z.number()])
+    });
+
+    try {
+      const { value, unit } = schema.parse(args);
+      const formattedValue = ethersService.formatUnits(value, unit);
+      
+      const unitName = typeof unit === 'string' ? unit : `${unit} decimals`;
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `${value} = ${formattedValue} ${unitName}`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error formatting units: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+  
+  getContractCode: async (args: unknown) => {
+    const schema = z.object({
+      address: z.string(),
+      provider: z.string().optional(),
+      chainId: z.number().optional()
+    });
+
+    try {
+      const { address, provider, chainId } = schema.parse(args);
+      const bytecode = await ethersService.getContractCode(address, provider, chainId);
+
+      if (!bytecode || bytecode === '0x') {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `No bytecode found for address ${address}. This is likely not a contract or the contract might have been self-destructed.`
+            },
+          ],
+        };
+      }
+
+      // Truncate bytecode if it's too long
+      let displayBytecode = bytecode;
+      if (bytecode.length > 500) {
+        displayBytecode = `${bytecode.substring(0, 500)}... (${bytecode.length} bytes total)`;
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Contract bytecode for ${address}:\n\n${displayBytecode}`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error retrieving contract bytecode: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  },
+  
+  contractCall: async (args: unknown) => {
+    const schema = z.object({
+      contractAddress: z.string(),
+      abi: z.string(),
+      method: z.string(),
+      args: z.array(z.any()).optional().default([]),
+      provider: z.string().optional(),
+      chainId: z.number().optional()
+    });
+
+    try {
+      const parsedArgs = schema.parse(args);
+      const { contractAddress, abi, method, provider, chainId } = parsedArgs;
+      const methodArgs = parsedArgs.args || [];
+      
+      // Call the contract method
+      const result = await ethersService.contractCall(
+        contractAddress,
+        abi,
+        method,
+        methodArgs,
+        provider,
+        chainId
+      );
+      
+      // Format the result for display
+      let formattedResult;
+      
+      if (result === null || result === undefined) {
+        formattedResult = "null";
+      } else if (typeof result === 'object') {
+        // Check if result is a BigInt
+        if (typeof result === 'bigint') {
+          formattedResult = result.toString();
+        } else {
+          try {
+            formattedResult = JSON.stringify(result, (_, value) => 
+              typeof value === 'bigint' ? value.toString() : value, 2);
+          } catch (e) {
+            formattedResult = `[Complex object that could not be stringified: ${typeof result}]`;
+          }
+        }
+      } else {
+        formattedResult = String(result);
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Contract call to ${contractAddress}:
+Method: ${method}
+Arguments: ${JSON.stringify(methodArgs)}
+Result: ${formattedResult}`
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Error calling contract method: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          },
+        ],
+      };
+    }
+  }
 };
 
 // Combine all handlers
