@@ -2,18 +2,20 @@
  * @file MCP Client Tests Runner
  * @version 1.0.0
  * @status IN_DEVELOPMENT
- * @lastModified 2024-07-05
+ * @lastModified 2024-07-09
  * 
  * Test runner for MCP client tests specifically designed for Bun
  * 
  * IMPORTANT:
  * - Uses real MCP protocol over stdio
  * - Tests against actual server implementation
+ * - Supports network availability detection
  * 
  * Functionality:
  * - Runs comprehensive MCP client tests
  * - Validates protocol communication
  * - Tests all exposed Ethereum tools
+ * - Tests cross-network functionality
  */
 
 import { McpStandardClient } from '../client/mcpStandardClient.js';
@@ -33,6 +35,10 @@ import { getConnectionTests } from './suites/connectionTests.js';
 import { getTransactionSendTests } from './suites/transactionSendTests.js';
 import { getEnsTests } from './suites/ensTests.js';
 import { getSignTests } from './suites/signTests.js';
+// Import new network operations tests
+import { getNetworkOperationsTests } from './suites/networkOperationsTests.js';
+// Import network test utilities
+import { determineAvailableNetworks } from './utils/networkTestSetup.js';
 import { generateReports } from '../client/utils/reportGenerator.js';
 import fs from 'fs';
 import path from 'path';
@@ -60,6 +66,19 @@ async function main() {
     await client.connect();
     logger.info('Connected to MCP server successfully');
     
+    // Detect available networks for testing
+    logger.info('Detecting available networks for cross-network testing...');
+    const networkAvailability = await determineAvailableNetworks(client);
+    
+    // Log network availability status
+    logger.info(`Network availability: ${networkAvailability.availableNetworks.length} available, ${networkAvailability.unavailableNetworks.length} unavailable`);
+    logger.info(`Available networks: ${networkAvailability.availableNetworks.join(', ')}`);
+    logger.info(`Available core networks: ${networkAvailability.availableCoreNetworks.join(', ')}`);
+    
+    if (!networkAvailability.hasMinimumNetworks) {
+      logger.warn('Not enough networks available for cross-network testing. Some tests may be skipped.');
+    }
+    
     // Organize test suites
     const testSuites = new Map();
     
@@ -84,6 +103,13 @@ async function main() {
     // Add contract and token tests
     testSuites.set('Contract', getContractTests(client));
     testSuites.set('Token', getTokenTests(client));
+    
+    // Add new network operations tests
+    if (networkAvailability.hasMinimumNetworks) {
+      testSuites.set('NetworkOperations', getNetworkOperationsTests(client));
+    } else {
+      logger.warn('Skipping NetworkOperations tests due to insufficient network availability');
+    }
     
     // Run all test suites
     logger.info(`Running ${testSuites.size} test suites...`);
