@@ -26,6 +26,7 @@ export function registerNetworkTools(server: McpServer) {
   // Get all networks tool
   server.tool(
     "getAllNetworks",
+    "Get information about all available blockchain networks. Use this to identify network names, chain IDs, and RPC URLs that can be used with other Ethereum tools. When using other tools with a 'provider' parameter, you can specify any of these network names.",
     {},
     async () => {
       // Format network data into a user-friendly format
@@ -54,10 +55,12 @@ export function registerNetworkTools(server: McpServer) {
   // Get specific network tool
   server.tool(
     "getNetwork",
+    "Get detailed information about a specific blockchain network. This provides the network's chain ID, native token, and RPC URL that can be used with other Ethereum tools. This network name can be used as the 'provider' parameter in other tools.",
     {
-      name: z.string().describe("The name of the network to get details for")
+      name: z.string().describe("The name of the network to get details for (case-insensitive, e.g., 'ethereum', 'polygon', 'arbitrum')")
     },
-    async ({ name }) => {
+    async (params) => {
+      const { name } = params;
       // Find network by name (case insensitive)
       const networkName = DEFAULT_PROVIDERS.find(
         provider => provider.toLowerCase() === name.toLowerCase()

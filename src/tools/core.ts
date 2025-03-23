@@ -10,6 +10,13 @@ import { z } from 'zod';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
 
+// Define address schema locally
+const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+
+// Shared provider description text that references the network tools
+const PROVIDER_DESCRIPTION = 
+  "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value.";
+
 /**
  * Registers core Ethereum tools with the MCP server
  */
@@ -17,6 +24,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
   // Get Supported Networks tool
   server.tool(
     "getSupportedNetworks",
+    "Get a list of all supported networks and their configurations. For more detailed information about networks, use the getAllNetworks and getNetwork tools.",
     {},
     async () => {
       try {
@@ -43,9 +51,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
   server.tool(
     "getBlockNumber",
     {
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -75,9 +81,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
   server.tool(
     "getGasPrice",
     {
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -108,9 +112,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
   server.tool(
     "getFeeData",
     {
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -239,9 +241,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
   server.tool(
     "checkWalletExists",
     {
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      )
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION)
     },
     async ({ provider }) => {
       try {
@@ -271,9 +271,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       address: z.string().describe(
         "The Ethereum address to query"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -406,9 +404,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       address: z.string().describe(
         "The Ethereum address to query"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -457,9 +453,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       blockTag: z.union([z.string(), z.number()]).describe(
         "The block number or the string 'latest'"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -493,9 +487,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       txHash: z.string().describe(
         "The transaction hash to lookup"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -573,9 +565,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       address: z.string().describe(
         "The contract's address"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -618,9 +608,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       args: z.array(z.any()).optional().describe(
         "Optional. The arguments to pass to the contract function"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -671,9 +659,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       message: z.string().describe(
         "The message to sign"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      )
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION)
     },
     async ({ message, provider }) => {
       try {
@@ -721,9 +707,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       data: z.string().describe(
         "The data to sign. Will be converted to hex if not already in hex format."
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      )
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION)
     },
     async ({ data, provider }) => {
       try {
@@ -780,9 +764,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       name: z.string().describe(
         "The ENS name to resolve"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -836,9 +818,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       address: z.string().describe(
         "The Ethereum address to resolve"
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -901,9 +881,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       mockMode: z.boolean().optional().default(false).describe(
         "Optional. If true, just simulates the transaction without sending it. Default is false."
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
@@ -1029,9 +1007,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       mockMode: z.boolean().optional().default(false).describe(
         "Optional. If true, just simulates the transaction without sending it. Default is false."
       ),
-      provider: z.string().optional().describe(
-        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
-      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
       chainId: z.number().optional().describe(
         "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
       )
