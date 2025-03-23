@@ -1,419 +1,313 @@
-# MCP Ethers Wallet ![NPM Version](https://img.shields.io/npm/v/mcp-ethers-wallet)
+# MCP Ethers Wallet
 
-A Model Context Protocol server for interacting with Ethereum wallets and networks using Ethers.js v6. This server provides LLMs with a standardized interface to interact with Ethereum networks, smart contracts, and wallets.
+A Model Context Protocol (MCP) server that provides Ethereum wallet functionality using ethers.js v6.
 
 ## Overview
 
-The MCP Ethers Wallet server implements the [Model Context Protocol](https://modelcontextprotocol.io) specification, providing LLMs with tools to:
+The MCP Ethers Wallet exposes Ethereum functionality to LLM applications through the Model Context Protocol. It provides tools for:
 
-- Query blockchain data across multiple networks
-- Interact with smart contracts
-- Manage wallet operations
-- Resolve ENS names
-- Handle transactions
-- Estimate gas costs
-- Work with ERC20, ERC721, and ERC1155 tokens
+- Network information and management
+- Wallet creation and management
+- Transaction creation and sending
+- Contract interaction (ERC20, ERC721, ERC1155)
+- ENS resolution
+- Unit conversion
+- Gas estimation
+- Transaction history
+
+This server follows the MCP specification, making it compatible with any MCP client, such as Claude Desktop.
 
 ## Installation
 
 ```bash
-npm install mcp-ethers-wallet
+# Clone the repository
+git clone https://github.com/yourusername/ethers-server.git
+cd ethers-server
+
+# Install dependencies
+npm install
+
+# Build the TypeScript code
+npm run build
 ```
 
 ## Quick Start
 
 ### Starting the Server
 
-```typescript
-import { startServer } from 'mcp-ethers-wallet';
+```bash
+# Using Node.js
+npm start
 
-startServer().catch((error) => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-});
+# Using Bun (recommended for faster performance)
+bun start
 ```
 
 ### Using with Claude Desktop
 
-1. Install Claude Desktop
-2. Add a new MCP server with the following configuration:
-   ```json
-    "ethers": {
-      "command": "node",
-      "args": [
-        "/path-to-mcp-ethers-wallet/build/src/index.js"
-      ],
-      "env": {
-        "ALCHEMY_API_KEY": "<<your alchemy api key>>"
-      }
-    }
-   ```
-3. The tools will now be available in your Claude conversations
+1. Configure Claude Desktop to use this server:
+   - Go to Settings > Model Context Protocol
+   - Set Command to: `node path/to/ethers-server/build/src/mcpServer.js`
+
+2. Use the Ethers tools in your Claude conversations.
 
 ### Testing with MCP Inspector
 
-1. Install the MCP Inspector:
-   ```bash
-   npm install -g @modelcontextprotocol/inspector
-   ```
+The MCP Inspector is a tool for testing and debugging MCP servers.
 
-2. Start the server:
-   ```bash
-   npm start
-   ```
+```bash
+# Install MCP Inspector globally
+npm install -g @modelcontextprotocol/inspector
 
-3. In another terminal, run the inspector:
-   ```bash
-   mcp-inspector
-   ```
-
-4. Open http://localhost:5173 in your browser to interact with the tools
-
-## Available Tools
-
-### Network Information
-- `getSupportedNetworks`: Get a list of all supported networks and their configurations
-- `getBlockNumber`: Get the current block number for a network
-- `getBlockDetails`: Get detailed information about a specific block
-- `getGasPrice`: Get the current gas price
-- `getFeeData`: Get detailed fee data including base fee and priority fee
-
-### Wallet Operations
-- `generateWallet`: Generate a new Ethereum wallet with a random private key
-- `loadWallet`: Load an existing wallet from a private key for the current session
-- `checkWalletExists`: Check if a wallet is configured (without exposing private keys)
-- `getWalletBalance`: Get the native token balance of a wallet
-- `getWalletTransactionCount`: Get the number of transactions sent from a wallet
-- `getERC20Balance`: Get the balance of an ERC20 token for a wallet
-
-### Transaction Management
-- `getTransactionDetails`: Get detailed information about a transaction
-- `sendTransaction`: Send a native token transaction
-- `sendTransactionWithOptions`: Send a transaction with custom options (gas, nonce, etc)
-- `getTransactionsByBlock`: Get all transactions in a specific block
-
-### Signing Operations
-- `signMessage`: Sign a message using personal_sign (the recommended method)
-- `ethSign`: Sign data using the legacy eth_sign method (use with caution)
-
-### Smart Contract Interaction
-- `contractCall`: Execute a contract write method
-- `contractCallView`: Execute a contract read method
-- `getContractCode`: Get the bytecode of a deployed contract
-
-### ENS Operations
-- `lookupAddress`: Resolve an ENS name to an address
-- `resolveName`: Resolve an address to an ENS name
-
-### ERC20 Token Operations
-- `getERC20TokenInfo`: Get basic information about an ERC20 token (name, symbol, decimals, total supply)
-- `getERC20Balance`: Get the token balance for an address
-- `getERC20Allowance`: Get the approved amount for a spender
-- `transferERC20`: Transfer tokens to a recipient
-- `approveERC20`: Approve a spender to use tokens
-- `transferFromERC20`: Transfer tokens from one address to another (requires approval)
-
-### ERC721 NFT Operations
-- `getERC721CollectionInfo`: Get basic information about an NFT collection
-- `getERC721Owner`: Get the owner of a specific NFT
-- `getERC721Metadata`: Get and parse metadata for a specific NFT
-- `getERC721TokensOfOwner`: Get all NFTs owned by an address
-- `transferERC721`: Transfer an NFT to a new owner
-- `safeTransferERC721`: Safely transfer an NFT to a new owner
-
-### ERC1155 Multi-Token Operations
-- `getERC1155Balance`: Get token balance for a specific token ID
-- `getERC1155BatchBalances`: Get token balances for multiple token IDs at once
-- `getERC1155Metadata`: Get and parse metadata for a specific token
-- `getERC1155TokensOfOwner`: Get all tokens owned by an address
-- `safeTransferERC1155`: Safely transfer tokens to another address
-- `safeBatchTransferERC1155`: Safely transfer multiple tokens in a batch
-
-## Network Support
-
-The server supports multiple networks including:
-- Ethereum Mainnet
-- Polygon PoS
-- Arbitrum
-- Optimism
-- Base
-- And more...
-
-Use the `getSupportedNetworks` tool to get a complete list of supported networks.
+# Run it with your server
+mcp-inspector --command "node build/src/mcpServer.js"
+```
 
 ## Configuration
 
-The server can be configured using environment variables:
+### Environment Variables
 
-- `ALCHEMY_API_KEY`: Your Alchemy API key for network access
-- `PRIVATE_KEY`: Private key for transaction signing (optional)
-- `DEFAULT_NETWORK`: Default network to use (defaults to "mainnet")
-- `LOG_LEVEL`: Logging level (error, warn, info, debug) - defaults to "info"
-- `SERVER_PORT`: Port to run the server on (defaults to 3000)
+Create a `.env` file in the root directory with:
 
-### Wallet Setup
+```
+# Required
+ALCHEMY_API_KEY=your_alchemy_api_key
+INFURA_API_KEY=your_infura_api_key
 
-There are three ways to set up a wallet for transaction signing:
+# Optional
+DEFAULT_NETWORK=mainnet  # Default: mainnet
+LOG_LEVEL=info           # Default: info (options: error, warn, info, debug)
+```
 
-1. **Environment Variable**: Add your private key to the `.env` file:
-   ```
-   PRIVATE_KEY=0x123abc...
-   ```
+### Network Configuration
 
-2. **Generate a New Wallet**: Use the `generateWallet` tool to create a new wallet:
-   ```
-   <invoke name="generateWallet">
-   <parameter name="saveToEnv">true</parameter>
-   </invoke>
-   ```
-   This will generate a new random wallet and optionally save it to the server's environment for the current session.
+The server supports multiple Ethereum networks. The supported networks are defined in `src/config/networkList.ts`:
 
-3. **Load an Existing Wallet**: Use the `loadWallet` tool to load a wallet from an existing private key:
-   ```
-   <invoke name="loadWallet">
-   <parameter name="privateKey">0x123abc...</parameter>
-   </invoke>
-   ```
-   This will load the wallet and make it available for transactions in the current session.
+- Mainnet
+- Sepolia
+- Goerli
+- Base (Mainnet and Sepolia)
+- Arbitrum (One and Sepolia)
+- Optimism (Mainnet and Sepolia)
+- Polygon (Mainnet and Mumbai)
 
-**Important**: Always keep your private keys secure. Never share them or commit them to version control.
+You can specify a network when using tools with the `provider` parameter, e.g., `"provider": "sepolia"`.
 
-## Error Handling
+### Custom RPC URLs
 
-The server provides detailed error messages for common issues:
-- Invalid network names or RPC URLs
-- Chain ID mismatches
-- Contract interaction failures
-- Transaction errors
-- Network connectivity issues
-- Token-specific errors (insufficient balance, allowance, etc.)
+You can also use a custom RPC URL:
+
+```
+"provider": "https://my-custom-rpc.example.com"
+```
+
+## Available Tools
+
+### Core Network Tools
+
+- **getSupportedNetworks**: Get a list of all supported networks and their configurations
+- **getBlockNumber**: Get the current block number
+- **getBlockDetails**: Get details about a block
+- **getTransactionDetails**: Get details about a transaction
+- **getGasPrice**: Get the current gas price
+- **getFeeData**: Get the current network fee data
+
+### Wallet Tools
+
+- **generateWallet**: Generate a new Ethereum wallet
+- **loadWallet**: Load an existing wallet from a private key
+- **checkWalletExists**: Check if a wallet is configured on the server
+- **getWalletBalance**: Get the ETH balance of a wallet
+- **getWalletTransactionCount**: Get the number of transactions sent by an address
+- **signMessage**: Sign a message with the loaded wallet
+- **ethSign**: Sign data using the Ethereum eth_sign method (legacy)
+
+### Contract Tools
+
+- **getContractCode**: Get a contract's bytecode
+- **callContractMethod**: Call a read-only method on a contract
+- **estimateGas**: Estimate gas for a transaction
+
+### ENS Tools
+
+- **lookupAddress**: Get the ENS name for an address
+- **resolveName**: Get the address for an ENS name
+
+### Unit Conversion Tools
+
+- **formatEther**: Convert a wei value to a decimal string in ether
+- **parseEther**: Convert an ether value to wei
+- **formatUnits**: Convert a value to a decimal string with specified units
+
+### ERC20 Tools
+
+- **erc20GetTokenInfo**: Get basic token information (name, symbol, decimals)
+- **erc20GetBalance**: Get token balance for an address
+- **erc20Transfer**: Transfer tokens between accounts
+- **erc20GetAllowance**: Get token approval allowance
+- **erc20Approve**: Approve tokens for spending by another address
+
+### ERC721 Tools
+
+- **erc721GetTokenInfo**: Get basic NFT collection information
+- **erc721GetBalance**: Get NFT balance for an address
+- **erc721OwnerOf**: Get the owner of a specific NFT
+- **erc721GetTokenURI**: Get token URI metadata for an NFT
+- **erc721Transfer**: Transfer an NFT to another address
+- **erc721SafeTransfer**: Safely transfer an NFT to another address
+
+### ERC1155 Tools
+
+- **erc1155GetTokenInfo**: Get basic multi-token information
+- **erc1155GetBalance**: Get token balance for an address and token ID
+- **erc1155GetBatchBalance**: Get multiple token balances in a single call
+- **erc1155GetURI**: Get metadata URI for a token
+- **erc1155SafeTransfer**: Safely transfer tokens to another address
+- **erc1155SafeBatchTransfer**: Safely transfer multiple tokens in a single call
+
+## Tool Usage Examples
+
+### Getting Network Information
+
+```json
+{
+  "name": "getSupportedNetworks",
+  "arguments": {}
+}
+```
+
+### Getting Wallet Balance
+
+```json
+{
+  "name": "getWalletBalance",
+  "arguments": {
+    "address": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "provider": "mainnet"
+  }
+}
+```
+
+### Getting ERC20 Token Information
+
+```json
+{
+  "name": "erc20GetTokenInfo",
+  "arguments": {
+    "tokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "provider": "mainnet"
+  }
+}
+```
+
+### Calling a Contract Method
+
+```json
+{
+  "name": "callContractMethod",
+  "arguments": {
+    "contractAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "methodName": "symbol",
+    "params": [],
+    "abi": ["function symbol() view returns (string)"],
+    "provider": "mainnet"
+  }
+}
+```
 
 ## Caching
 
-The server implements intelligent caching for frequently accessed data:
-- Token metadata (1 hour TTL)
-- Token balances (30 seconds TTL)
-- Block data (10 seconds TTL)
-- Transaction data (1 minute TTL)
+The server implements caching for certain operations to improve performance and reduce API calls:
+
+- Token information (name, symbol, decimals)
+- Token balances
+- Contract method calls
+
+The cache uses a time-to-live (TTL) mechanism that automatically expires entries after a configurable period.
 
 ## Rate Limiting
 
-To prevent abuse, the server implements rate limiting for various operations:
-- General operations: 120 requests per minute
-- Contract calls: 60 requests per minute
-- Transactions: 20 requests per minute
+The server implements rate limiting for certain operations:
+
+- Write operations (transfers, approvals)
+- Wallet generation
+- Contract interactions
+
+This prevents abuse and ensures the server remains responsive.
+
+## Error Handling
+
+The server includes comprehensive error handling:
+
+- Custom error classes for specific error types
+- Detailed error messages
+- Appropriate HTTP status codes
+- Safe error serialization to prevent sensitive data leaks
 
 ## Development
 
+### Building
+
 ```bash
-# Install dependencies
-npm install
-
-# Run tests with Jest
-npm test
-
-# Run tests with Bun (faster)
-npm run test:bun:all
-
-# Start in development mode
-npm run dev
-
-# Build
 npm run build
 ```
 
-## Testing
+### Testing
 
-### Unit and Integration Tests
+The server includes comprehensive test suites:
 
-The project includes comprehensive test suites that can be run with either Jest or Bun:
-
-```bash
-# Run all tests with Jest
-npm test
-
-# Run all tests with Bun (recommended)
-npm run test:bun:all
-
-# Run specific test suites with Bun
-npm run test:bun:erc20    # Only ERC20 tests
-npm run test:bun:erc721   # Only ERC721 tests
-npm run test:bun:erc1155  # Only ERC1155 tests
-npm run test:bun:methods  # Only contract and write method tests
-```
-
-The tests use a real Hardhat blockchain node instead of mocks, providing more reliable and accurate testing.
-
-### MCP Client Tests
-
-We've implemented a dedicated testing framework for validating the MCP protocol functionality:
+#### Running All Tests with Bun (Recommended)
 
 ```bash
-# Run MCP client tests (tests the MCP server via the client protocol)
-npm run test:mcp:client
+# Start a Hardhat node in a separate terminal
+npx hardhat node
 
-# Run specific MCP client test categories
-npm run test:mcp:client:network  # Network-related MCP tools
+# Run all tests
+bun test
 ```
 
-These tests help ensure that the MCP protocol implementation works correctly and that tools are properly exposed through the standardized interface.
+#### Running MCP Client Tests
 
-### Testing MCP Integration
-
-The project includes a comprehensive testing framework for verifying the MCP server functionality:
+These tests validate the MCP protocol implementation by spawning the server and sending real MCP requests:
 
 ```bash
-# Run all MCP tests
-npm run test:mcp
-
-# Run specific test suites
-npm run test:mcp:core     # Test core tools
-npm run test:mcp:erc20    # Test ERC20 token tools
-npm run test:mcp:nft      # Test NFT tools
-npm run test:mcp:basic    # Run basic functionality tests
-
-# Run a complete test with detailed reporting
-npm run test:mcp:report
-
-# Validate your Alchemy API key
-npm run validate:alchemy
+bun run test:client:mcp
 ```
 
-The testing framework:
-- Verifies server initialization
-- Tests tool discovery and listing
-- Validates individual tool functionality
-- Generates detailed reports of test results
-- Catches API key and authentication issues
+#### Individual Test Categories
 
-### Test Reports
+```bash
+# Run ERC20 tests
+bun test src/services/erc/erc20.test.ts
 
-Tests generate a Markdown report with:
-- Test status (pass/fail)
-- Duration of each test 
-- Error details for failed tests
-- Overall success rate
+# Run ERC721 tests
+bun test src/services/erc/erc721.test.ts
 
-### Alchemy API Setup
+# Run ERC1155 tests
+bun test src/services/erc/erc1155.test.ts
 
-For the Ethers server to function correctly, you need a valid Alchemy API key:
+# Run core tool tests
+bun test src/tests/write-methods.test.ts
+```
 
-1. Create a free account at [Alchemy](https://www.alchemy.com/)
-2. Create a new app and get your API key
-3. Add it to your `.env` file: `ALCHEMY_API_KEY=your_key_here`
+#### Test Environment
 
-For detailed instructions, see [ALCHEMY_SETUP.md](ALCHEMY_SETUP.md).
+Tests use the `bun.setup.ts` file to configure the test environment, including setting up Hardhat as the default provider.
 
-## Tool Status
+## Security Considerations
 
-Based on comprehensive testing, the following tool categories are available:
-
-### Core Tools
-- Network information (getSupportedNetworks)
-- Wallet generation and management
-- Block and transaction utilities
-
-### ERC20 Token Tools
-- Token information (name, symbol, decimals, supply)
-- Balance checking
-- Allowance management
-- Transfer and approval operations
-
-### NFT Tools
-- Collection information
-- Ownership verification
-- Metadata retrieval
-- Transfer operations
+- **Private Keys**: The server can store private keys in memory. Exercise caution with the `saveToEnv` option in wallet operations.
+- **API Keys**: Your Alchemy and Infura API keys are used to connect to Ethereum networks. Never expose your `.env` file.
+- **Eth Sign**: The `ethSign` method can sign transaction-like data, which is less secure than `signMessage`. Use with caution.
 
 ## Contributing
 
-Issues and pull requests are welcome on GitHub.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
 
 ## Author
 
-Dennison Bertram (dennison@tally.xyz)
-
-## What's New in v1.1.7
-
-### Improvements
-- **Enhanced Error Handling**: Improved error detection and reporting for invalid ERC20 contracts
-  - Better error messages when contracts return empty data
-  - More detailed error logging for debugging
-  - Added specific error codes in error messages
-- **Fixed Parameter Order**: Corrected parameter order in `getERC20Balance` tool for consistent behavior
-- **Improved Testing**: Added new test cases
-  - Test for valid tokens with zero balance
-  - Test for invalid ERC20 contracts
-  - Verification of parameter order correctness
-
-### Breaking Changes
-None. All changes are backward compatible.
-
-### Usage
-To get an ERC20 token balance:
-```typescript
-const balance = await ethersService.getERC20Balance(
-  ownerAddress,    // The address to check balance for
-  tokenAddress,    // The ERC20 token contract address
-  provider,        // Optional: provider name or instance
-  chainId         // Optional: chain ID
-);
-```
-
-If the contract is not a valid ERC20 token, you'll now get a more descriptive error:
-```typescript
-Error: Contract at 0x... does not appear to be a valid ERC20 token. It returned empty data for the balanceOf call. Error code: BAD_DATA
-```
-
-## Testing
-
-### Standard Test Client
-
-The MCP Ethers Wallet server includes a standardized test client based on the official MCP TypeScript SDK. This client can be used to run automated tests against the server.
-
-#### Running Tests
-
-To run all tests:
-
-```bash
-npm run test:client
-```
-
-To run specific test suites:
-
-```bash
-# Run basic connectivity tests
-npm run test:client:basic
-
-# Run wallet functionality tests
-npm run test:client:wallet
-```
-
-#### Test Reports
-
-The test client generates detailed reports in multiple formats:
-
-- Console output
-- HTML report (in `reports/mcp-test-report.html`)
-- JSON report (in `reports/mcp-test-report.json`)
-
-#### Creating Custom Tests
-
-You can extend the test client with your own test suites by:
-
-1. Creating a new test suite file in `src/tests/client/suites/`
-2. Updating `src/tests/runTests.ts` to include your test suite
-3. Adding a new npm script to package.json if needed
-
-#### Test Client Architecture
-
-The test client is built using a modular architecture:
-
-- `McpStandardClient`: Main client class using the official MCP SDK
-- Test suites: Collections of related tests
-- Test utilities: Assertions, test running, and reporting
-- Test runner: Command-line interface to run tests 
+Your Name 
