@@ -40,7 +40,8 @@
     "test:bun:erc1155": "bun test src/tests/erc1155-methods.test.ts src/services/erc/erc1155.test.ts",
     "test:mcp:client": "bun run build/src/tests/mcp-client/runClientTests.js",
     "test:mcp:client:network": "bun run build/src/tests/mcp-client/suites/networkTests.js",
-    "test:client:mcp": "npm run build && bun run src/tests/mcp-client/runClientTests.ts"
+    "test:client:mcp": "npm run build && bun run src/tests/mcp-client/runClientTests.ts",
+    "hardhat:node": "npx hardhat node"
   },
   "files": [
     "build"
