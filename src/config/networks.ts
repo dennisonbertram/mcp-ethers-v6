@@ -30,7 +30,10 @@ export type DefaultProvider =
   | "Metis"
   | "Astar"
   | "Holešky"
-  | "Scroll";
+  | "Scroll"
+  | "Monad Testnet"
+  | "MEGA Testnet"
+  | "Rari Chain Mainnet";
 
 export const DEFAULT_PROVIDERS: DefaultProvider[] = [
   "Ethereum",
@@ -65,4 +68,7 @@ export const DEFAULT_PROVIDERS: DefaultProvider[] = [
   "Astar",
   "Holešky",
   "Scroll",
+  "Monad Testnet",
+  "MEGA Testnet",
+  "Rari Chain Mainnet",
 ];

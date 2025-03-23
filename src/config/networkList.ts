@@ -73,5 +73,23 @@ export const networkList = {
     "chainId": 534352,
     "RPC": "https://scroll-mainnet.g.alchemy.com/v2/",
     "explorer": ""
+  },
+  "Monad Testnet": {
+    "currency": "ETH",
+    "chainId": 10143,
+    "RPC": "https://testnet-rpc.monad.xyz",
+    "explorer": ""
+  },
+  "MEGA Testnet": {
+    "currency": "ETH",
+    "chainId": 6342,
+    "RPC": "https://carrot.megaeth.com/rpc",
+    "explorer": ""
+  },
+  "Rari Chain Mainnet": {
+    "currency": "ETH",
+    "chainId": 1380012617,
+    "RPC": "https://mainnet.rpc.rarichain.org/http",
+    "explorer": ""
   }
 } as const;

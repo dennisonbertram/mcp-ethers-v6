@@ -45,7 +45,9 @@ const networkToEthersMap: Record<string, string> = {
     "Base": "base",
     "BNB Smart Chain": "bnb",
     "Linea": "linea",
-    "Polygon zkEVM": "polygon-zkevm"
+    "Polygon zkEVM": "polygon-zkevm",
+    // New networks will use their custom RPC URLs directly, no mapping needed
+    // as they don't have standard ethers.js names
 };
 
 // Add a mapping from common network names to official names
@@ -68,7 +70,13 @@ const NETWORK_ALIASES: Record<string, string> = {
     "linea": "Linea",
     "scroll": "Scroll",
     "zkEVM": "Polygon zkEVM",
-    "polygonZkEVM": "Polygon zkEVM"
+    "polygonZkEVM": "Polygon zkEVM",
+    "monad": "Monad Testnet",
+    "monadtestnet": "Monad Testnet",
+    "mega": "MEGA Testnet",
+    "megatestnet": "MEGA Testnet",
+    "rari": "Rari Chain Mainnet",
+    "rarichain": "Rari Chain Mainnet"
 };
 
 export class EthersService {
