@@ -1,18 +1,26 @@
-import { TestEnvironment, getHardhatTestProvider } from './hardhatTestProvider.js';
+import { afterAll, beforeAll } from '@jest/globals';
+import { getHardhatTestProvider, TestEnvironment } from './hardhatTestProvider.js';
 
-let globalTestEnv: TestEnvironment | undefined;
+// Global test environment that can be reused between tests
+let testEnvironment: TestEnvironment | null = null;
 
+// Get (or initialize) the test environment
 export async function getTestEnvironment(): Promise<TestEnvironment> {
-  if (!globalTestEnv) {
-    globalTestEnv = await getHardhatTestProvider();
+  if (!testEnvironment) {
+    testEnvironment = await getHardhatTestProvider();
   }
-  return globalTestEnv;
+  return testEnvironment;
 }
 
-export async function cleanupTestEnvironment(): Promise<void> {
-  globalTestEnv = undefined;
-}
+// Global setup for all tests to share the same Hardhat provider
+beforeAll(async () => {
+  if (!testEnvironment) {
+    testEnvironment = await getTestEnvironment();
+  }
+});
 
-export async function resetTestEnvironment(): Promise<void> {
-  globalTestEnv = await getHardhatTestProvider();
-} 
+// Clean up resources
+afterAll(async () => {
+  // Add any necessary cleanup here
+  testEnvironment = null;
+}); 

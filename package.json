@@ -30,7 +30,11 @@
     "validate:alchemy": "bun run tests/validate-alchemy-key.ts",
     "test:client": "node build/src/tests/runTests.js",
     "test:client:basic": "node build/src/tests/runTests.js basic",
-    "test:client:wallet": "node build/src/tests/runTests.js wallet"
+    "test:client:wallet": "node build/src/tests/runTests.js wallet",
+    "test:bun": "bun test",
+    "test:bun:erc20": "bun test src/tests/erc20-methods.test.ts",
+    "test:bun:erc721": "bun test src/tests/erc721-methods.test.ts",
+    "test:bun:erc1155": "bun test src/tests/erc1155-methods.test.ts"
   },
   "files": [
     "build"

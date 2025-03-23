@@ -140,22 +140,23 @@ export class EthersService {
                     alchemyNetwork = network.toLowerCase().replace(/ /g, "-");
             }
             
-            // Alchemy API has changed its endpoints, try both endpoint patterns
             try {
                 // First try with standard AlchemyProvider
                 return new ethers.AlchemyProvider(alchemyNetwork, apiKey);
             } catch (error) {
-                logger.warn(`Failed to create provider with standard endpoint, trying legacy format`, { error });
+                logger.warn(`Failed to create Alchemy provider, falling back to default provider`, { error });
                 
-                // If that fails, create a JsonRpcProvider directly with the legacy URL format
-                const url = `https://${alchemyNetwork}.alchemyapi.io/v2/${apiKey}`;
-                return new ethers.JsonRpcProvider(url);
+                // Fall back to ethers default provider
+                const ethersNetwork = networkToEthersMap[network] || alchemyNetwork;
+                return ethers.getDefaultProvider(ethersNetwork);
             }
         } catch (error) {
             if (error instanceof ConfigurationError) {
-                throw error;
+                logger.info("No Alchemy API key found, using default provider");
+                const ethersNetwork = networkToEthersMap[network] || network.toLowerCase().replace(/ /g, "-");
+                return ethers.getDefaultProvider(ethersNetwork);
             }
-            throw new NetworkError(`Failed to create Alchemy provider for network ${network}`, {
+            throw new NetworkError(`Failed to create provider for network ${network}`, {
                 network, error
             });
         }

@@ -49,12 +49,23 @@ export async function initializeMcpServer() {
     (defaultNetworkInput as DefaultProvider);
 
   // Create provider with the correct network name
-  const provider = new ethers.AlchemyProvider(
-    defaultNetwork === "Ethereum"
-      ? "mainnet"
-      : defaultNetwork.toLowerCase().replace(" ", "-"),
-    process.env.ALCHEMY_API_KEY
-  );
+  let provider: ethers.Provider;
+  try {
+    const apiKey = process.env.ALCHEMY_API_KEY;
+    if (!apiKey) {
+      throw new Error("No Alchemy API key");
+    }
+    provider = new ethers.AlchemyProvider(
+      defaultNetwork === "Ethereum"
+        ? "mainnet"
+        : defaultNetwork.toLowerCase().replace(" ", "-"),
+      apiKey
+    );
+  } catch (error) {
+    silentLogger.info("Failed to create Alchemy provider, using default provider");
+    const networkName = defaultNetwork === "Ethereum" ? "mainnet" : defaultNetwork.toLowerCase().replace(" ", "-");
+    provider = ethers.getDefaultProvider(networkName);
+  }
   
   const ethersService = new EthersService(provider);
 
