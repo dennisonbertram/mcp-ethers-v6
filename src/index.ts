@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { startServer } from './server.js';
 import { config } from 'dotenv';
 import { logger } from './utils/logger.js';
 
@@ -40,8 +39,5 @@ Options:
   process.exit(0);
 }
 
-// Start the server
-startServer().catch((error: Error) => {
-    logger.error('Failed to start server:', { error });
-    process.exit(1);
-}); 
+// Import and run the MCP server
+import './mcpServer.js'; 
