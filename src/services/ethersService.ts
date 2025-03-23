@@ -76,7 +76,9 @@ const NETWORK_ALIASES: Record<string, string> = {
     "mega": "MEGA Testnet",
     "megatestnet": "MEGA Testnet",
     "rari": "Rari Chain Mainnet",
-    "rarichain": "Rari Chain Mainnet"
+    "rarichain": "Rari Chain Mainnet",
+    "bera": "Berachain",
+    "sonic": "Sonic Mainnet"
 };
 
 export class EthersService {

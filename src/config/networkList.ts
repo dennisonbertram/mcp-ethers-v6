@@ -41,7 +41,7 @@ export const networkList = {
   "Avalanche C-Chain": {
     "currency": "AVAX",
     "chainId": 43114,
-    "RPC": "https://avax-mainnet.g.alchemy.com/v2/",
+    "RPC": "https://avalanche-c-chain-rpc.publicnode.com",
     "explorer": ""
   },
   "Base": {
@@ -90,6 +90,18 @@ export const networkList = {
     "currency": "ETH",
     "chainId": 1380012617,
     "RPC": "https://mainnet.rpc.rarichain.org/http",
+    "explorer": ""
+  },
+  "Berachain": {
+    "currency": "BERA",
+    "chainId": 80094,
+    "RPC": "https://rpc.berachain.com",
+    "explorer": ""
+  },
+  "Sonic Mainnet": {
+    "currency": "S",
+    "chainId": 146,
+    "RPC": "https://rpc.soniclabs.com",
     "explorer": ""
   }
 } as const;

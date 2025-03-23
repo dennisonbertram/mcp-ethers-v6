@@ -117,12 +117,14 @@ The server supports multiple Ethereum and EVM-compatible networks. The supported
 - BNB Smart Chain (BNB)
 - Scroll (ETH)
 - Rari Chain Mainnet (ETH)
+- Berachain (BERA)
+- Sonic Mainnet (S)
 
 #### Testnet Networks
 - Monad Testnet (MON)
 - MEGA Testnet (ETH)
 
-You can specify a network when using tools with the `provider` parameter, e.g., `"provider": "polygon"` or `"provider": "monad"`.
+You can specify a network when using tools with the `provider` parameter, e.g., `"provider": "polygon"` or `"provider": "bera"`.
 
 ### Custom RPC URLs
 

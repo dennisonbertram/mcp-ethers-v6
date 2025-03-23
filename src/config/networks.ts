@@ -33,7 +33,8 @@ export type DefaultProvider =
   | "Scroll"
   | "Monad Testnet"
   | "MEGA Testnet"
-  | "Rari Chain Mainnet";
+  | "Rari Chain Mainnet"
+  | "Sonic Mainnet";
 
 export const DEFAULT_PROVIDERS: DefaultProvider[] = [
   "Ethereum",
@@ -71,4 +72,5 @@ export const DEFAULT_PROVIDERS: DefaultProvider[] = [
   "Monad Testnet",
   "MEGA Testnet",
   "Rari Chain Mainnet",
+  "Sonic Mainnet",
 ];
