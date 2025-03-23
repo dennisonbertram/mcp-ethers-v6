@@ -172,8 +172,15 @@ export class EthersService {
         }
     }
 
+    // Check if a string has a valid RPC URL format without throwing an error
+    private isValidRpcUrlFormat(url: string): boolean {
+        return url.startsWith('http://') || url.startsWith('https://') || 
+               url.startsWith('ws://') || url.startsWith('wss://');
+    }
+
+    // Validate that a URL has a proper RPC format and throw if not
     private validateRpcUrl(url: string): void {
-        if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('ws://') && !url.startsWith('wss://')) {
+        if (!this.isValidRpcUrlFormat(url)) {
             throw new NetworkError(`Invalid RPC URL format: ${url}`, {
                 url
             });
@@ -210,7 +217,15 @@ export class EthersService {
             }
         }
         
-        throw handleUnknownError(error);
+        // Generic error fallback
+        throw new EthersServerError(
+            `Error while trying to ${context}: ${error instanceof Error ? error.message : String(error)}`,
+            'UNKNOWN_ERROR',
+            {
+                ...details,
+                originalError: error
+            }
+        );
     }
 
     private serializeValue(value: any): string {
@@ -277,7 +292,7 @@ export class EthersService {
             if (DEFAULT_PROVIDERS.includes(network as DefaultProvider)) {
                 try {
                     selectedProvider = this.createAlchemyProvider(network as DefaultProvider);
-            } catch (error) {
+                } catch (error) {
                     // Fall back to custom RPC if Alchemy fails
                     // Check if this is an Alchemy URL that needs the API key appended
                     if (networkInfo.RPC.includes('alchemy.com/v2/')) {
@@ -316,14 +331,21 @@ export class EthersService {
                 }
             }
         } else {
-            // Assume provider is a custom RPC URL
-            this.validateRpcUrl(normalizedProvider);
-            selectedProvider = new ethers.JsonRpcProvider(normalizedProvider);
-            
-            // If chainId is provided, check if it matches the network
-            if (chainId !== undefined) {
-                // This will be checked when connecting to the network
-                // and throw an error if mismatched
+            // Check if the provider value looks like a valid RPC URL
+            if (this.isValidRpcUrlFormat(normalizedProvider)) {
+                // Assume provider is a custom RPC URL
+                selectedProvider = new ethers.JsonRpcProvider(normalizedProvider);
+                
+                // If chainId is provided, check if it matches the network
+                if (chainId !== undefined) {
+                    // This will be checked when connecting to the network
+                    // and throw an error if mismatched
+                }
+            } else {
+                // Not a valid network name or URL format
+                throw new NetworkError(`Invalid provider: "${provider}" is not a recognized network name or valid RPC URL`, {
+                    provider
+                });
             }
         }
 
