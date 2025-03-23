@@ -46,10 +46,12 @@ export function getBlockTests(client: McpStandardClient): Array<{ name: string; 
         
         logger.debug('Block number response', { blockNumberText });
         
-        // Extract the block number for use in other tests
+        // Extract the block number for use in other tests (but don't return it)
         const match = blockNumberText.match(/\d+/);
         if (match) {
-          return parseInt(match[0], 10);
+          // Store in a variable but don't return it
+          const blockNumber = parseInt(match[0], 10);
+          logger.debug('Extracted block number', { blockNumber });
         }
       }
     },
