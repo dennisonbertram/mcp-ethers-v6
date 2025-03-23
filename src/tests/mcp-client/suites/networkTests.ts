@@ -147,7 +147,7 @@ export function getNetworkTests(client: McpStandardClient): Array<{ name: string
             const blockNumberText = extractTextFromResponse(result);
             const blockNumber = extractNumberFromText(blockNumberText);
             
-            assert(blockNumber && blockNumber > 0, 
+            assert(blockNumber !== undefined && blockNumber > 0, 
               `Invalid block number on ${networkName}: ${blockNumberText}`);
               
             results.push({ network: networkName, blockNumber });

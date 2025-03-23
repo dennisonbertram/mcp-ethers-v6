@@ -96,7 +96,7 @@ export function getNetworkOperationsTests(client: McpStandardClient): Array<{ na
             
             // Verify it contains a number
             assert(
-              balanceText && /[\d\.]+/.test(balanceText),
+              balanceText !== undefined && /[\d\.]+/.test(balanceText),
               `Balance response on ${networkName} does not contain a number: ${balanceText}`
             );
             
@@ -222,9 +222,18 @@ export function getNetworkOperationsTests(client: McpStandardClient): Array<{ na
             assertToolSuccess(blockResult, `Failed to get latest block on ${networkName}`);
             const blockText = extractTextFromResponse(blockResult);
             
-            // Get previous block
+            // Extract block number from latest block
+            const blockNumberMatch = blockText?.match(/"number":\s*(\d+)/);
+            const latestBlockNumber = blockNumberMatch ? parseInt(blockNumberMatch[1]) : undefined;
+            
+            if (!latestBlockNumber) {
+              logger.warn(`Could not extract block number from latest block on ${networkName}`);
+              continue;
+            }
+            
+            // Get previous block using explicit block number
             const prevBlockResult = await client.callTool('getBlockDetails', {
-              blockTag: 'latest - 1', // Get previous block
+              blockTag: String(latestBlockNumber - 1), // Convert to string for the API
               provider: config.rpcName
             });
             

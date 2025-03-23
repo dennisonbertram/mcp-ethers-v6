@@ -82,7 +82,7 @@ export async function determineAvailableNetworks(
     }
     
     // Parse network data from response
-    const networkText = result.content.find(item => item.type === 'text')?.text || '';
+    const networkText = result.content.find((item: { type: string; text?: string }) => item.type === 'text')?.text || '';
     const networks: Array<{ name: string; chainId?: number }> = [];
     
     try {

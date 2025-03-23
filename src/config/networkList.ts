@@ -103,5 +103,11 @@ export const networkList = {
     "chainId": 146,
     "RPC": "https://rpc.soniclabs.com",
     "explorer": ""
+  },
+  "Gnosis": {
+    "currency": "xDAI",
+    "chainId": 100,
+    "RPC": "https://rpc.gnosischain.com",
+    "explorer": ""
   }
 } as const;

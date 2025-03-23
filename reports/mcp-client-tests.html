@@ -17,15 +17,15 @@
       </head>
       <body>
         <h1>MCP Test Report</h1>
-        <div class="timestamp">Generated on 2025-03-23T18:19:37.678Z</div>
+        <div class="timestamp">Generated on 2025-03-23T18:48:29.772Z</div>
         
         <div class="summary">
           <h2>Summary</h2>
-          <p>Total Suites: 12</p>
-          <p>Total Tests: 47</p>
-          <p>Passed: 47 (100%)</p>
-          <p>Failed: 0</p>
-          <p>Total Duration: 3083ms</p>
+          <p>Total Suites: 13</p>
+          <p>Total Tests: 54</p>
+          <p>Passed: 52 (96%)</p>
+          <p>Failed: 2</p>
+          <p>Total Duration: 4221ms</p>
         </div>
     
         <div class="suite">
@@ -58,7 +58,7 @@
           <p>Tests: 4</p>
           <p>Passed: 4 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 153ms</p>
+          <p>Duration: 160ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -67,7 +67,7 @@
         
       
           <div class="test passed">
-            <strong>✅ List available tools</strong> (1ms)
+            <strong>✅ List available tools</strong> (2ms)
           </div>
         
           <div class="test passed">
@@ -79,7 +79,7 @@
           </div>
         
           <div class="test passed">
-            <strong>✅ Get gas price</strong> (150ms)
+            <strong>✅ Get gas price</strong> (156ms)
           </div>
         </div>
         <div class="suite">
@@ -87,7 +87,7 @@
           <p>Tests: 4</p>
           <p>Passed: 4 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 326ms</p>
+          <p>Duration: 415ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -96,19 +96,19 @@
         
       
           <div class="test passed">
-            <strong>✅ Get wallet balance</strong> (80ms)
+            <strong>✅ Get wallet balance</strong> (155ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get Foundation wallet balance</strong> (113ms)
+            <strong>✅ Get Foundation wallet balance</strong> (104ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Generate new wallet</strong> (38ms)
+            <strong>✅ Generate new wallet</strong> (42ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Generate wallet and check its balance</strong> (95ms)
+            <strong>✅ Generate wallet and check its balance</strong> (113ms)
           </div>
         </div>
         <div class="suite">
@@ -116,7 +116,7 @@
           <p>Tests: 5</p>
           <p>Passed: 5 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 402ms</p>
+          <p>Duration: 456ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -125,23 +125,23 @@
         
       
           <div class="test passed">
-            <strong>✅ Get transaction details</strong> (125ms)
+            <strong>✅ Get transaction details</strong> (141ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get historical transaction (genesis)</strong> (184ms)
+            <strong>✅ Get historical transaction (genesis)</strong> (211ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get transaction count for address</strong> (2ms)
+            <strong>✅ Get transaction count for address</strong> (1ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get gas price for transactions</strong> (89ms)
+            <strong>✅ Get gas price for transactions</strong> (102ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get detailed fee data</strong> (2ms)
+            <strong>✅ Get detailed fee data</strong> (1ms)
           </div>
         </div>
         <div class="suite">
@@ -149,7 +149,7 @@
           <p>Tests: 2</p>
           <p>Passed: 2 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 108ms</p>
+          <p>Duration: 103ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -158,40 +158,53 @@
         
       
           <div class="test passed">
-            <strong>✅ Send transaction in mock mode</strong> (102ms)
+            <strong>✅ Send transaction in mock mode</strong> (100ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Send transaction with options in mock mode</strong> (6ms)
+            <strong>✅ Send transaction with options in mock mode</strong> (3ms)
           </div>
         </div>
         <div class="suite">
           <h2>Network</h2>
-          <p>Tests: 4</p>
-          <p>Passed: 4 (100%)</p>
-          <p>Failed: 0</p>
-          <p>Duration: 184ms</p>
+          <p>Tests: 7</p>
+          <p>Passed: 6 (86%)</p>
+          <p>Failed: 1</p>
+          <p>Duration: 246ms</p>
           
           <h3>Failed Tests</h3>
-          <p>None</p>
+          
       
+          <div class="test failed">
+            <strong>❌ Get supported networks</strong> (1ms)
+            <div class="error">Network missing valid chainId property: {"name":"Gnosis","isTestnet":false,"nativeCurrency":{"name":"Native Token","symbol":"NATIVE","decimals":18},"isDefault":false}</div>
+          </div>
+        
         <h3>Passed Tests</h3>
         
       
           <div class="test passed">
-            <strong>✅ Get supported networks</strong> (1ms)
+            <strong>✅ Validate supported networks</strong> (1ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get block number</strong> (103ms)
+            <strong>✅ Switch between networks</strong> (23ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get gas price</strong> (79ms)
+            <strong>✅ Validate chainId parameter</strong> (116ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get fee data</strong> (1ms)
+            <strong>✅ Get block number</strong> (0ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get gas price</strong> (103ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get fee data</strong> (2ms)
           </div>
         </div>
         <div class="suite">
@@ -199,7 +212,7 @@
           <p>Tests: 4</p>
           <p>Passed: 4 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 243ms</p>
+          <p>Duration: 316ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -216,11 +229,11 @@
           </div>
         
           <div class="test passed">
-            <strong>✅ Get specific block by number</strong> (83ms)
+            <strong>✅ Get specific block by number</strong> (115ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Get block with transactions</strong> (158ms)
+            <strong>✅ Get block with transactions</strong> (198ms)
           </div>
         </div>
         <div class="suite">
@@ -228,7 +241,7 @@
           <p>Tests: 5</p>
           <p>Passed: 5 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 4ms</p>
+          <p>Duration: 6ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -237,7 +250,7 @@
         
       
           <div class="test passed">
-            <strong>✅ Format wei to ether</strong> (1ms)
+            <strong>✅ Format wei to ether</strong> (3ms)
           </div>
         
           <div class="test passed">
@@ -261,7 +274,7 @@
           <p>Tests: 2</p>
           <p>Passed: 2 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 724ms</p>
+          <p>Duration: 871ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -270,11 +283,11 @@
         
       
           <div class="test passed">
-            <strong>✅ Resolve ENS name to address</strong> (338ms)
+            <strong>✅ Resolve ENS name to address</strong> (404ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Lookup address to ENS name</strong> (386ms)
+            <strong>✅ Lookup address to ENS name</strong> (467ms)
           </div>
         </div>
         <div class="suite">
@@ -282,7 +295,7 @@
           <p>Tests: 2</p>
           <p>Passed: 2 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 17ms</p>
+          <p>Duration: 18ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -291,7 +304,7 @@
         
       
           <div class="test passed">
-            <strong>✅ Sign a simple message</strong> (14ms)
+            <strong>✅ Sign a simple message</strong> (15ms)
           </div>
         
           <div class="test passed">
@@ -303,7 +316,7 @@
           <p>Tests: 5</p>
           <p>Passed: 5 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 427ms</p>
+          <p>Duration: 433ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -312,23 +325,23 @@
         
       
           <div class="test passed">
-            <strong>✅ Get contract code</strong> (85ms)
+            <strong>✅ Get contract code</strong> (83ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Read USDC contract name</strong> (79ms)
+            <strong>✅ Read USDC contract name</strong> (100ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Read USDC contract symbol</strong> (92ms)
+            <strong>✅ Read USDC contract symbol</strong> (83ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Read USDC contract decimals</strong> (78ms)
+            <strong>✅ Read USDC contract decimals</strong> (79ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ Read balance of address on USDC contract</strong> (93ms)
+            <strong>✅ Read balance of address on USDC contract</strong> (88ms)
           </div>
         </div>
         <div class="suite">
@@ -336,7 +349,7 @@
           <p>Tests: 7</p>
           <p>Passed: 7 (100%)</p>
           <p>Failed: 0</p>
-          <p>Duration: 490ms</p>
+          <p>Duration: 537ms</p>
           
           <h3>Failed Tests</h3>
           <p>None</p>
@@ -345,15 +358,15 @@
         
       
           <div class="test passed">
-            <strong>✅ ERC20 token balance</strong> (145ms)
+            <strong>✅ ERC20 token balance</strong> (170ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ ERC20 token information</strong> (1ms)
+            <strong>✅ ERC20 token information</strong> (2ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ ERC721 balance</strong> (160ms)
+            <strong>✅ ERC721 balance</strong> (161ms)
           </div>
         
           <div class="test passed">
@@ -365,11 +378,41 @@
           </div>
         
           <div class="test passed">
-            <strong>✅ ERC1155 URI</strong> (1ms)
+            <strong>✅ ERC1155 URI</strong> (2ms)
           </div>
         
           <div class="test passed">
-            <strong>✅ ERC1155 balance of batch</strong> (93ms)
+            <strong>✅ ERC1155 balance of batch</strong> (113ms)
+          </div>
+        </div>
+        <div class="suite">
+          <h2>NetworkOperations</h2>
+          <p>Tests: 4</p>
+          <p>Passed: 3 (75%)</p>
+          <p>Failed: 1</p>
+          <p>Duration: 655ms</p>
+          
+          <h3>Failed Tests</h3>
+          
+      
+          <div class="test failed">
+            <strong>❌ Compare block times across networks</strong> (208ms)
+            <div class="error">Failed to get block times from multiple networks</div>
+          </div>
+        
+        <h3>Passed Tests</h3>
+        
+      
+          <div class="test passed">
+            <strong>✅ Get wallet balance across networks</strong> (96ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Get gas prices across networks</strong> (266ms)
+          </div>
+        
+          <div class="test passed">
+            <strong>✅ Rapid network switching test</strong> (85ms)
           </div>
         </div>
       </body>
