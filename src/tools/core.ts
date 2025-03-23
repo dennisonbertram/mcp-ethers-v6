@@ -161,6 +161,10 @@ Max Priority Fee Per Gas: ${formatted.maxPriorityFeePerGas}`
         
         if (saveToEnv) {
           process.env.WALLET_PRIVATE_KEY = wallet.privateKey;
+          
+          // Update the ethersService with the new wallet
+          const signer = new ethers.Wallet(wallet.privateKey, ethersService.provider);
+          ethersService.setSigner(signer);
         }
         
         return {
@@ -203,6 +207,10 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
         
         if (saveToEnv) {
           process.env.WALLET_PRIVATE_KEY = privateKey;
+          
+          // Update the ethersService with the new wallet
+          const signer = new ethers.Wallet(privateKey, ethersService.provider);
+          ethersService.setSigner(signer);
         }
         
         return {
@@ -237,7 +245,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
     },
     async ({ provider }) => {
       try {
-        const walletInfo = await ethersService.checkWalletExists(provider);
+        const walletInfo = await ethersService.getWalletInfo(provider);
         return {
           content: [{ 
             type: "text", 
@@ -1087,4 +1095,4 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       }
     }
   );
-} 
+}
