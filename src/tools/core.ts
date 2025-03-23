@@ -39,6 +39,114 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
     }
   );
 
+  // Get Block Number tool
+  server.tool(
+    "getBlockNumber",
+    {
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ provider, chainId }) => {
+      try {
+        const blockNumber = await ethersService.getBlockNumber(provider, chainId);
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Current block number: ${blockNumber}`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error getting block number: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Get Gas Price tool
+  server.tool(
+    "getGasPrice",
+    {
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ provider, chainId }) => {
+      try {
+        const gasPriceWei = await ethersService.getGasPrice(provider, chainId);
+        const gasPriceGwei = ethers.formatUnits(gasPriceWei, "gwei");
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Current gas price: ${gasPriceGwei} gwei (${gasPriceWei.toString()} wei)`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error getting gas price: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Get Fee Data tool
+  server.tool(
+    "getFeeData",
+    {
+      provider: z.string().optional().describe(
+        "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+      ),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+      )
+    },
+    async ({ provider, chainId }) => {
+      try {
+        const feeData = await ethersService.getFeeData(provider, chainId);
+        
+        // Format the fee data for human readability
+        const formatted = {
+          gasPrice: feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, "gwei") + " gwei" : "Not available",
+          maxFeePerGas: feeData.maxFeePerGas ? ethers.formatUnits(feeData.maxFeePerGas, "gwei") + " gwei" : "Not available",
+          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? ethers.formatUnits(feeData.maxPriorityFeePerGas, "gwei") + " gwei" : "Not available"
+        };
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Fee Data:
+Gas Price: ${formatted.gasPrice}
+Max Fee Per Gas: ${formatted.maxFeePerGas}
+Max Priority Fee Per Gas: ${formatted.maxPriorityFeePerGas}`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error getting fee data: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
   // Generate Wallet tool
   server.tool(
     "generateWallet",

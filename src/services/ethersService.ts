@@ -397,11 +397,11 @@ export class EthersService {
         }
     }
 
-    async getGasPrice(provider?: string, chainId?: number): Promise<string> {
+    async getGasPrice(provider?: string, chainId?: number): Promise<bigint> {
         try {
             const selectedProvider = this.getProvider(provider, chainId);
             const feeData = await selectedProvider.getFeeData();
-            return ethers.formatUnits(feeData.gasPrice || 0n, "gwei");
+            return feeData.gasPrice || 0n;
         } catch (error) {
             this.handleProviderError(error, "get gas price");
         }
@@ -1739,6 +1739,24 @@ export class EthersService {
                 throw error;
             }
             this.handleProviderError(error, "safe batch transfer ERC1155 tokens", { contractAddress, fromAddress, toAddress, tokenIds, amounts });
+        }
+    }
+
+    /**
+     * Get wallet balance in ETH
+     * 
+     * @param address Address to check balance for
+     * @param provider Optional provider or network name
+     * @param chainId Optional chain ID
+     * @returns Formatted balance string in ETH
+     */
+    async getWalletBalance(address: string, provider?: string, chainId?: number): Promise<string> {
+        try {
+            const selectedProvider = this.getProvider(provider, chainId);
+            const balance = await selectedProvider.getBalance(address);
+            return ethers.formatEther(balance);
+        } catch (error) {
+            this.handleProviderError(error, "get wallet balance", { address });
         }
     }
 } 

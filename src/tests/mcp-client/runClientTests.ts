@@ -23,13 +23,11 @@ import { getBasicTests } from '../client/suites/basicTests.js';
 import { getWalletTests } from '../client/suites/walletTests.js';
 // Import additional test suites as they're implemented
 import { getNetworkTests } from './suites/networkTests.js';
-/* 
 import { getBlockTests } from './suites/blockTests.js';
 import { getTransactionTests } from './suites/transactionTests.js';
+import { getUtilityTests } from './suites/utilityTests.js';
 import { getContractTests } from './suites/contractTests.js';
 import { getTokenTests } from './suites/tokenTests.js';
-import { getUtilityTests } from './suites/utilityTests.js';
-*/
 // import { generateTestReport } from './utils/reportGenerator.js';
 
 /**
@@ -62,8 +60,13 @@ async function main() {
     testSuites.set('Basic', getBasicTests(client));
     testSuites.set('Wallet', getWalletTests(client));
     
-    // Add new test suites as they're implemented
+    // Add new test suites
     testSuites.set('Network', getNetworkTests(client));
+    testSuites.set('Block', getBlockTests(client));
+    testSuites.set('Transaction', getTransactionTests(client));
+    testSuites.set('Utility', getUtilityTests(client));
+    testSuites.set('Contract', getContractTests(client));
+    testSuites.set('Token', getTokenTests(client));
     
     // Run all test suites
     logger.info(`Running ${testSuites.size} test suites...`);
