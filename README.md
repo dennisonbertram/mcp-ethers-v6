@@ -102,17 +102,27 @@ LOG_LEVEL=info           # Default: info (options: error, warn, info, debug)
 
 ### Network Configuration
 
-The server supports multiple Ethereum networks. The supported networks are defined in `src/config/networkList.ts`:
+The server supports multiple Ethereum and EVM-compatible networks. The supported networks are defined in `src/config/networkList.ts`:
 
-- Mainnet
-- Sepolia
-- Goerli
-- Base (Mainnet and Sepolia)
-- Arbitrum (One and Sepolia)
-- Optimism (Mainnet and Sepolia)
-- Polygon (Mainnet and Mumbai)
+#### Mainnet Networks
+- Ethereum (ETH)
+- Polygon PoS (POL)
+- Arbitrum (ETH)
+- Arbitrum Nova (ETH)
+- Optimism (ETH)
+- Avalanche C-Chain (AVAX)
+- Base (ETH)
+- Polygon zkEVM (ETH)
+- Linea (ETH)
+- BNB Smart Chain (BNB)
+- Scroll (ETH)
+- Rari Chain Mainnet (ETH)
 
-You can specify a network when using tools with the `provider` parameter, e.g., `"provider": "sepolia"`.
+#### Testnet Networks
+- Monad Testnet (MON)
+- MEGA Testnet (ETH)
+
+You can specify a network when using tools with the `provider` parameter, e.g., `"provider": "polygon"` or `"provider": "monad"`.
 
 ### Custom RPC URLs
 
