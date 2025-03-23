@@ -1168,22 +1168,28 @@ export class EthersService {
     }> {
         try {
             const defaultNetwork = process.env.DEFAULT_NETWORK || "mainnet";
-            return DEFAULT_PROVIDERS.map((network) => {
-                const networkInfo = networkList[network as NetworkName];
+            // Filter out networks that don't have a corresponding entry in networkList or don't have a chainId
+            return DEFAULT_PROVIDERS
+                .filter((network) => {
+                    const networkInfo = networkList[network as NetworkName];
+                    return networkInfo && typeof networkInfo.chainId === 'number';
+                })
+                .map((network) => {
+                    const networkInfo = networkList[network as NetworkName];
                     return {
                         name: network,
-                    chainId: networkInfo?.chainId,
-                    isTestnet: network.toLowerCase().includes('testnet') || 
-                              network.toLowerCase().includes('goerli') || 
-                              network.toLowerCase().includes('sepolia'),
+                        chainId: networkInfo.chainId,
+                        isTestnet: network.toLowerCase().includes('testnet') || 
+                                network.toLowerCase().includes('goerli') || 
+                                network.toLowerCase().includes('sepolia'),
                         nativeCurrency: {
-                        name: networkInfo?.currency || 'Native Token',
-                        symbol: networkInfo?.currency || 'NATIVE',
+                            name: networkInfo.currency || 'Native Token',
+                            symbol: networkInfo.currency || 'NATIVE',
                             decimals: 18
-                    },
-                    isDefault: network === defaultNetwork
-                };
-            });
+                        },
+                        isDefault: network === defaultNetwork
+                    };
+                });
         } catch (error) {
             throw this.handleProviderError(error, "get supported networks");
         }
