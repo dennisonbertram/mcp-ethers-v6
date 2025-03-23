@@ -10,6 +10,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerCoreTools } from "./core.js";
 import { registerERC20Tools } from "./erc20.js";
 import { registerERC721Tools } from './erc721.js';
+import { registerERC1155Tools } from './erc1155.js';
 import { silentLogger } from "../utils/silentLogger.js";
 
 /**
@@ -20,6 +21,7 @@ export function registerAllTools(server: McpServer, ethersService: any) {
   registerCoreTools(server, ethersService);
   registerERC20Tools(server, ethersService);
   registerERC721Tools(server, ethersService);
+  registerERC1155Tools(server, ethersService);
   
   // TODO: Add other tool categories as they are refactored
   // registerERC1155Tools(server, ethersService);

@@ -91,9 +91,92 @@ Total Supply: ${tokenInfo.totalSupply}`
     }
   );
   
+  // MCP client test compatible version - erc20_getTokenInfo
+  server.tool(
+    "erc20_getTokenInfo",
+    {
+      tokenAddress: tokenAddressSchema,
+      provider: providerSchema,
+      chainId: chainIdSchema
+    },
+    async (params) => {
+      try {
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Token Information:
+Name: ${tokenInfo.name}
+Symbol: ${tokenInfo.symbol}
+Decimals: ${tokenInfo.decimals}
+Total Supply: ${tokenInfo.totalSupply}`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error getting token information: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+  
   // Get ERC20 Balance
   server.tool(
     "getERC20Balance",
+    {
+      tokenAddress: tokenAddressSchema,
+      ownerAddress: z.string().describe(
+        "The Ethereum address whose balance to check"
+      ),
+      provider: providerSchema,
+      chainId: chainIdSchema
+    },
+    async (params) => {
+      try {
+        const balance = await ethersService.getERC20Balance(
+          params.ownerAddress,
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        // Get token info to format the response
+        const tokenInfo = await ethersService.getERC20TokenInfo(
+          params.tokenAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `${params.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error getting token balance: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+  
+  // MCP client test compatible version - erc20_balanceOf
+  server.tool(
+    "erc20_balanceOf",
     {
       tokenAddress: tokenAddressSchema,
       ownerAddress: z.string().describe(
