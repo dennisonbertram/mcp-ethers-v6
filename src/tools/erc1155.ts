@@ -23,7 +23,7 @@ const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
   "An Ethereum address"
 );
 const providerSchema = z.string().optional().describe(
-  "Optional. The provider to use. If not provided, the default provider is used."
+  "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
 );
 const chainIdSchema = z.number().optional().describe(
   "Optional. The chain ID to use."

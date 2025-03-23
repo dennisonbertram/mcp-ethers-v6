@@ -109,5 +109,23 @@ export const networkList = {
     "chainId": 100,
     "RPC": "https://rpc.gnosischain.com",
     "explorer": ""
+  },
+  "CrossFi": {
+    "currency": "XFI",
+    "chainId": 4157,
+    "RPC": "https://rpc.crossfi.org",
+    "explorer": ""
+  },
+  "Lens": {
+    "currency": "LENS",
+    "chainId": 13337,
+    "RPC": "https://rpc.lens.xyz",
+    "explorer": ""
+  },
+  "World Chain": {
+    "currency": "WORLD",
+    "chainId": 59144001,
+    "RPC": "https://rpc.worldchain.xyz",
+    "explorer": ""
   }
 } as const;

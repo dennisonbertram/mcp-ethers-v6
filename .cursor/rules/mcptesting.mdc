@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# MCP Server testing
+
+- Do not run MCP servers at the command line, they don't return anything and can not be tested this way
+- Do not use console.log in MCP servers. They break STDIO interface
+- Stay focused
+- Do not create new servers 

@@ -16,7 +16,7 @@ const tokenAddressSchema = z.string().describe(
 );
 
 const providerSchema = z.string().optional().describe(
-  "Optional. Either a network name or custom RPC URL. Use getSupportedNetworks to get a list of supported networks."
+  "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
 );
 
 const chainIdSchema = z.number().optional().describe(
