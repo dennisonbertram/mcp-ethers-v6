@@ -12,6 +12,7 @@ import { registerERC20Tools } from "./erc20.js";
 import { registerERC721Tools } from './erc721.js';
 import { registerERC1155Tools } from './erc1155.js';
 import { registerNetworkTools } from './networkTools.js';
+import { registerPromptTools } from './promptTools.js';
 import { silentLogger } from "../utils/silentLogger.js";
 
 /**
@@ -24,6 +25,7 @@ export function registerAllTools(server: McpServer, ethersService: any) {
   registerERC721Tools(server, ethersService);
   registerERC1155Tools(server, ethersService);
   registerNetworkTools(server);
+  registerPromptTools(server);
   
   silentLogger.info("All tools registered successfully");
 } 
