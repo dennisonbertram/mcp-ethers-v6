@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-03-24T00:14:35.062Z",
+  "results": [
+    {
+      "suiteName": "Basic Tests",
+      "passed": [
+        {
+          "name": "List available tools",
+          "passed": true,
+          "duration": 4
+        },
+        {
+          "name": "Verify core tools exist",
+          "passed": true,
+          "duration": 2
+        },
+        {
+          "name": "Get network information",
+          "passed": true,
+          "duration": 0
+        },
+        {
+          "name": "Get gas price",
+          "passed": true,
+          "duration": 259
+        }
+      ],
+      "failed": [],
+      "duration": 265
+    }
+  ],
+  "summary": {
+    "totalSuites": 1,
+    "totalTests": 4,
+    "totalPassed": 4,
+    "totalFailed": 0,
+    "totalDuration": 265
+  }
+}

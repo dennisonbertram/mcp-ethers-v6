@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-03-23T19:06:31.458Z",
+  "timestamp": "2025-03-24T00:14:58.816Z",
   "results": [
     {
       "suiteName": "Connection",
@@ -7,12 +7,12 @@
         {
           "name": "Connection initialization",
           "passed": true,
-          "duration": 5
+          "duration": 3
         },
         {
           "name": "Capability negotiation",
           "passed": true,
-          "duration": 2
+          "duration": 0
         },
         {
           "name": "Error handling",
@@ -21,7 +21,7 @@
         }
       ],
       "failed": [],
-      "duration": 8
+      "duration": 4
     },
     {
       "suiteName": "Basic",
@@ -39,16 +39,16 @@
         {
           "name": "Get network information",
           "passed": true,
-          "duration": 1
+          "duration": 0
         },
         {
           "name": "Get gas price",
           "passed": true,
-          "duration": 149
+          "duration": 126
         }
       ],
       "failed": [],
-      "duration": 153
+      "duration": 129
     },
     {
       "suiteName": "Wallet",
@@ -56,26 +56,26 @@
         {
           "name": "Get wallet balance",
           "passed": true,
-          "duration": 93
+          "duration": 119
         },
         {
           "name": "Get Foundation wallet balance",
           "passed": true,
-          "duration": 104
+          "duration": 106
         },
         {
           "name": "Generate new wallet",
           "passed": true,
-          "duration": 31
+          "duration": 24
         },
         {
           "name": "Generate wallet and check its balance",
           "passed": true,
-          "duration": 111
+          "duration": 100
         }
       ],
       "failed": [],
-      "duration": 340
+      "duration": 349
     },
     {
       "suiteName": "Transaction",
@@ -83,12 +83,12 @@
         {
           "name": "Get transaction details",
           "passed": true,
-          "duration": 96
+          "duration": 119
         },
         {
           "name": "Get historical transaction (genesis)",
           "passed": true,
-          "duration": 206
+          "duration": 210
         },
         {
           "name": "Get transaction count for address",
@@ -98,7 +98,7 @@
         {
           "name": "Get gas price for transactions",
           "passed": true,
-          "duration": 100
+          "duration": 107
         },
         {
           "name": "Get detailed fee data",
@@ -107,7 +107,7 @@
         }
       ],
       "failed": [],
-      "duration": 404
+      "duration": 438
     },
     {
       "suiteName": "TransactionSend",
@@ -115,7 +115,7 @@
         {
           "name": "Send transaction in mock mode",
           "passed": true,
-          "duration": 96
+          "duration": 109
         },
         {
           "name": "Send transaction with options in mock mode",
@@ -124,7 +124,7 @@
         }
       ],
       "failed": [],
-      "duration": 98
+      "duration": 111
     },
     {
       "suiteName": "Network",
@@ -137,36 +137,36 @@
         {
           "name": "Validate supported networks",
           "passed": true,
-          "duration": 1
+          "duration": 0
         },
         {
           "name": "Switch between networks",
           "passed": true,
-          "duration": 20
+          "duration": 21
         },
         {
           "name": "Validate chainId parameter",
           "passed": true,
-          "duration": 1184
+          "duration": 115
         },
         {
           "name": "Get block number",
           "passed": true,
-          "duration": 95
+          "duration": 1
         },
         {
           "name": "Get gas price",
           "passed": true,
-          "duration": 89
+          "duration": 119
         },
         {
           "name": "Get fee data",
           "passed": true,
-          "duration": 1
+          "duration": 0
         }
       ],
       "failed": [],
-      "duration": 1391
+      "duration": 257
     },
     {
       "suiteName": "Block",
@@ -174,26 +174,26 @@
         {
           "name": "Get current block number",
           "passed": true,
-          "duration": 0
+          "duration": 1
         },
         {
           "name": "Get latest block details",
           "passed": true,
-          "duration": 1
+          "duration": 0
         },
         {
           "name": "Get specific block by number",
           "passed": true,
-          "duration": 86
+          "duration": 102
         },
         {
           "name": "Get block with transactions",
           "passed": true,
-          "duration": 165
+          "duration": 177
         }
       ],
       "failed": [],
-      "duration": 253
+      "duration": 280
     },
     {
       "suiteName": "Utility",
@@ -201,12 +201,12 @@
         {
           "name": "Format wei to ether",
           "passed": true,
-          "duration": 0
+          "duration": 1
         },
         {
           "name": "Parse ether to wei",
           "passed": true,
-          "duration": 1
+          "duration": 0
         },
         {
           "name": "Format units to gwei",
@@ -233,16 +233,16 @@
         {
           "name": "Resolve ENS name to address",
           "passed": true,
-          "duration": 385
+          "duration": 335
         },
         {
           "name": "Lookup address to ENS name",
           "passed": true,
-          "duration": 455
+          "duration": 510
         }
       ],
       "failed": [],
-      "duration": 841
+      "duration": 845
     },
     {
       "suiteName": "Signature",
@@ -250,7 +250,7 @@
         {
           "name": "Sign a simple message",
           "passed": true,
-          "duration": 13
+          "duration": 9
         },
         {
           "name": "Sign data with ethSign",
@@ -259,7 +259,7 @@
         }
       ],
       "failed": [],
-      "duration": 16
+      "duration": 12
     },
     {
       "suiteName": "Contract",
@@ -267,31 +267,31 @@
         {
           "name": "Get contract code",
           "passed": true,
-          "duration": 99
+          "duration": 85
         },
         {
           "name": "Read USDC contract name",
           "passed": true,
-          "duration": 86
+          "duration": 98
         },
         {
           "name": "Read USDC contract symbol",
           "passed": true,
-          "duration": 109
+          "duration": 106
         },
         {
           "name": "Read USDC contract decimals",
           "passed": true,
-          "duration": 74
+          "duration": 73
         },
         {
           "name": "Read balance of address on USDC contract",
           "passed": true,
-          "duration": 79
+          "duration": 113
         }
       ],
       "failed": [],
-      "duration": 448
+      "duration": 475
     },
     {
       "suiteName": "Token",
@@ -299,7 +299,7 @@
         {
           "name": "ERC20 token balance",
           "passed": true,
-          "duration": 129
+          "duration": 188
         },
         {
           "name": "ERC20 token information",
@@ -309,17 +309,17 @@
         {
           "name": "ERC721 balance",
           "passed": true,
-          "duration": 242
+          "duration": 171
         },
         {
           "name": "ERC721 token URI",
           "passed": true,
-          "duration": 2
+          "duration": 1
         },
         {
           "name": "ERC1155 balance",
           "passed": true,
-          "duration": 102
+          "duration": 113
         },
         {
           "name": "ERC1155 URI",
@@ -329,11 +329,11 @@
         {
           "name": "ERC1155 balance of batch",
           "passed": true,
-          "duration": 76
+          "duration": 86
         }
       ],
       "failed": [],
-      "duration": 551
+      "duration": 559
     },
     {
       "suiteName": "NetworkOperations",
@@ -341,26 +341,26 @@
         {
           "name": "Get wallet balance across networks",
           "passed": true,
-          "duration": 90
+          "duration": 83
         },
         {
           "name": "Get gas prices across networks",
           "passed": true,
-          "duration": 236
+          "duration": 228
         },
         {
           "name": "Compare block times across networks",
           "passed": true,
-          "duration": 204
+          "duration": 191
         },
         {
           "name": "Rapid network switching test",
           "passed": true,
-          "duration": 85
+          "duration": 82
         }
       ],
       "failed": [],
-      "duration": 615
+      "duration": 584
     }
   ],
   "summary": {
@@ -368,6 +368,6 @@
     "totalTests": 54,
     "totalPassed": 54,
     "totalFailed": 0,
-    "totalDuration": 5120
+    "totalDuration": 4045
   }
 }
