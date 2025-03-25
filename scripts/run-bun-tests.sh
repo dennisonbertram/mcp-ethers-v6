@@ -29,7 +29,7 @@ node scripts/updateTestHelper.mjs
 
 # Run the tests with Bun
 echo "🧪 Running tests with Bun..."
-bun test
+bun test ./src/tests/*.test.ts ./src/services/erc/*.test.ts
 
 # Clean up - kill the Hardhat node
 echo "🧹 Cleaning up - stopping Hardhat node..."
