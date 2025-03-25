@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-03-24T00:14:35.062Z",
+  "timestamp": "2025-03-25T02:05:56.831Z",
   "results": [
     {
       "suiteName": "Basic Tests",
@@ -22,18 +22,45 @@
         {
           "name": "Get gas price",
           "passed": true,
-          "duration": 259
+          "duration": 152
         }
       ],
       "failed": [],
-      "duration": 265
+      "duration": 158
+    },
+    {
+      "suiteName": "Wallet Tests",
+      "passed": [
+        {
+          "name": "Get wallet balance",
+          "passed": true,
+          "duration": 48
+        },
+        {
+          "name": "Get Foundation wallet balance",
+          "passed": true,
+          "duration": 60
+        },
+        {
+          "name": "Generate new wallet",
+          "passed": true,
+          "duration": 38
+        },
+        {
+          "name": "Generate wallet and check its balance",
+          "passed": true,
+          "duration": 51
+        }
+      ],
+      "failed": [],
+      "duration": 198
     }
   ],
   "summary": {
-    "totalSuites": 1,
-    "totalTests": 4,
-    "totalPassed": 4,
+    "totalSuites": 2,
+    "totalTests": 8,
+    "totalPassed": 8,
     "totalFailed": 0,
-    "totalDuration": 265
+    "totalDuration": 356
   }
 }
