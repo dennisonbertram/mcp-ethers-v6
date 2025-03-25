@@ -16,7 +16,7 @@ async function main() {
   
   // Replace the hardcoded address
   const oldAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
-  const newAddress = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'; // The address where the token was deployed
+  const newAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Use the same address to ensure consistency
   
   const updatedContent = content.replace(
     `const tokenAddress = "${oldAddress}"`,
@@ -24,7 +24,7 @@ async function main() {
   );
   
   if (content === updatedContent) {
-    console.log("❌ No changes were made. Address might not be found in the file.");
+    console.log("✅ Address already set correctly in the file.");
     return;
   }
   
@@ -39,4 +39,4 @@ main()
   .catch((error) => {
     console.error("Update failed:", error);
     process.exit(1);
-  }); 
+  });

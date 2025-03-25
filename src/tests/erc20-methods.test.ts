@@ -84,41 +84,60 @@ describe('ERC20 Service Methods', () => {
 
   describe('Transfer', () => {
     it('should transfer tokens between accounts', async () => {
-      const amount = '10.0';
+      // Use a different signer to avoid nonce issues
+      const transferSigner = testEnv.signers[2];
+      const transferService = new EthersService(testEnv.provider, transferSigner);
       
-      const initialOwnerBalance = await erc20.getBalance(
+      // First, we need to send some tokens to transferSigner from owner
+      // since only owner has tokens initially
+      const transferSignerAddress = await transferSigner.getAddress();
+      const initialAmount = '50.0';
+      
+      // Owner sends tokens to the transfer signer
+      await erc20.transfer(
         ethersService,
         tokenAddress,
-        ownerAddress
+        transferSignerAddress,
+        initialAmount
+      );
+      
+      // Now transferSigner has tokens and can send to recipient
+      const amount = '10.0';
+      
+      const initialTransferSignerBalance = await erc20.getBalance(
+        transferService,
+        tokenAddress,
+        transferSignerAddress
       );
       
       const initialRecipientBalance = await erc20.getBalance(
-        ethersService,
+        transferService,
         tokenAddress,
         recipientAddress
       );
       
+      // Transfer from new signer to recipient
       await erc20.transfer(
-        ethersService,
+        transferService,
         tokenAddress,
         recipientAddress,
         amount
       );
 
-      const finalOwnerBalance = await erc20.getBalance(
-        ethersService,
+      const finalTransferSignerBalance = await erc20.getBalance(
+        transferService,
         tokenAddress,
-        ownerAddress
+        transferSignerAddress
       );
       
       const finalRecipientBalance = await erc20.getBalance(
-        ethersService,
+        transferService,
         tokenAddress,
         recipientAddress
       );
       
-      // Owner balance should decrease
-      expect(parseFloat(finalOwnerBalance)).toBeLessThan(parseFloat(initialOwnerBalance));
+      // TransferSigner balance should decrease
+      expect(parseFloat(finalTransferSignerBalance)).toBeLessThan(parseFloat(initialTransferSignerBalance));
       
       // Recipient balance should increase
       const expectedRecipientBalance = parseFloat(initialRecipientBalance) + parseFloat(amount);
