@@ -104,6 +104,7 @@ export function registerERC721Tools(server: McpServer, ethersService: EthersServ
   // Get NFT Info
   server.tool(
     "getNFTInfo",
+    "Get information about an ERC721 NFT collection including its name, symbol, and total supply. Provides basic details about the NFT contract.",
     {
       contractAddress: contractAddressSchema.describe("The address of the ERC721 contract"),
       provider: providerSchema.describe("Optional. The provider to use. If not provided, the default provider is used."),
@@ -141,6 +142,7 @@ Total Supply: ${info.totalSupply}`
   // Get NFT Owner
   server.tool(
     "getNFTOwner",
+    "Get the current owner of a specific ERC721 NFT token. Returns the Ethereum address that owns the specified token ID.",
     {
       contractAddress: contractAddressSchema.describe("The address of the ERC721 contract"),
       tokenId: tokenIdSchema.describe("The ID of the token to check"),
@@ -177,6 +179,7 @@ Total Supply: ${info.totalSupply}`
   // Client test compatible version - erc721_balanceOf
   server.tool(
     "erc721_balanceOf",
+    "Get the number of ERC721 NFTs owned by a specific address. Alternative naming for compatibility with MCP client tests.",
     {
       tokenAddress: contractAddressSchema.describe("The address of the ERC721 contract"),
       ownerAddress: addressSchema.describe("The address to check balance for"),

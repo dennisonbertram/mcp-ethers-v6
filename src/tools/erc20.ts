@@ -62,6 +62,7 @@ export function registerERC20Tools(server: McpServer, ethersService: EthersServi
   // Get ERC20 Token Info - Using standardized parameter names
   server.tool(
     "getERC20TokenInfo",
+    "Get detailed information about an ERC20 token including its name, symbol, decimals, and total supply. Requires the contract address of the token.",
     {
       contractAddress: contractAddressSchema,
       tokenAddress: tokenAddressSchema.optional(),  // Deprecated
@@ -108,6 +109,7 @@ Total Supply: ${tokenInfo.totalSupply}`
   // MCP client test compatible version - erc20_getTokenInfo
   server.tool(
     "erc20_getTokenInfo",
+    "Get detailed information about an ERC20 token including its name, symbol, decimals, and total supply. Alternative naming for compatibility with MCP client tests.",
     {
       contractAddress: contractAddressSchema,
       tokenAddress: tokenAddressSchema.optional(),  // Deprecated
@@ -154,6 +156,7 @@ Total Supply: ${tokenInfo.totalSupply}`
   // Get ERC20 Balance - Using standardized parameter names
   server.tool(
     "getERC20Balance",
+    "Get the ERC20 token balance for a specific address. Returns the balance amount along with the token symbol for easy reading.",
     {
       contractAddress: contractAddressSchema,
       tokenAddress: tokenAddressSchema.optional(),  // Deprecated
@@ -207,6 +210,7 @@ Total Supply: ${tokenInfo.totalSupply}`
   // MCP client test compatible version - erc20_balanceOf
   server.tool(
     "erc20_balanceOf",
+    "Get the ERC20 token balance for a specific address. Alternative naming for compatibility with MCP client tests.",
     {
       contractAddress: contractAddressSchema,
       tokenAddress: tokenAddressSchema.optional(),  // Deprecated
@@ -260,6 +264,7 @@ Total Supply: ${tokenInfo.totalSupply}`
   // Get ERC20 Allowance - Using standardized parameter names
   server.tool(
     "getERC20Allowance",
+    "Get the amount of tokens that a spender is approved to spend on behalf of a token owner. Used to check ERC20 approval amounts.",
     {
       contractAddress: contractAddressSchema,
       tokenAddress: tokenAddressSchema.optional(),  // Deprecated
@@ -317,6 +322,7 @@ Total Supply: ${tokenInfo.totalSupply}`
   // Transfer ERC20
   server.tool(
     "transferERC20",
+    "Transfer ERC20 tokens from the connected wallet to another address. Requires a loaded wallet with sufficient token balance and ETH for gas fees.",
     {
       tokenAddress: tokenAddressSchema,
       recipientAddress: z.string().describe(
@@ -376,6 +382,7 @@ Waiting for confirmation...`
   // Approve ERC20
   server.tool(
     "approveERC20",
+    "Approve another address to spend ERC20 tokens on behalf of the connected wallet. Sets the allowance amount for the spender address.",
     {
       tokenAddress: tokenAddressSchema,
       spenderAddress: z.string().describe(

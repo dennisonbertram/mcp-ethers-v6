@@ -29,7 +29,7 @@ const PARAMETER_MAPPINGS: Record<string, string> = {
  * @returns A new object with standardized parameter names
  */
 export function mapParameters<T extends Record<string, any>>(params: T): T {
-  const mapped = { ...params };
+  const mapped = { ...params } as any;
   let hasDeprecated = false;
   
   for (const [oldName, newName] of Object.entries(PARAMETER_MAPPINGS)) {
@@ -51,7 +51,7 @@ export function mapParameters<T extends Record<string, any>>(params: T): T {
     }
   }
   
-  return mapped;
+  return mapped as T;
 }
 
 /**
