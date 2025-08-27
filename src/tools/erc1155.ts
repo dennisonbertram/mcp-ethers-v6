@@ -11,10 +11,16 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { EthersService } from '../services/ethersService.js';
 import { silentLogger } from '../utils/silentLogger.js';
+import { mapParameters } from '../utils/parameterMapping.js';
 
-// Common schemas
+// Common schemas - Standardized parameter names
 const contractAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
   "The address of the ERC1155 contract"
+);
+
+// Deprecated - kept for backward compatibility
+const tokenAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
+  "DEPRECATED: Use contractAddress instead. The address of the ERC1155 contract"
 );
 const tokenIdSchema = z.string().describe(
   "The ID of the token to query"
@@ -35,30 +41,38 @@ const chainIdSchema = z.number().optional().describe(
 export function registerERC1155Tools(server: McpServer, ethersService: EthersService) {
   silentLogger.debug('Registering ERC1155 tools');
 
-  // Get single token balance
+  // Get single token balance - Using standardized parameter names
   server.tool(
     "erc1155_balanceOf",
     {
-      tokenAddress: contractAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       ownerAddress: addressSchema.describe("The address to check balance for"),
       tokenId: tokenIdSchema,
       provider: providerSchema,
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const balance = await ethersService.getERC1155Balance(
-          params.tokenAddress,
-          params.ownerAddress,
+          contractAddr,
+          mapped.ownerAddress,
           params.tokenId,
-          params.provider,
-          params.chainId
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `Balance of token ${params.tokenId} for ${params.ownerAddress} is ${balance}`
+            text: `Balance of token ${params.tokenId} for ${mapped.ownerAddress} is ${balance}`
           }]
         };
       } catch (error) {

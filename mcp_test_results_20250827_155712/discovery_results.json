@@ -1,0 +1,1368 @@
+{
+  "timestamp": "2025-08-27T19:58:59.096Z",
+  "serverInfo": {
+    "name": "Ethers Wallet",
+    "version": "1.0.0"
+  },
+  "initialization": {
+    "result": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {
+        "tools": {},
+        "prompts": {}
+      },
+      "serverInfo": {
+        "name": "Ethers Wallet",
+        "version": "1.0.0"
+      }
+    },
+    "jsonrpc": "2.0",
+    "id": 1
+  },
+  "tools": {
+    "result": {
+      "tools": [
+        {
+          "name": "getSupportedNetworks",
+          "description": "Get a list of all supported networks and their configurations. For more detailed information about networks, use the getAllNetworks and getNetwork tools.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getBlockNumber",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getGasPrice",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getFeeData",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "generateWallet",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "saveToEnv": {
+                "type": "boolean",
+                "description": "Optional. If true, the private key will be saved to the server's environment variables for future use. Default is false."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "loadWallet",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "privateKey": {
+                "type": "string",
+                "description": "The private key of the wallet to load. Should start with '0x'."
+              },
+              "saveToEnv": {
+                "type": "boolean",
+                "description": "Optional. If true, the private key will be saved to the server's environment variables for this session. Default is true."
+              }
+            },
+            "required": [
+              "privateKey"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "checkWalletExists",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getWalletBalance",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "The Ethereum address to query"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "formatEther",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "wei": {
+                "type": "string",
+                "description": "The wei value to format"
+              }
+            },
+            "required": [
+              "wei"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "parseEther",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "ether": {
+                "type": "string",
+                "description": "The ether value to parse"
+              }
+            },
+            "required": [
+              "ether"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "formatUnits",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "The value to format"
+              },
+              "unit": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "description": "The number of decimals or unit name (e.g., 'gwei', 18)"
+              }
+            },
+            "required": [
+              "value",
+              "unit"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getWalletTransactionCount",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "The Ethereum address to query"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getBlockDetails",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "blockTag": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "description": "The block number or the string 'latest'"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "blockTag"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getTransactionDetails",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "txHash": {
+                "type": "string",
+                "description": "The transaction hash to lookup"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "txHash"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getContractCode",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "The contract's address"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "contractCall",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "description": "The address of the contract to call"
+              },
+              "abi": {
+                "type": "string",
+                "description": "The ABI of the contract function to call, in JSON format"
+              },
+              "method": {
+                "type": "string",
+                "description": "The name of the method to call"
+              },
+              "args": {
+                "type": "array",
+                "description": "Optional. The arguments to pass to the contract function"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "contractAddress",
+              "abi",
+              "method"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "signMessage",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The message to sign"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "ethSign",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "string",
+                "description": "The data to sign. Will be converted to hex if not already in hex format."
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "resolveName",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The ENS name to resolve"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "lookupAddress",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "The Ethereum address to resolve"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "sendTransaction",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string",
+                "description": "The Ethereum address to send to"
+              },
+              "value": {
+                "type": "string",
+                "description": "The amount to send in ether"
+              },
+              "data": {
+                "type": "string",
+                "description": "Optional. The hex data to include in the transaction"
+              },
+              "mockMode": {
+                "type": "boolean",
+                "default": false,
+                "description": "Optional. If true, just simulates the transaction without sending it. Default is false."
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "to",
+              "value"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "sendTransactionWithOptions",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "type": "string",
+                "description": "The Ethereum address to send to"
+              },
+              "value": {
+                "type": "string",
+                "description": "The amount to send in ether"
+              },
+              "data": {
+                "type": "string",
+                "description": "Optional. The hex data to include in the transaction"
+              },
+              "gasLimit": {
+                "type": "string",
+                "description": "Optional. The gas limit for the transaction"
+              },
+              "maxFeePerGas": {
+                "type": "string",
+                "description": "Optional. The maximum fee per gas (in gwei)"
+              },
+              "maxPriorityFeePerGas": {
+                "type": "string",
+                "description": "Optional. The maximum priority fee per gas (in gwei)"
+              },
+              "nonce": {
+                "type": "number",
+                "description": "Optional. The nonce to use for the transaction"
+              },
+              "mockMode": {
+                "type": "boolean",
+                "default": false,
+                "description": "Optional. If true, just simulates the transaction without sending it. Default is false."
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "to",
+              "value"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getERC20TokenInfo",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "tokenAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc20_getTokenInfo",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "tokenAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getERC20Balance",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "ownerAddress": {
+                "type": "string",
+                "description": "The Ethereum address whose balance to check"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc20_balanceOf",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "ownerAddress": {
+                "type": "string",
+                "description": "The Ethereum address whose balance to check"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getERC20Allowance",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "ownerAddress": {
+                "type": "string",
+                "description": "The Ethereum address that owns the tokens"
+              },
+              "spenderAddress": {
+                "type": "string",
+                "description": "The Ethereum address that is approved to spend tokens"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddress",
+              "spenderAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "transferERC20",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "recipientAddress": {
+                "type": "string",
+                "description": "The Ethereum address to receive the tokens"
+              },
+              "amount": {
+                "type": "string",
+                "description": "The amount of tokens to transfer (can be decimal, e.g. '1.5')"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              },
+              "gasLimit": {
+                "type": "string"
+              },
+              "gasPrice": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "recipientAddress",
+              "amount"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "approveERC20",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "description": "The address of the ERC20 token contract"
+              },
+              "spenderAddress": {
+                "type": "string",
+                "description": "The Ethereum address to approve for spending tokens"
+              },
+              "amount": {
+                "type": "string",
+                "description": "The amount of tokens to transfer (can be decimal, e.g. '1.5')"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use. If provided with a named network and they don't match, the RPC's chain ID will be used."
+              },
+              "gasLimit": {
+                "type": "string"
+              },
+              "gasPrice": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "spenderAddress",
+              "amount"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getNFTInfo",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC721 contract"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. The provider to use. If not provided, the default provider is used."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "contractAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getNFTOwner",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC721 contract"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "description": "The ID of the token to check"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. The provider to use. If not provided, the default provider is used."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "contractAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc721_balanceOf",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC721 contract"
+              },
+              "ownerAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address to check balance for"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. The provider to use. If not provided, the default provider is used."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddress"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getNFTTokenURI",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC721 contract"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "description": "The ID of the token to get the URI for"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. The provider to use. If not provided, the default provider is used."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "contractAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc721_tokenURI",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC721 contract"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ],
+                "description": "The ID of the token to get the URI for"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. The provider to use. If not provided, the default provider is used."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getNFTMetadata",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "provider": {
+                "type": "string"
+              },
+              "chainId": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "contractAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "transferNFT",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "chainId": {
+                "type": "number"
+              },
+              "gasOptions": {
+                "type": "object",
+                "properties": {
+                  "gasLimit": {
+                    "type": "number"
+                  },
+                  "gasPrice": {
+                    "type": "number"
+                  },
+                  "maxFeePerGas": {
+                    "type": "number"
+                  },
+                  "maxPriorityFeePerGas": {
+                    "type": "number"
+                  },
+                  "nonce": {
+                    "type": "number"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "contractAddress",
+              "tokenId",
+              "to"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "approveNFT",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "tokenId": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "approved": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "chainId": {
+                "type": "number"
+              },
+              "gasOptions": {
+                "type": "object",
+                "properties": {
+                  "gasLimit": {
+                    "type": "number"
+                  },
+                  "gasPrice": {
+                    "type": "number"
+                  },
+                  "maxFeePerGas": {
+                    "type": "number"
+                  },
+                  "maxPriorityFeePerGas": {
+                    "type": "number"
+                  },
+                  "nonce": {
+                    "type": "number"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "contractAddress",
+              "tokenId",
+              "approved"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "setNFTApprovalForAll",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "contractAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "operator": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$"
+              },
+              "approved": {
+                "type": "boolean"
+              },
+              "provider": {
+                "type": "string"
+              },
+              "chainId": {
+                "type": "number"
+              },
+              "gasOptions": {
+                "type": "object",
+                "properties": {
+                  "gasLimit": {
+                    "type": "number"
+                  },
+                  "gasPrice": {
+                    "type": "number"
+                  },
+                  "maxFeePerGas": {
+                    "type": "number"
+                  },
+                  "maxPriorityFeePerGas": {
+                    "type": "number"
+                  },
+                  "nonce": {
+                    "type": "number"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "contractAddress",
+              "operator",
+              "approved"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc1155_balanceOf",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC1155 contract"
+              },
+              "ownerAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address to check balance for"
+              },
+              "tokenId": {
+                "type": "string",
+                "description": "The ID of the token to query"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc1155_uri",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC1155 contract"
+              },
+              "tokenId": {
+                "type": "string",
+                "description": "The ID of the token to query"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "tokenId"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "erc1155_balanceOfBatch",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "tokenAddress": {
+                "type": "string",
+                "pattern": "^0x[a-fA-F0-9]{40}$",
+                "description": "The address of the ERC1155 contract"
+              },
+              "ownerAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^0x[a-fA-F0-9]{40}$",
+                  "description": "An Ethereum address"
+                },
+                "description": "Array of addresses to check balances for"
+              },
+              "tokenIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "The ID of the token to query"
+                },
+                "description": "Array of token IDs to check balances for"
+              },
+              "provider": {
+                "type": "string",
+                "description": "Optional. Either a network name or custom RPC URL. Use getAllNetworks to see available networks and their details, or getNetwork to get info about a specific network. You can use any network name returned by these tools as a provider value."
+              },
+              "chainId": {
+                "type": "number",
+                "description": "Optional. The chain ID to use."
+              }
+            },
+            "required": [
+              "tokenAddress",
+              "ownerAddresses",
+              "tokenIds"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getAllNetworks",
+          "description": "Get information about all available blockchain networks. Use this to identify network names, chain IDs, and RPC URLs that can be used with other Ethereum tools. When using other tools with a 'provider' parameter, you can specify any of these network names.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getNetwork",
+          "description": "Get detailed information about a specific blockchain network. This provides the network's chain ID, native token, and RPC URL that can be used with other Ethereum tools. This network name can be used as the 'provider' parameter in other tools.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the network to get details for (case-insensitive, e.g., 'ethereum', 'polygon', 'arbitrum')"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "listPrompts",
+          "description": "List all available prompts in the system",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        },
+        {
+          "name": "getEnsResolutionGuidance",
+          "description": "Get guidance for resolving ENS names across networks and performing operations",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "ensName": {
+                "type": "string",
+                "description": "The ENS name to resolve (e.g., 'vitalik.eth')"
+              },
+              "targetNetwork": {
+                "type": "string",
+                "description": "The target network to perform operations on (e.g., 'MEGA Testnet', 'Optimism')"
+              },
+              "operation": {
+                "type": "string",
+                "enum": [
+                  "balance",
+                  "txCount",
+                  "code"
+                ],
+                "description": "The operation to perform: 'balance' for ETH balance, 'txCount' for transaction count, 'code' for contract code"
+              }
+            },
+            "required": [
+              "ensName",
+              "targetNetwork",
+              "operation"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 2
+  },
+  "prompts": {
+    "result": {
+      "prompts": [
+        {
+          "name": "resolveEnsAcrossNetworks",
+          "description": "A prompt that guides resolving ENS names on Ethereum mainnet and performing operations with the resolved address on other networks.",
+          "arguments": [
+            {
+              "name": "ensName",
+              "description": "The ENS name to resolve (e.g., 'vitalik.eth')",
+              "required": true
+            },
+            {
+              "name": "targetNetwork",
+              "description": "The target network to perform operations on (e.g., 'MEGA Testnet', 'Optimism')",
+              "required": true
+            },
+            {
+              "name": "operation",
+              "description": "The operation to perform: 'balance' for ETH balance, 'txCount' for transaction count, 'code' for contract code",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 3
+  },
+  "resources": {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "error": {
+      "code": -32601,
+      "message": "Method not found"
+    }
+  },
+  "errors": []
+}

@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { TokenOperationOptions } from '../../services/erc/types.js';
 import { validateWithFriendlyErrors, createErrorResponse, CommonSchemas } from '../../utils/validation.js';
+import { mapParameters } from '../../utils/parameterMapping.js';
 
 // This will be injected during initialization
 let ethersService: any;
@@ -16,8 +17,9 @@ export function initializeErc20Handlers(service: any) {
   ethersService = service;
 }
 
-// Common schemas with user-friendly messages
-const tokenAddressSchema = CommonSchemas.ethereumAddress.describe('ERC20 token contract address');
+// Common schemas with user-friendly messages and standardized parameter names
+const contractAddressSchema = CommonSchemas.ethereumAddress.describe('ERC20 token contract address');
+const tokenAddressSchema = CommonSchemas.ethereumAddress.optional().describe('DEPRECATED: Use contractAddress instead. ERC20 token contract address');
 const providerSchema = CommonSchemas.provider;
 const chainIdSchema = CommonSchemas.chainId;
 const amountSchema = CommonSchemas.amountString.describe('Token amount in smallest unit (e.g., "1000000000000000000" for 1 token with 18 decimals)');
@@ -35,18 +37,30 @@ const optionsSchema = z.object({
 export const erc20Handlers = {
   getERC20TokenInfo: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       provider: providerSchema,
       chainId: chainIdSchema
     });
     
     try {
-      const { tokenAddress, provider, chainId } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema, 
         args, 
         'Get ERC20 Token Information'
       );
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
@@ -65,27 +79,39 @@ Total Supply: ${tokenInfo.totalSupply}`
   
   getERC20Balance: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       ownerAddress: CommonSchemas.ethereumAddress.describe('Address to check balance for'),
       provider: providerSchema,
       chainId: chainIdSchema
     });
     
     try {
-      const { tokenAddress, ownerAddress, provider, chainId } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema,
         args,
         'Get ERC20 Balance'
       );
-      const balance = await ethersService.getERC20Balance(ownerAddress, tokenAddress, provider, chainId);
+      
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
+      const balance = await ethersService.getERC20Balance(validatedParams.ownerAddress, contractAddr, mapped.provider, mapped.chainId);
       
       // Get token info to format the response
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
           type: "text", 
-          text: `${ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
+          text: `${validatedParams.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
         }]
       };
     } catch (error) {
@@ -95,7 +121,8 @@ Total Supply: ${tokenInfo.totalSupply}`
   
   getERC20Allowance: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       ownerAddress: CommonSchemas.ethereumAddress.describe('Token owner address'),
       spenderAddress: CommonSchemas.ethereumAddress.describe('Address authorized to spend tokens'),
       provider: providerSchema,
@@ -103,26 +130,37 @@ Total Supply: ${tokenInfo.totalSupply}`
     });
     
     try {
-      const { tokenAddress, ownerAddress, spenderAddress, provider, chainId } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema,
         args,
         'Get ERC20 Allowance'
       );
+      
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
       const allowance = await ethersService.getERC20Allowance(
-        tokenAddress, 
-        ownerAddress, 
-        spenderAddress, 
-        provider, 
-        chainId
+        contractAddr, 
+        validatedParams.ownerAddress, 
+        validatedParams.spenderAddress, 
+        mapped.provider, 
+        mapped.chainId
       );
       
       // Get token info to format the response
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
           type: "text", 
-          text: `${spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${ownerAddress}`
+          text: `${validatedParams.spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${validatedParams.ownerAddress}`
         }]
       };
     } catch (error) {
@@ -132,7 +170,8 @@ Total Supply: ${tokenInfo.totalSupply}`
   
   transferERC20: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       recipientAddress: CommonSchemas.ethereumAddress.describe('Recipient address for the tokens'),
       amount: amountSchema,
       provider: providerSchema,
@@ -142,33 +181,43 @@ Total Supply: ${tokenInfo.totalSupply}`
     });
     
     try {
-      const { tokenAddress, recipientAddress, amount, provider, chainId, gasLimit, gasPrice } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema,
         args,
         'Transfer ERC20 Tokens'
       );
       
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
       // Create options object for transaction parameters
       const options: TokenOperationOptions = {};
-      if (gasLimit) options.gasLimit = gasLimit;
-      if (gasPrice) options.gasPrice = gasPrice;
+      if (validatedParams.gasLimit) options.gasLimit = validatedParams.gasLimit;
+      if (validatedParams.gasPrice) options.gasPrice = validatedParams.gasPrice;
       
       const tx = await ethersService.transferERC20(
-        tokenAddress, 
-        recipientAddress, 
-        amount, 
-        provider, 
-        chainId,
+        contractAddr, 
+        validatedParams.recipientAddress, 
+        validatedParams.amount, 
+        mapped.provider, 
+        mapped.chainId,
         options
       );
       
       // Get token info to format the response
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
           type: "text", 
-          text: `Successfully transferred ${amount} ${tokenInfo.symbol} to ${recipientAddress}.\nTransaction Hash: ${tx.hash}`
+          text: `Successfully transferred ${validatedParams.amount} ${tokenInfo.symbol} to ${validatedParams.recipientAddress}.\nTransaction Hash: ${tx.hash}`
         }]
       };
     } catch (error) {
@@ -178,7 +227,8 @@ Total Supply: ${tokenInfo.totalSupply}`
   
   approveERC20: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       spenderAddress: CommonSchemas.ethereumAddress.describe('Address to approve for spending tokens'),
       amount: amountSchema,
       provider: providerSchema,
@@ -188,33 +238,43 @@ Total Supply: ${tokenInfo.totalSupply}`
     });
     
     try {
-      const { tokenAddress, spenderAddress, amount, provider, chainId, gasLimit, gasPrice } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema,
         args,
         'Approve ERC20 Spending'
       );
       
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
       // Create options object for transaction parameters
       const options: TokenOperationOptions = {};
-      if (gasLimit) options.gasLimit = gasLimit;
-      if (gasPrice) options.gasPrice = gasPrice;
+      if (validatedParams.gasLimit) options.gasLimit = validatedParams.gasLimit;
+      if (validatedParams.gasPrice) options.gasPrice = validatedParams.gasPrice;
       
       const tx = await ethersService.approveERC20(
-        tokenAddress, 
-        spenderAddress, 
-        amount, 
-        provider, 
-        chainId,
+        contractAddr, 
+        validatedParams.spenderAddress, 
+        validatedParams.amount, 
+        mapped.provider, 
+        mapped.chainId,
         options
       );
       
       // Get token info to format the response
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
           type: "text", 
-          text: `Successfully approved ${spenderAddress} to spend ${amount} ${tokenInfo.symbol}.\nTransaction Hash: ${tx.hash}`
+          text: `Successfully approved ${validatedParams.spenderAddress} to spend ${validatedParams.amount} ${tokenInfo.symbol}.\nTransaction Hash: ${tx.hash}`
         }]
       };
     } catch (error) {
@@ -224,7 +284,8 @@ Total Supply: ${tokenInfo.totalSupply}`
   
   transferFromERC20: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema.optional(),
+      tokenAddress: tokenAddressSchema,  // Deprecated
       senderAddress: CommonSchemas.ethereumAddress.describe('Address to transfer tokens from (requires prior approval)'),
       recipientAddress: CommonSchemas.ethereumAddress.describe('Address to transfer tokens to'),
       amount: amountSchema,
@@ -235,34 +296,44 @@ Total Supply: ${tokenInfo.totalSupply}`
     });
     
     try {
-      const { tokenAddress, senderAddress, recipientAddress, amount, provider, chainId, gasLimit, gasPrice } = validateWithFriendlyErrors(
+      // First validate with friendly errors
+      const validatedParams = validateWithFriendlyErrors(
         schema,
         args,
         'Transfer ERC20 Tokens From Another Address'
       );
       
+      // Then map deprecated parameters for backward compatibility
+      const mapped = mapParameters(validatedParams);
+      
+      // Ensure we have a contract address (from either new or old parameter name)
+      const contractAddr = mapped.contractAddress || validatedParams.tokenAddress;
+      if (!contractAddr) {
+        throw new Error('Contract address is required. Please provide either contractAddress or tokenAddress.');
+      }
+      
       // Create options object for transaction parameters
       const options: TokenOperationOptions = {};
-      if (gasLimit) options.gasLimit = gasLimit;
-      if (gasPrice) options.gasPrice = gasPrice;
+      if (validatedParams.gasLimit) options.gasLimit = validatedParams.gasLimit;
+      if (validatedParams.gasPrice) options.gasPrice = validatedParams.gasPrice;
       
       const tx = await ethersService.transferFromERC20(
-        tokenAddress, 
-        senderAddress, 
-        recipientAddress, 
-        amount, 
-        provider, 
-        chainId,
+        contractAddr, 
+        validatedParams.senderAddress, 
+        validatedParams.recipientAddress, 
+        validatedParams.amount, 
+        mapped.provider, 
+        mapped.chainId,
         options
       );
       
       // Get token info to format the response
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
           type: "text", 
-          text: `Successfully transferred ${amount} ${tokenInfo.symbol} from ${senderAddress} to ${recipientAddress}.\nTransaction Hash: ${tx.hash}`
+          text: `Successfully transferred ${validatedParams.amount} ${tokenInfo.symbol} from ${validatedParams.senderAddress} to ${validatedParams.recipientAddress}.\nTransaction Hash: ${tx.hash}`
         }]
       };
     } catch (error) {
