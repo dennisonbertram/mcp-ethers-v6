@@ -9,10 +9,16 @@
 import { z } from 'zod';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { EthersService } from '../services/ethersService.js';
+import { mapParameters } from '../utils/parameterMapping.js';
 
-// Common schemas
-const tokenAddressSchema = z.string().describe(
+// Common schemas - Standardized parameter names
+const contractAddressSchema = z.string().describe(
   "The address of the ERC20 token contract"
+);
+
+// Deprecated - kept for backward compatibility
+const tokenAddressSchema = z.string().describe(
+  "DEPRECATED: Use contractAddress instead. The address of the ERC20 token contract"
 );
 
 const providerSchema = z.string().optional().describe(
@@ -53,20 +59,28 @@ const gasOptionsSchema = z.object({
  * Registers ERC20 token tools with the MCP server
  */
 export function registerERC20Tools(server: McpServer, ethersService: EthersService) {
-  // Get ERC20 Token Info
+  // Get ERC20 Token Info - Using standardized parameter names
   server.tool(
     "getERC20TokenInfo",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       provider: providerSchema,
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
@@ -95,16 +109,24 @@ Total Supply: ${tokenInfo.totalSupply}`
   server.tool(
     "erc20_getTokenInfo",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       provider: providerSchema,
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
@@ -129,11 +151,12 @@ Total Supply: ${tokenInfo.totalSupply}`
     }
   );
   
-  // Get ERC20 Balance
+  // Get ERC20 Balance - Using standardized parameter names
   server.tool(
     "getERC20Balance",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       ownerAddress: z.string().describe(
         "The Ethereum address whose balance to check"
       ),
@@ -141,25 +164,32 @@ Total Supply: ${tokenInfo.totalSupply}`
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const balance = await ethersService.getERC20Balance(
-          params.ownerAddress,
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          mapped.ownerAddress,
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         // Get token info to format the response
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `${params.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
+            text: `${mapped.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
           }]
         };
       } catch (error) {
@@ -178,7 +208,8 @@ Total Supply: ${tokenInfo.totalSupply}`
   server.tool(
     "erc20_balanceOf",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       ownerAddress: z.string().describe(
         "The Ethereum address whose balance to check"
       ),
@@ -186,25 +217,32 @@ Total Supply: ${tokenInfo.totalSupply}`
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const balance = await ethersService.getERC20Balance(
-          params.ownerAddress,
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          mapped.ownerAddress,
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         // Get token info to format the response
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `${params.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
+            text: `${mapped.ownerAddress} has a balance of ${balance} ${tokenInfo.symbol}`
           }]
         };
       } catch (error) {
@@ -219,11 +257,12 @@ Total Supply: ${tokenInfo.totalSupply}`
     }
   );
   
-  // Get ERC20 Allowance
+  // Get ERC20 Allowance - Using standardized parameter names
   server.tool(
     "getERC20Allowance",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       ownerAddress: z.string().describe(
         "The Ethereum address that owns the tokens"
       ),
@@ -234,26 +273,33 @@ Total Supply: ${tokenInfo.totalSupply}`
       chainId: chainIdSchema
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
         const allowance = await ethersService.getERC20Allowance(
-          params.tokenAddress,
-          params.ownerAddress,
-          params.spenderAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.ownerAddress,
+          mapped.spenderAddress,
+          mapped.provider,
+          mapped.chainId
         );
         
         // Get token info to format the response
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `${params.spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${params.ownerAddress}`
+            text: `${mapped.spenderAddress} is approved to spend ${allowance} ${tokenInfo.symbol} from ${mapped.ownerAddress}`
           }]
         };
       } catch (error) {

@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { TokenOperationOptions } from '../../services/erc/types.js';
+import { mapParameters } from '../../utils/parameterMapping.js';
 
 // This will be injected during initialization
 let ethersService: any;
@@ -15,8 +16,9 @@ export function initializeErc20Handlers(service: any) {
   ethersService = service;
 }
 
-// Common schemas for repeated use
-const tokenAddressSchema = z.string();
+// Common schemas for repeated use - Standardized parameter names
+const contractAddressSchema = z.string();
+const tokenAddressSchema = z.string().optional();  // Deprecated
 const providerSchema = z.string().optional();
 const chainIdSchema = z.number().optional();
 const amountSchema = z.string();
@@ -34,14 +36,17 @@ const optionsSchema = z.object({
 export const erc20Handlers = {
   getERC20TokenInfo: async (args: unknown) => {
     const schema = z.object({
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema,  // Deprecated
       provider: providerSchema,
       chainId: chainIdSchema
     });
     
     try {
-      const { tokenAddress, provider, chainId } = schema.parse(args);
-      const tokenInfo = await ethersService.getERC20TokenInfo(tokenAddress, provider, chainId);
+      const params = schema.parse(args);
+      const mapped = mapParameters(params);
+      const contractAddr = mapped.contractAddress || params.tokenAddress;
+      const tokenInfo = await ethersService.getERC20TokenInfo(contractAddr, mapped.provider, mapped.chainId);
       
       return {
         content: [{ 
