@@ -18,6 +18,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { networkList, NetworkName } from "../config/networkList.js";
 import { DEFAULT_PROVIDERS } from "../config/networks.js";
 import { z } from "zod";
+import { validateWithFriendlyErrors, createErrorResponse } from "../utils/validation.js";
 
 /**
  * Register network tools with the MCP server
@@ -59,22 +60,25 @@ export function registerNetworkTools(server: McpServer) {
     {
       name: z.string().describe("The name of the network to get details for (case-insensitive, e.g., 'ethereum', 'polygon', 'arbitrum')")
     },
-    async (params) => {
-      const { name } = params;
-      // Find network by name (case insensitive)
-      const networkName = DEFAULT_PROVIDERS.find(
-        provider => provider.toLowerCase() === name.toLowerCase()
-      );
-      
-      if (!networkName || !(networkName in networkList)) {
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({ error: `Network '${name}' not found` }, null, 2)
-          }],
-          isError: true
-        };
-      }
+    async ({ name }) => {
+      try {
+        
+        // Find network by name (case insensitive)
+        const networkName = DEFAULT_PROVIDERS.find(
+          provider => provider.toLowerCase() === name.toLowerCase()
+        );
+        
+        if (!networkName || !(networkName in networkList)) {
+          // Get list of available networks for helpful error message
+          const availableNetworks = DEFAULT_PROVIDERS
+            .filter(n => n in networkList)
+            .join(', ');
+          
+          return createErrorResponse(
+            new Error(`Network '${name}' not found. Available networks are: ${availableNetworks}`),
+            'getting network information'
+          );
+        }
       
       const networkInfo = networkList[networkName as NetworkName];
       const data = {
@@ -85,12 +89,15 @@ export function registerNetworkTools(server: McpServer) {
         explorer: networkInfo.explorer || ''
       };
       
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(data, null, 2)
-        }]
-      };
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(data, null, 2)
+          }]
+        };
+      } catch (error) {
+        return createErrorResponse(error, 'getting network information');
+      }
     }
   );
 } 

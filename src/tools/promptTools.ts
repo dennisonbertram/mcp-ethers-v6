@@ -17,6 +17,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { validateWithFriendlyErrors, createErrorResponse } from "../utils/validation.js";
 
 /**
  * Register prompt-related tools with the MCP server
@@ -70,8 +71,8 @@ export function registerPromptTools(server: McpServer) {
       targetNetwork: z.string().describe("The target network to perform operations on (e.g., 'MEGA Testnet', 'Optimism')"),
       operation: z.enum(["balance", "txCount", "code"]).describe("The operation to perform: 'balance' for ETH balance, 'txCount' for transaction count, 'code' for contract code")
     },
-    async (params) => {
-      const { ensName, targetNetwork, operation } = params;
+    async ({ ensName, targetNetwork, operation }) => {
+      try {
       
       // Define guidance for each type of operation
       let operationGuidance = "";
@@ -110,6 +111,9 @@ export function registerPromptTools(server: McpServer) {
 This approach ensures reliable ENS resolution while allowing operations across any supported blockchain network.`
         }]
       };
+      } catch (error) {
+        return createErrorResponse(error, 'getting ENS resolution guidance');
+      }
     }
   );
 } 

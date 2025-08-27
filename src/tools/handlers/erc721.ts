@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { TokenOperationOptions } from '../../services/erc/types.js';
+import { validateWithFriendlyErrors, createErrorResponse, CommonSchemas } from '../../utils/validation.js';
 
 // This will be injected during initialization
 let ethersService: any;
@@ -15,11 +16,11 @@ export function initializeErc721Handlers(service: any) {
   ethersService = service;
 }
 
-// Common schemas for repeated use
-const contractAddressSchema = z.string();
-const providerSchema = z.string().optional();
-const chainIdSchema = z.number().optional();
-const tokenIdSchema = z.union([z.string(), z.number()]);
+// Common schemas with user-friendly messages
+const contractAddressSchema = CommonSchemas.ethereumAddress.describe('ERC721 NFT contract address');
+const providerSchema = CommonSchemas.provider;
+const chainIdSchema = CommonSchemas.chainId;
+const tokenIdSchema = z.union([z.string(), z.number()]).describe('NFT token ID (numeric identifier)');
 
 // Options schema for transaction operations
 const optionsSchema = z.object({
@@ -40,7 +41,11 @@ export const erc721Handlers = {
     });
     
     try {
-      const { contractAddress, provider, chainId } = schema.parse(args);
+      const { contractAddress, provider, chainId } = validateWithFriendlyErrors(
+        schema,
+        args,
+        'Get ERC721 Collection Information'
+      );
       const collectionInfo = await ethersService.getERC721CollectionInfo(contractAddress, provider, chainId);
       
       return {
@@ -53,13 +58,7 @@ Total Supply: ${collectionInfo.totalSupply}` : ''}`
         }]
       };
     } catch (error) {
-      return {
-        isError: true,
-        content: [{ 
-          type: "text", 
-          text: `Error getting NFT collection information: ${error instanceof Error ? error.message : String(error)}`
-        }]
-      };
+      return createErrorResponse(error, 'getting NFT collection information');
     }
   },
   
@@ -72,7 +71,11 @@ Total Supply: ${collectionInfo.totalSupply}` : ''}`
     });
     
     try {
-      const { contractAddress, tokenId, provider, chainId } = schema.parse(args);
+      const { contractAddress, tokenId, provider, chainId } = validateWithFriendlyErrors(
+        schema,
+        args,
+        'Get ERC721 Owner'
+      );
       const owner = await ethersService.getERC721Owner(contractAddress, tokenId, provider, chainId);
       
       // Get collection info to add context
@@ -85,13 +88,7 @@ Total Supply: ${collectionInfo.totalSupply}` : ''}`
         }]
       };
     } catch (error) {
-      return {
-        isError: true,
-        content: [{ 
-          type: "text", 
-          text: `Error getting NFT owner: ${error instanceof Error ? error.message : String(error)}`
-        }]
-      };
+      return createErrorResponse(error, 'getting NFT owner');
     }
   },
   
@@ -104,7 +101,11 @@ Total Supply: ${collectionInfo.totalSupply}` : ''}`
     });
     
     try {
-      const { contractAddress, tokenId, provider, chainId } = schema.parse(args);
+      const { contractAddress, tokenId, provider, chainId } = validateWithFriendlyErrors(
+        schema,
+        args,
+        'Get ERC721 Metadata'
+      );
       const metadata = await ethersService.getERC721Metadata(contractAddress, tokenId, provider, chainId);
       
       // Get collection info to add context
@@ -135,13 +136,7 @@ Total Supply: ${collectionInfo.totalSupply}` : ''}`
         }]
       };
     } catch (error) {
-      return {
-        isError: true,
-        content: [{ 
-          type: "text", 
-          text: `Error getting NFT metadata: ${error instanceof Error ? error.message : String(error)}`
-        }]
-      };
+      return createErrorResponse(error, 'getting NFT metadata');
     }
   },
   

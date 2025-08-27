@@ -7,6 +7,7 @@
 
 import { z } from 'zod';
 import { TokenOperationOptions } from '../../services/erc/types.js';
+import { validateWithFriendlyErrors, createErrorResponse, CommonSchemas } from '../../utils/validation.js';
 
 // This will be injected during initialization
 let ethersService: any;
@@ -15,12 +16,12 @@ export function initializeErc1155Handlers(service: any) {
   ethersService = service;
 }
 
-// Common schemas for repeated use
-const contractAddressSchema = z.string();
-const providerSchema = z.string().optional();
-const chainIdSchema = z.number().optional();
-const tokenIdSchema = z.union([z.string(), z.number()]);
-const amountSchema = z.string();
+// Common schemas with user-friendly messages
+const contractAddressSchema = CommonSchemas.ethereumAddress.describe('ERC1155 contract address');
+const providerSchema = CommonSchemas.provider;
+const chainIdSchema = CommonSchemas.chainId;
+const tokenIdSchema = z.union([z.string(), z.number()]).describe('Token ID (numeric identifier for the specific token type)');
+const amountSchema = CommonSchemas.amountString.describe('Amount of tokens in smallest unit');
 
 // Options schema for transaction operations
 const optionsSchema = z.object({
@@ -36,14 +37,18 @@ export const erc1155Handlers = {
   getERC1155Balance: async (args: unknown) => {
     const schema = z.object({
       contractAddress: contractAddressSchema,
-      ownerAddress: z.string(),
+      ownerAddress: CommonSchemas.ethereumAddress.describe('Address to check balance for'),
       tokenId: tokenIdSchema,
       provider: providerSchema,
       chainId: chainIdSchema
     });
     
     try {
-      const { contractAddress, ownerAddress, tokenId, provider, chainId } = schema.parse(args);
+      const { contractAddress, ownerAddress, tokenId, provider, chainId } = validateWithFriendlyErrors(
+        schema,
+        args,
+        'Get ERC1155 Balance'
+      );
       const balance = await ethersService.getERC1155Balance(
         contractAddress, 
         ownerAddress, 

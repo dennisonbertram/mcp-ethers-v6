@@ -9,9 +9,10 @@
 import { z } from 'zod';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ethers } from "ethers";
+import { validateWithFriendlyErrors, createErrorResponse, CommonSchemas } from '../utils/validation.js';
 
 // Define address schema locally
-const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+const addressSchema = CommonSchemas.ethereumAddress;
 
 // Shared provider description text that references the network tools
 const PROVIDER_DESCRIPTION = 
@@ -66,13 +67,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
           }]
         };
       } catch (error) {
-        return {
-          isError: true,
-          content: [{ 
-            type: "text", 
-            text: `Error getting block number: ${error instanceof Error ? error.message : String(error)}`
-          }]
-        };
+        return createErrorResponse(error, 'getting block number');
       }
     }
   );
@@ -97,13 +92,7 @@ export function registerCoreTools(server: McpServer, ethersService: any) {
           }]
         };
       } catch (error) {
-        return {
-          isError: true,
-          content: [{ 
-            type: "text", 
-            text: `Error getting gas price: ${error instanceof Error ? error.message : String(error)}`
-          }]
-        };
+        return createErrorResponse(error, 'getting gas price');
       }
     }
   );
@@ -138,13 +127,7 @@ Max Priority Fee Per Gas: ${formatted.maxPriorityFeePerGas}`
           }]
         };
       } catch (error) {
-        return {
-          isError: true,
-          content: [{ 
-            type: "text", 
-            text: `Error getting fee data: ${error instanceof Error ? error.message : String(error)}`
-          }]
-        };
+        return createErrorResponse(error, 'getting fee data');
       }
     }
   );
@@ -226,13 +209,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           }]
         };
       } catch (error) {
-        return {
-          isError: true,
-          content: [{ 
-            type: "text", 
-            text: `Error loading wallet: ${error instanceof Error ? error.message : String(error)}`
-          }]
-        };
+        return createErrorResponse(error, 'loading wallet');
       }
     }
   );
@@ -268,7 +245,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
   server.tool(
     "getWalletBalance",
     {
-      address: z.string().describe(
+      address: addressSchema.describe(
         "The Ethereum address to query"
       ),
       provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
@@ -293,13 +270,7 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
           }]
         };
       } catch (error) {
-        return {
-          isError: true,
-          content: [{ 
-            type: "text", 
-            text: `Error getting wallet balance: ${error instanceof Error ? error.message : String(error)}`
-          }]
-        };
+        return createErrorResponse(error, 'getting wallet balance');
       }
     }
   );
