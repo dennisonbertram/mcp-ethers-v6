@@ -2221,6 +2221,260 @@ export class EthersService {
     }
 
     /**
+     * Prepare ERC1155 NFT transfer transaction for signing
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param fromAddress Sender address
+     * @param toAddress Recipient address
+     * @param tokenId Token ID to transfer
+     * @param amount Amount to transfer
+     * @param data Additional data (default: '0x')
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC1155Transfer(
+        contractAddress: string,
+        fromAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        amount: string,
+        data: string = '0x',
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(fromAddress);
+            addressSchema.parse(toAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC1155_ABI
+            const { ERC1155_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC1155_ABI, ethersProvider);
+            
+            // Prepare transaction data for safeTransferFrom
+            const txData = contract.interface.encodeFunctionData("safeTransferFrom", [
+                fromAddress, 
+                toAddress, 
+                tokenId.toString(), 
+                amount, 
+                data
+            ]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: txData,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC1155 transfer", { contractAddress, fromAddress, toAddress, tokenId, amount });
+        }
+    }
+
+    /**
+     * Prepare ERC1155 NFT batch transfer transaction for signing
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param fromAddress Sender address
+     * @param toAddress Recipient address
+     * @param tokenIds Array of token IDs to transfer
+     * @param amounts Array of amounts to transfer
+     * @param data Additional data (default: '0x')
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC1155BatchTransfer(
+        contractAddress: string,
+        fromAddress: string,
+        toAddress: string,
+        tokenIds: (string | number)[],
+        amounts: string[],
+        data: string = '0x',
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(fromAddress);
+            addressSchema.parse(toAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC1155_ABI
+            const { ERC1155_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC1155_ABI, ethersProvider);
+            
+            // Convert tokenIds to strings
+            const tokenIdStrings = tokenIds.map(id => id.toString());
+            
+            // Prepare transaction data for safeBatchTransferFrom
+            const txData = contract.interface.encodeFunctionData("safeBatchTransferFrom", [
+                fromAddress, 
+                toAddress, 
+                tokenIdStrings, 
+                amounts, 
+                data
+            ]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: txData,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC1155 batch transfer", { contractAddress, fromAddress, toAddress, tokenIds, amounts });
+        }
+    }
+
+    /**
+     * Prepare ERC1155 NFT setApprovalForAll transaction for signing
+     * 
+     * @param contractAddress ERC1155 contract address
+     * @param operator Address to approve/revoke for all tokens
+     * @param approved Whether to approve or revoke
+     * @param fromAddress Owner address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC1155SetApprovalForAll(
+        contractAddress: string,
+        operator: string,
+        approved: boolean,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(operator);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC1155_ABI
+            const { ERC1155_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC1155_ABI, ethersProvider);
+            
+            // Prepare transaction data for setApprovalForAll
+            const txData = contract.interface.encodeFunctionData("setApprovalForAll", [operator, approved]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: txData,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC1155 setApprovalForAll", { contractAddress, operator, approved });
+        }
+    }
+
+    /**
      * Get wallet balance in ETH
      * 
      * @param address Address to check balance for

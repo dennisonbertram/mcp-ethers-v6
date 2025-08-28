@@ -193,4 +193,260 @@ export function registerERC1155Tools(server: McpServer, ethersService: EthersSer
       }
     }
   );
+
+  // Prepare ERC1155 Transfer Transaction
+  server.tool(
+    "prepareERC1155Transfer",
+    "Prepare an ERC1155 token transfer transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
+      fromAddress: addressSchema.describe("The address sending the tokens"),
+      toAddress: addressSchema.describe("The address receiving the tokens"), 
+      tokenId: tokenIdSchema,
+      amount: z.string().describe("The amount of tokens to transfer"),
+      data: z.string().optional().describe("Additional data (default: '0x')"),
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
+      try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
+
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC1155Transfer(
+          contractAddr,
+          mapped.fromAddress,
+          mapped.toAddress,
+          mapped.tokenId,
+          mapped.amount,
+          params.data || '0x',
+          mapped.provider,
+          mapped.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC1155 Transfer Transaction Prepared:
+
+Contract: ${contractAddr}
+Token ID: ${mapped.tokenId}
+From: ${mapped.fromAddress}
+To: ${mapped.toAddress}
+Amount: ${mapped.amount}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing ERC1155 transfer transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Prepare ERC1155 Batch Transfer Transaction
+  server.tool(
+    "prepareERC1155BatchTransfer",
+    "Prepare an ERC1155 batch transfer transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
+      fromAddress: addressSchema.describe("The address sending the tokens"),
+      toAddress: addressSchema.describe("The address receiving the tokens"), 
+      tokenIds: z.array(tokenIdSchema).describe("Array of token IDs to transfer"),
+      amounts: z.array(z.string()).describe("Array of amounts to transfer"),
+      data: z.string().optional().describe("Additional data (default: '0x')"),
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
+      try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
+
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC1155BatchTransfer(
+          contractAddr,
+          mapped.fromAddress,
+          mapped.toAddress,
+          params.tokenIds,
+          params.amounts,
+          params.data || '0x',
+          mapped.provider,
+          mapped.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC1155 Batch Transfer Transaction Prepared:
+
+Contract: ${contractAddr}
+Token IDs: ${params.tokenIds.join(', ')}
+From: ${mapped.fromAddress}
+To: ${mapped.toAddress}
+Amounts: ${params.amounts.join(', ')}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing ERC1155 batch transfer transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Prepare ERC1155 Set Approval For All Transaction
+  server.tool(
+    "prepareERC1155SetApprovalForAll",
+    "Prepare an ERC1155 setApprovalForAll transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
+      operator: addressSchema.describe("The address to approve/revoke for all tokens"),
+      approved: z.boolean().describe("Whether to approve (true) or revoke (false)"),
+      fromAddress: addressSchema.describe("The address that owns the tokens"),
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
+      try {
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
+
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC1155SetApprovalForAll(
+          contractAddr,
+          mapped.operator,
+          params.approved,
+          mapped.fromAddress,
+          mapped.provider,
+          mapped.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC1155 Set Approval For All Transaction Prepared:
+
+Contract: ${contractAddr}
+Owner: ${mapped.fromAddress}
+Operator: ${mapped.operator}
+Approved: ${params.approved ? 'Yes' : 'No'}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing ERC1155 setApprovalForAll transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
 } 
