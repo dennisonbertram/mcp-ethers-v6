@@ -319,52 +319,85 @@ Total Supply: ${tokenInfo.totalSupply}`
     }
   );
   
-  // Transfer ERC20
+  // Prepare ERC20 Transfer Transaction
   server.tool(
-    "transferERC20",
-    "Transfer ERC20 tokens from the connected wallet to another address. Requires a loaded wallet with sufficient token balance and ETH for gas fees.",
+    "prepareERC20Transfer",
+    "Prepare an ERC20 token transfer transaction for signing. Returns transaction data that can be signed and broadcast.",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       recipientAddress: z.string().describe(
         "The Ethereum address to receive the tokens"
       ),
       amount: amountSchema,
+      fromAddress: z.string().describe(
+        "The Ethereum address sending the tokens"
+      ),
       provider: providerSchema,
       chainId: chainIdSchema,
       gasLimit: z.string().optional(),
-      gasPrice: z.string().optional()
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
-        // Get token info to format the response
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
+
+        // Get token info for display
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         // Prepare gas options
         const options = {
           gasLimit: params.gasLimit,
-          gasPrice: params.gasPrice
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
         };
         
-        const txResult = await ethersService.transferERC20(
-          params.tokenAddress,
-          params.recipientAddress,
-          params.amount,
-          params.provider,
-          params.chainId,
+        const txRequest = await ethersService.prepareERC20Transfer(
+          contractAddr,
+          mapped.recipientAddress,
+          mapped.amount,
+          mapped.fromAddress,
+          mapped.provider,
+          mapped.chainId,
           options
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `
-Successfully transferred ${params.amount} ${tokenInfo.symbol} to ${params.recipientAddress}
-Transaction Hash: ${txResult.hash}
-Waiting for confirmation...`
+            text: `ERC20 Transfer Transaction Prepared:
+
+Token: ${tokenInfo.name} (${tokenInfo.symbol})
+From: ${mapped.fromAddress}
+To: ${mapped.recipientAddress}
+Amount: ${mapped.amount} ${tokenInfo.symbol}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
           }]
         };
       } catch (error) {
@@ -372,59 +405,92 @@ Waiting for confirmation...`
           isError: true,
           content: [{ 
             type: "text", 
-            text: `Error transferring tokens: ${error instanceof Error ? error.message : String(error)}`
+            text: `Error preparing transfer transaction: ${error instanceof Error ? error.message : String(error)}`
           }]
         };
       }
     }
   );
   
-  // Approve ERC20
+  // Prepare ERC20 Approval Transaction
   server.tool(
-    "approveERC20",
-    "Approve another address to spend ERC20 tokens on behalf of the connected wallet. Sets the allowance amount for the spender address.",
+    "prepareERC20Approval",
+    "Prepare an ERC20 token approval transaction for signing. Returns transaction data that can be signed and broadcast.",
     {
-      tokenAddress: tokenAddressSchema,
+      contractAddress: contractAddressSchema,
+      tokenAddress: tokenAddressSchema.optional(),  // Deprecated
       spenderAddress: z.string().describe(
         "The Ethereum address to approve for spending tokens"
       ),
       amount: amountSchema,
+      fromAddress: z.string().describe(
+        "The Ethereum address that owns the tokens"
+      ),
       provider: providerSchema,
       chainId: chainIdSchema,
       gasLimit: z.string().optional(),
-      gasPrice: z.string().optional()
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
     },
     async (params) => {
+      // Map deprecated parameters
+      const mapped = mapParameters(params);
+      
       try {
-        // Get token info to format the response
+        const contractAddr = mapped.contractAddress || params.tokenAddress;
+        if (!contractAddr) {
+          throw new Error('Either contractAddress or tokenAddress must be provided');
+        }
+
+        // Get token info for display
         const tokenInfo = await ethersService.getERC20TokenInfo(
-          params.tokenAddress,
-          params.provider,
-          params.chainId
+          contractAddr,
+          mapped.provider,
+          mapped.chainId
         );
         
         // Prepare gas options
         const options = {
           gasLimit: params.gasLimit,
-          gasPrice: params.gasPrice
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
         };
         
-        const txResult = await ethersService.approveERC20(
-          params.tokenAddress,
-          params.spenderAddress,
-          params.amount,
-          params.provider,
-          params.chainId,
+        const txRequest = await ethersService.prepareERC20Approval(
+          contractAddr,
+          mapped.spenderAddress,
+          mapped.amount,
+          mapped.fromAddress,
+          mapped.provider,
+          mapped.chainId,
           options
         );
         
         return {
           content: [{ 
             type: "text", 
-            text: `
-Successfully approved ${params.spenderAddress} to spend ${params.amount} ${tokenInfo.symbol}
-Transaction Hash: ${txResult.hash}
-Waiting for confirmation...`
+            text: `ERC20 Approval Transaction Prepared:
+
+Token: ${tokenInfo.name} (${tokenInfo.symbol})
+Owner: ${mapped.fromAddress}
+Spender: ${mapped.spenderAddress}
+Amount: ${mapped.amount} ${tokenInfo.symbol}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
           }]
         };
       } catch (error) {
@@ -432,7 +498,7 @@ Waiting for confirmation...`
           isError: true,
           content: [{ 
             type: "text", 
-            text: `Error approving tokens: ${error instanceof Error ? error.message : String(error)}`
+            text: `Error preparing approval transaction: ${error instanceof Error ? error.message : String(error)}`
           }]
         };
       }

@@ -25,14 +25,44 @@ import { networkList, NetworkName, NetworkInfo } from "../config/networkList.js"
 import * as erc20 from "./erc/erc20.js";
 import * as erc721 from "./erc/erc721.js";
 import * as erc1155 from "./erc/erc1155.js";
+import { ERC20_ABI } from "./erc/constants.js";
 import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types.js";
 import { TokenError } from "./erc/errors.js";
 import { logger } from "../utils/logger.js";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().refine(
-    (address) => ethers.isAddress(address),
-    { message: "Invalid Ethereum address format" }
+    (address) => {
+        // First check if it's a valid format
+        if (!address.startsWith('0x')) {
+            throw new Error('Address must start with 0x');
+        }
+        
+        const addressLength = address.length;
+        if (addressLength !== 42) {
+            if (addressLength === 43) {
+                throw new Error(`Address is too long (${addressLength} characters). Expected exactly 42 characters. Your address has an extra character: "${address}". Try: "${address.substring(0, 42)}"`);
+            } else if (addressLength === 41) {
+                throw new Error(`Address is too short (${addressLength} characters). Expected exactly 42 characters. Your address is missing ${42 - addressLength} character(s).`);
+            } else if (addressLength < 42) {
+                throw new Error(`Address is too short (${addressLength} characters). Expected exactly 42 characters. Your address is missing ${42 - addressLength} character(s).`);
+            } else {
+                throw new Error(`Address is too long (${addressLength} characters). Expected exactly 42 characters. Your address has ${addressLength - 42} extra character(s).`);
+            }
+        }
+        
+        // Check if all characters after 0x are valid hex
+        const hexPart = address.substring(2);
+        if (!/^[a-fA-F0-9]+$/.test(hexPart)) {
+            throw new Error('Address contains invalid characters. Only hexadecimal characters (0-9, a-f, A-F) are allowed after 0x.');
+        }
+        
+        // Finally validate with ethers
+        return ethers.isAddress(address);
+    },
+    { 
+        message: "Invalid Ethereum address format. Expected format: 0x followed by exactly 40 hexadecimal characters (e.g., 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb7)" 
+    }
 );
 
 const networkToEthersMap: Record<string, string> = {
@@ -1398,6 +1428,166 @@ export class EthersService {
                 throw error;
             }
             this.handleProviderError(error, "approve ERC20 tokens", { tokenAddress, spenderAddress, amount });
+        }
+    }
+
+    /**
+     * Prepare ERC20 transfer transaction for signing
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param recipientAddress Recipient address
+     * @param amount Amount to transfer in token units (e.g., "1.5" not wei)
+     * @param fromAddress Sender address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC20Transfer(
+        tokenAddress: string,
+        recipientAddress: string,
+        amount: string,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(recipientAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Get token info to parse amount correctly
+            const tokenInfo = await this.getERC20TokenInfo(tokenAddress, provider, chainId);
+            
+            // Create contract interface
+            const contract = new ethers.Contract(tokenAddress, ERC20_ABI, ethersProvider);
+            
+            // Parse amount to wei equivalent (considering token decimals)
+            const amountWei = ethers.parseUnits(amount, tokenInfo.decimals);
+            
+            // Prepare transaction data
+            const data = contract.interface.encodeFunctionData("transfer", [recipientAddress, amountWei]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: tokenAddress,
+                data: data,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC20 transfer", { tokenAddress, recipientAddress, amount });
+        }
+    }
+
+    /**
+     * Prepare ERC20 approval transaction for signing
+     * 
+     * @param tokenAddress ERC20 token contract address
+     * @param spenderAddress Address to approve for spending
+     * @param amount Amount to approve in token units (e.g., "1.5" not wei)
+     * @param fromAddress Owner address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC20Approval(
+        tokenAddress: string,
+        spenderAddress: string,
+        amount: string,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(tokenAddress);
+            addressSchema.parse(spenderAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Get token info to parse amount correctly
+            const tokenInfo = await this.getERC20TokenInfo(tokenAddress, provider, chainId);
+            
+            // Create contract interface
+            const contract = new ethers.Contract(tokenAddress, ERC20_ABI, ethersProvider);
+            
+            // Parse amount to wei equivalent (considering token decimals)
+            const amountWei = ethers.parseUnits(amount, tokenInfo.decimals);
+            
+            // Prepare transaction data
+            const data = contract.interface.encodeFunctionData("approve", [spenderAddress, amountWei]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: tokenAddress,
+                data: data,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC20 approval", { tokenAddress, spenderAddress, amount });
         }
     }
 
