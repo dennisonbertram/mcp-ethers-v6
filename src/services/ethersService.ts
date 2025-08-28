@@ -1796,6 +1796,237 @@ export class EthersService {
         }
     }
 
+    /**
+     * Prepare ERC721 NFT transfer transaction for signing
+     * 
+     * @param contractAddress ERC721 contract address
+     * @param toAddress Recipient address
+     * @param tokenId Token ID to transfer
+     * @param fromAddress Sender address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC721Transfer(
+        contractAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(toAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC721_ABI
+            const { ERC721_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC721_ABI, ethersProvider);
+            
+            // Prepare transaction data for transferFrom
+            const data = contract.interface.encodeFunctionData("transferFrom", [fromAddress, toAddress, tokenId.toString()]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: data,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC721 transfer", { contractAddress, toAddress, tokenId });
+        }
+    }
+
+    /**
+     * Prepare ERC721 NFT approval transaction for signing
+     * 
+     * @param contractAddress ERC721 contract address
+     * @param toAddress Address to approve for the token
+     * @param tokenId Token ID to approve
+     * @param fromAddress Owner address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC721Approval(
+        contractAddress: string,
+        toAddress: string,
+        tokenId: string | number,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(toAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC721_ABI
+            const { ERC721_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC721_ABI, ethersProvider);
+            
+            // Prepare transaction data for approve
+            const data = contract.interface.encodeFunctionData("approve", [toAddress, tokenId.toString()]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: data,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC721 approval", { contractAddress, toAddress, tokenId });
+        }
+    }
+
+    /**
+     * Prepare ERC721 NFT setApprovalForAll transaction for signing
+     * 
+     * @param contractAddress ERC721 contract address
+     * @param operator Address to approve/revoke for all tokens
+     * @param approved Whether to approve or revoke
+     * @param fromAddress Owner address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareERC721SetApprovalForAll(
+        contractAddress: string,
+        operator: string,
+        approved: boolean,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(operator);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Import ERC721_ABI
+            const { ERC721_ABI } = await import("./erc/constants.js");
+            
+            // Create contract interface
+            const contract = new ethers.Contract(contractAddress, ERC721_ABI, ethersProvider);
+            
+            // Prepare transaction data for setApprovalForAll
+            const data = contract.interface.encodeFunctionData("setApprovalForAll", [operator, approved]);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: data,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare ERC721 setApprovalForAll", { contractAddress, operator, approved });
+        }
+    }
+
     // ERC1155 Multi-Token Methods
 
     /**

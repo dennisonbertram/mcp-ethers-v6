@@ -452,4 +452,244 @@ Waiting for confirmation...`
       }
     }
   );
+
+  // Prepare ERC721 Transfer Transaction
+  server.tool(
+    "prepareERC721Transfer",
+    "Prepare an ERC721 NFT transfer transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      tokenId: tokenIdSchema,
+      toAddress: addressSchema,
+      fromAddress: addressSchema,
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      try {
+        // Get NFT collection info for display
+        const nftInfo = await ethersService.getERC721CollectionInfo(
+          params.contractAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC721Transfer(
+          params.contractAddress,
+          params.toAddress,
+          params.tokenId,
+          params.fromAddress,
+          params.provider,
+          params.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC721 Transfer Transaction Prepared:
+
+Collection: ${nftInfo.name} (${nftInfo.symbol})
+Token ID: ${params.tokenId}
+From: ${params.fromAddress}
+To: ${params.toAddress}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing NFT transfer transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Prepare ERC721 Approval Transaction
+  server.tool(
+    "prepareERC721Approval",
+    "Prepare an ERC721 NFT approval transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      tokenId: tokenIdSchema,
+      approvedAddress: addressSchema,
+      fromAddress: addressSchema,
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      try {
+        // Get NFT collection info for display
+        const nftInfo = await ethersService.getERC721CollectionInfo(
+          params.contractAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC721Approval(
+          params.contractAddress,
+          params.approvedAddress,
+          params.tokenId,
+          params.fromAddress,
+          params.provider,
+          params.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC721 Approval Transaction Prepared:
+
+Collection: ${nftInfo.name} (${nftInfo.symbol})
+Token ID: ${params.tokenId}
+Owner: ${params.fromAddress}
+Approved Address: ${params.approvedAddress}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing NFT approval transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Prepare ERC721 Set Approval For All Transaction
+  server.tool(
+    "prepareERC721SetApprovalForAll",
+    "Prepare an ERC721 NFT setApprovalForAll transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: contractAddressSchema,
+      operator: addressSchema,
+      approved: z.boolean(),
+      fromAddress: addressSchema,
+      provider: providerSchema,
+      chainId: chainIdSchema,
+      gasLimit: z.string().optional(),
+      gasPrice: z.string().optional(),
+      maxFeePerGas: z.string().optional(),
+      maxPriorityFeePerGas: z.string().optional()
+    },
+    async (params) => {
+      try {
+        // Get NFT collection info for display
+        const nftInfo = await ethersService.getERC721CollectionInfo(
+          params.contractAddress,
+          params.provider,
+          params.chainId
+        );
+        
+        // Prepare gas options
+        const options = {
+          gasLimit: params.gasLimit,
+          gasPrice: params.gasPrice,
+          maxFeePerGas: params.maxFeePerGas,
+          maxPriorityFeePerGas: params.maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareERC721SetApprovalForAll(
+          params.contractAddress,
+          params.operator,
+          params.approved,
+          params.fromAddress,
+          params.provider,
+          params.chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ERC721 Set Approval For All Transaction Prepared:
+
+Collection: ${nftInfo.name} (${nftInfo.symbol})
+Owner: ${params.fromAddress}
+Operator: ${params.operator}
+Approved: ${params.approved ? 'Yes' : 'No'}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value || "0",
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing NFT setApprovalForAll transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
 } 
