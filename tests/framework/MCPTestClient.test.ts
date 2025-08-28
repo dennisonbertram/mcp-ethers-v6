@@ -3,7 +3,7 @@
  * @description Tests for the MCPTestClient implementation
  */
 
-import { MCPTestClient, createTestClient } from './MCPTestClient';
+import { MCPTestClient, createTestClient } from './MCPTestClient.js';
 import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';
 
 describe('MCPTestClient', () => {
@@ -70,7 +70,7 @@ describe('MCPTestClient', () => {
       const tools = await client.listTools();
       
       // If there's a simple tool like getBlockNumber, test it
-      const blockNumberTool = tools.tools.find(t => t.name === 'getBlockNumber');
+      const blockNumberTool = tools.tools.find((t: any) => t.name === 'getBlockNumber');
       if (blockNumberTool) {
         const result = await client.callTool('getBlockNumber', {
           provider: 'ethereum'
@@ -104,7 +104,7 @@ describe('MCPTestClient', () => {
       
       expect(Array.isArray(results)).toBe(true);
       expect(results.length).toBe(toolTests.length);
-      results.forEach(result => {
+      results.forEach((result: any) => {
         expect(result).toHaveProperty('success');
         expect(result).toHaveProperty('toolName');
         expect(result).toHaveProperty('duration');

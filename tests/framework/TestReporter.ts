@@ -3,8 +3,8 @@
  * @description Test reporting system for MCP test results
  */
 
-import { TestResult, TestSuiteResult, TestSeverity, TestCategory } from './TestCase';
-import { TestRunner } from './TestRunner';
+import { TestResult, TestSuiteResult, TestSeverity, TestCategory } from './TestCase.js';
+import { TestRunner } from './TestRunner.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -51,7 +51,7 @@ export interface TestSummary {
   testsBySeverity: Record<TestSeverity, number>;
   failuresByCategory: Record<TestCategory, number>;
   slowestTests: Array<{ name: string; duration: number }>;
-  failedTests: Array<{ name: string; error: string }>;
+  failedTestsList: Array<{ name: string; error: string }>;
 }
 
 /**
@@ -80,33 +80,33 @@ export class TestReporter {
   attachToRunner(runner: TestRunner): void {
     this.testRunner = runner;
 
-    runner.on('test:start', (testCase) => {
+    runner.on('test:start', (testCase: any) => {
       if (this.config.verbose) {
         this.logTestStart(testCase.name);
       }
     });
 
-    runner.on('test:pass', (result) => {
+    runner.on('test:pass', (result: any) => {
       this.logTestPass(result);
     });
 
-    runner.on('test:fail', (result) => {
+    runner.on('test:fail', (result: any) => {
       this.logTestFail(result);
     });
 
-    runner.on('test:skip', (result) => {
+    runner.on('test:skip', (result: any) => {
       this.logTestSkip(result);
     });
 
-    runner.on('suite:start', (suite) => {
+    runner.on('suite:start', (suite: any) => {
       this.logSuiteStart(suite.name);
     });
 
-    runner.on('suite:end', (result) => {
+    runner.on('suite:end', (result: any) => {
       this.logSuiteEnd(result);
     });
 
-    runner.on('progress', (current, total) => {
+    runner.on('progress', (current: any, total: any) => {
       if (this.config.verbose) {
         this.logProgress(current, total);
       }
@@ -170,7 +170,7 @@ export class TestReporter {
       testsBySeverity: {} as Record<TestSeverity, number>,
       failuresByCategory: {} as Record<TestCategory, number>,
       slowestTests: [],
-      failedTests: []
+      failedTestsList: []
     };
 
     const allTests: TestResult[] = [];
@@ -203,7 +203,7 @@ export class TestReporter {
     }));
 
     // Collect failed tests
-    summary.failedTests = allTests
+    summary.failedTestsList = allTests
       .filter(t => !t.passed && !t.skipped)
       .map(t => ({
         name: t.testName,
@@ -257,11 +257,11 @@ export class TestReporter {
     }
 
     // Failed tests details
-    if (summary.failedTests.length > 0 && this.config.includeErrors) {
+    if (summary.failedTestsList.length > 0 && this.config.includeErrors) {
       lines.push('\n' + '─'.repeat(60));
       lines.push('❌ Failed Tests');
       lines.push('─'.repeat(60));
-      for (const failed of summary.failedTests) {
+      for (const failed of summary.failedTestsList) {
         lines.push(`• ${failed.name}`);
         lines.push(`  Error: ${failed.error}`);
       }
@@ -303,7 +303,7 @@ export class TestReporter {
         startTime: suite.startTime,
         endTime: suite.endTime,
         passRate: suite.passRate,
-        tests: this.config.includeResponses ? suite.results : suite.results.map(r => ({
+        tests: this.config.includeResponses ? suite.results : suite.results.map((r: any) => ({
           testId: r.testId,
           testName: r.testName,
           passed: r.passed,
@@ -365,7 +365,7 @@ export class TestReporter {
                     </tr>
                 </thead>
                 <tbody>
-                    ${suite.results.map(test => `
+                    ${suite.results.map((test: any) => `
                         <tr>
                             <td>${test.testName}</td>
                             <td class="${test.passed ? 'passed' : test.skipped ? 'skipped' : 'failed'}">
@@ -459,10 +459,10 @@ export class TestReporter {
     }
 
     // Failed tests
-    if (summary.failedTests.length > 0) {
+    if (summary.failedTestsList.length > 0) {
       lines.push('## Failed Tests');
       lines.push('');
-      for (const failed of summary.failedTests) {
+      for (const failed of summary.failedTestsList) {
         lines.push(`- **${failed.name}**`);
         lines.push(`  - Error: ${failed.error}`);
       }

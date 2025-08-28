@@ -9,7 +9,7 @@
  * - Generate reports
  */
 
-import { MCPTestClient, createTestClient } from './framework/MCPTestClient';
+import { MCPTestClient, createTestClient } from './framework/MCPTestClient.js';
 import { 
   TestCase, 
   TestSuite, 
@@ -17,10 +17,10 @@ import {
   TestSeverity,
   createTestCase,
   ValidationRuleType
-} from './framework/TestCase';
-import { TestRunner } from './framework/TestRunner';
-import { TestReporter } from './framework/TestReporter';
-import { ResponseValidator } from './validation/ResponseValidator';
+} from './framework/TestCase.js';
+import { TestRunner } from './framework/TestRunner.js';
+import { TestReporter } from './framework/TestReporter.js';
+import { ResponseValidator } from './validation/ResponseValidator.js';
 
 /**
  * Creates a comprehensive test suite for the MCP server
@@ -42,7 +42,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
       .expectSuccess()
       .requireField('content')
       .validateType('content', 'object')
-      .customValidator((response) => {
+      .customValidator((response: any) => {
         // Check that block number is a positive integer
         if (response?.content?.[0]?.text) {
           const blockNum = parseInt(response.content[0].text);
@@ -298,7 +298,7 @@ async function createERC20TestSuite(): Promise<TestSuite> {
         provider: 'ethereum'
       })
       .expectSuccess()
-      .customValidator((response) => {
+      .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('USD Coin');
       }, 'Should return USD Coin as name')
@@ -317,7 +317,7 @@ async function createERC20TestSuite(): Promise<TestSuite> {
         provider: 'ethereum'
       })
       .expectSuccess()
-      .customValidator((response) => {
+      .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('USDC');
       }, 'Should return USDC as symbol')
@@ -336,7 +336,7 @@ async function createERC20TestSuite(): Promise<TestSuite> {
         provider: 'ethereum'
       })
       .expectSuccess()
-      .customValidator((response) => {
+      .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('6'); // USDC has 6 decimals
       }, 'USDC should have 6 decimals')
@@ -379,7 +379,7 @@ async function runTests() {
   console.log('🚀 Starting MCP Test Framework Example\n');
 
   let client: MCPTestClient;
-  let cleanup: () => Promise<void>;
+  let cleanup: (() => Promise<void>) | undefined;
 
   try {
     // Create and connect test client
@@ -484,7 +484,7 @@ async function runTests() {
 }
 
 // Run tests if this file is executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runTests().catch(console.error);
 }
 

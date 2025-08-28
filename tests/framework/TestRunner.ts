@@ -3,7 +3,7 @@
  * @description Test execution engine for running MCP test cases systematically
  */
 
-import { MCPTestClient } from './MCPTestClient';
+import { MCPTestClient } from './MCPTestClient.js';
 import {
   TestCase,
   TestSuite,
@@ -14,7 +14,7 @@ import {
   TestSeverity,
   ValidationRule,
   ValidationRuleType
-} from './TestCase';
+} from './TestCase.js';
 import { EventEmitter } from 'events';
 
 /**
@@ -83,7 +83,7 @@ export class TestRunner extends EventEmitter {
 
       // Check dependencies
       if (testCase.dependencies && testCase.dependencies.length > 0) {
-        const unmetDeps = testCase.dependencies.filter(dep => !this.executedTests.has(dep));
+        const unmetDeps = testCase.dependencies.filter((dep: any) => !this.executedTests.has(dep));
         if (unmetDeps.length > 0) {
           result.skipped = true;
           result.error = `Unmet dependencies: ${unmetDeps.join(', ')}`;
@@ -398,13 +398,13 @@ export class TestRunner extends EventEmitter {
     // Filter by tags
     if (this.config.includeTags && this.config.includeTags.length > 0) {
       filtered = filtered.filter(tc =>
-        tc.tags && tc.tags.some(tag => this.config.includeTags!.includes(tag))
+        tc.tags && tc.tags.some((tag: any) => this.config.includeTags!.includes(tag))
       );
     }
 
     if (this.config.excludeTags && this.config.excludeTags.length > 0) {
       filtered = filtered.filter(tc =>
-        !tc.tags || !tc.tags.some(tag => this.config.excludeTags!.includes(tag))
+        !tc.tags || !tc.tags.some((tag: any) => this.config.excludeTags!.includes(tag))
       );
     }
 
@@ -475,7 +475,7 @@ export class TestRunner extends EventEmitter {
       this.emit('progress', completed, total);
       
       // Check for stop on failure
-      if (this.config.stopOnFailure && batchResults.some(r => !r.passed && !r.skipped)) {
+      if (this.config.stopOnFailure && batchResults.some((r: any) => !r.passed && !r.skipped)) {
         break;
       }
     }

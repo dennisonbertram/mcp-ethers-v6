@@ -236,7 +236,7 @@ export class MCPTestClient {
         name: 'unknown',
         version: 'unknown'
       },
-      capabilities: this.capabilities || {}
+      capabilities: this.capabilities as any || {}
     };
   }
 
@@ -282,7 +282,7 @@ export class MCPTestClient {
         success: true,
         toolName: name,
         parameters,
-        response,
+        response: response as any,
         duration,
         timestamp: new Date()
       };
