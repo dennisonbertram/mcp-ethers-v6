@@ -1,7 +1,0 @@
-[test]
-# Test timeout in milliseconds
-timeout = 30000
-
-[test.env]
-# Disable logging for tests
-NODE_ENV = "test" 

@@ -73,7 +73,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('tool-003', 'Get Balance - Valid Address')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.HIGH)
-      .tool('getBalance')
+      .tool('getWalletBalance')
       .parameters({
         address: '0x0000000000000000000000000000000000000000',
         provider: 'ethereum'
@@ -91,7 +91,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('tool-004', 'Get Balance - Invalid Address')
       .category(TestCategory.PARAMETERS)
       .severity(TestSeverity.HIGH)
-      .tool('getBalance')
+      .tool('getWalletBalance')
       .parameters({
         address: 'not_a_valid_address',
         provider: 'ethereum'
@@ -107,7 +107,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('tool-005', 'Get Balance - Missing Address')
       .category(TestCategory.PARAMETERS)
       .severity(TestSeverity.HIGH)
-      .tool('getBalance')
+      .tool('getWalletBalance')
       .parameters({ provider: 'ethereum' })
       .expectError(/required|missing.*address/i)
       .timeout(5000)
@@ -120,10 +120,10 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('tool-006', 'ERC20 Get Balance')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.MEDIUM)
-      .tool('erc20_getBalance')
+      .tool('getERC20Balance')
       .parameters({
         contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
-        account: '0x0000000000000000000000000000000000000000',
+        ownerAddress: '0x0000000000000000000000000000000000000000',
         provider: 'ethereum'
       })
       .expectSuccess()
@@ -133,12 +133,12 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
       .build()
   );
 
-  // Test 7: ERC20 Get Total Supply
+  // Test 7: ERC20 Get Token Info (includes Total Supply)
   testCases.push(
-    createTestCase('tool-007', 'ERC20 Get Total Supply')
+    createTestCase('tool-007', 'ERC20 Get Token Info')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.LOW)
-      .tool('erc20_getTotalSupply')
+      .tool('getERC20TokenInfo')
       .parameters({
         contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
         provider: 'ethereum'
@@ -155,10 +155,10 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('tool-008', 'ERC721 Get Balance')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.LOW)
-      .tool('erc721_getBalance')
+      .tool('erc721_balanceOf')
       .parameters({
-        contractAddress: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D', // BAYC
-        owner: '0x0000000000000000000000000000000000000000',
+        tokenAddress: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D', // BAYC
+        ownerAddress: '0x0000000000000000000000000000000000000000',
         provider: 'ethereum'
       })
       .expectSuccess()
@@ -214,12 +214,11 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
       .tool('getBlockNumber')
       .parameters({ provider: 'ethereum' })
       .expectSuccess()
-      .expectStructure({
-        content: [{
-          type: 'text',
-          text: expect.any(String)
-        }]
-      })
+      .customValidator((response: any) => {
+        const content = response?.content;
+        return Array.isArray(content) && content.length > 0 && 
+               content[0]?.type === 'text' && typeof content[0]?.text === 'string';
+      }, 'Should return content array with text response')
       .timeout(3000) // Strict timeout for performance
       .tags('performance')
       .build()
@@ -234,7 +233,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('sec-001', 'SQL Injection Prevention')
       .category(TestCategory.SECURITY)
       .severity(TestSeverity.CRITICAL)
-      .tool('getBalance')
+      .tool('getWalletBalance')
       .parameters({
         address: "'; DROP TABLE users; --",
         provider: 'ethereum'
@@ -250,7 +249,7 @@ async function createComprehensiveTestSuite(): Promise<TestSuite> {
     createTestCase('sec-002', 'XSS Prevention in Parameters')
       .category(TestCategory.SECURITY)
       .severity(TestSeverity.HIGH)
-      .tool('getBalance')
+      .tool('getWalletBalance')
       .parameters({
         address: '<script>alert("xss")</script>',
         provider: 'ethereum'
@@ -289,10 +288,10 @@ async function createERC20TestSuite(): Promise<TestSuite> {
   const TEST_ACCOUNT = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503'; // Binance wallet
 
   testCases.push(
-    createTestCase('erc20-001', 'Get Token Name')
+    createTestCase('erc20-001', 'Get Token Info (Name)')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.HIGH)
-      .tool('erc20_getName')
+      .tool('getERC20TokenInfo')
       .parameters({
         contractAddress: USDC_ADDRESS,
         provider: 'ethereum'
@@ -301,17 +300,17 @@ async function createERC20TestSuite(): Promise<TestSuite> {
       .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('USD Coin');
-      }, 'Should return USD Coin as name')
+      }, 'Should return USD Coin as name in token info')
       .timeout(10000)
       .tags('erc20', 'metadata')
       .build()
   );
 
   testCases.push(
-    createTestCase('erc20-002', 'Get Token Symbol')
+    createTestCase('erc20-002', 'Get Token Info (Symbol)')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.HIGH)
-      .tool('erc20_getSymbol')
+      .tool('getERC20TokenInfo')
       .parameters({
         contractAddress: USDC_ADDRESS,
         provider: 'ethereum'
@@ -320,17 +319,17 @@ async function createERC20TestSuite(): Promise<TestSuite> {
       .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('USDC');
-      }, 'Should return USDC as symbol')
+      }, 'Should return USDC as symbol in token info')
       .timeout(10000)
       .tags('erc20', 'metadata')
       .build()
   );
 
   testCases.push(
-    createTestCase('erc20-003', 'Get Token Decimals')
+    createTestCase('erc20-003', 'Get Token Info (Decimals)')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.MEDIUM)
-      .tool('erc20_getDecimals')
+      .tool('getERC20TokenInfo')
       .parameters({
         contractAddress: USDC_ADDRESS,
         provider: 'ethereum'
@@ -339,7 +338,7 @@ async function createERC20TestSuite(): Promise<TestSuite> {
       .customValidator((response: any) => {
         const text = response?.content?.[0]?.text;
         return text && text.includes('6'); // USDC has 6 decimals
-      }, 'USDC should have 6 decimals')
+      }, 'USDC should have 6 decimals in token info')
       .timeout(10000)
       .tags('erc20', 'metadata')
       .build()
@@ -349,10 +348,10 @@ async function createERC20TestSuite(): Promise<TestSuite> {
     createTestCase('erc20-004', 'Get Token Balance')
       .category(TestCategory.TOOLS)
       .severity(TestSeverity.HIGH)
-      .tool('erc20_getBalance')
+      .tool('getERC20Balance')
       .parameters({
         contractAddress: USDC_ADDRESS,
-        account: TEST_ACCOUNT,
+        ownerAddress: TEST_ACCOUNT,
         provider: 'ethereum'
       })
       .expectSuccess()
@@ -484,7 +483,7 @@ async function runTests() {
 }
 
 // Run tests if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('example-test-suite.js')) {
   runTests().catch(console.error);
 }
 
