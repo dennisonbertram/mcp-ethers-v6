@@ -29,6 +29,7 @@ import { ERC20_ABI } from "./erc/constants.js";
 import { ERC20Info, ERC721Info, NFTMetadata, ERC721TokenInfo, ERC1155TokenInfo, TokenOperationOptions } from "./erc/types.js";
 import { TokenError } from "./erc/errors.js";
 import { logger } from "../utils/logger.js";
+import { silentLogger } from "../utils/silentLogger.js";
 
 // Move addressSchema to class level to avoid duplication
 const addressSchema = z.string().refine(
@@ -2489,6 +2490,193 @@ export class EthersService {
             return ethers.formatEther(balance);
         } catch (error) {
             this.handleProviderError(error, "get wallet balance", { address });
+        }
+    }
+
+    /**
+     * Prepare a basic ETH transfer transaction for signing
+     * 
+     * @param toAddress Recipient address
+     * @param value Amount in ETH to send
+     * @param fromAddress Sender address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareTransaction(
+        toAddress: string,
+        value: string,
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(toAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Convert ETH amount to wei
+            const valueInWei = ethers.parseEther(value);
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: toAddress,
+                value: valueInWei,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare transaction", { toAddress, value, fromAddress });
+        }
+    }
+
+    /**
+     * Prepare a smart contract transaction for signing
+     * 
+     * @param contractAddress Smart contract address
+     * @param data Contract interaction data (encoded function call)
+     * @param value Amount in ETH to send (default: "0")
+     * @param fromAddress Sender address
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @param options Optional transaction options
+     * @returns Promise with prepared transaction object
+     */
+    async prepareContractTransaction(
+        contractAddress: string,
+        data: string,
+        value: string = "0",
+        fromAddress: string,
+        provider?: string,
+        chainId?: number,
+        options: TokenOperationOptions = {}
+    ): Promise<ethers.TransactionRequest> {
+        try {
+            addressSchema.parse(contractAddress);
+            addressSchema.parse(fromAddress);
+            
+            // Validate data is hex
+            if (!data.startsWith('0x')) {
+                throw new Error('Contract data must be hex string starting with 0x');
+            }
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            
+            // Convert ETH amount to wei
+            const valueInWei = ethers.parseEther(value);
+            
+            // Prepare transaction request
+            const txRequest: ethers.TransactionRequest = {
+                to: contractAddress,
+                data: data,
+                value: valueInWei,
+                from: fromAddress,
+                chainId: chainId || Number(network.chainId)
+            };
+            
+            // Add gas options if provided
+            if (options.gasLimit) {
+                txRequest.gasLimit = typeof options.gasLimit === 'string' ? 
+                    ethers.getBigInt(options.gasLimit) : 
+                    ethers.getBigInt(options.gasLimit.toString());
+            }
+            if (options.gasPrice) {
+                txRequest.gasPrice = typeof options.gasPrice === 'string' ? 
+                    ethers.parseUnits(options.gasPrice, 'gwei') : 
+                    ethers.parseUnits(options.gasPrice.toString(), 'gwei');
+            }
+            if (options.maxFeePerGas) {
+                txRequest.maxFeePerGas = typeof options.maxFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxFeePerGas.toString(), 'gwei');
+            }
+            if (options.maxPriorityFeePerGas) {
+                txRequest.maxPriorityFeePerGas = typeof options.maxPriorityFeePerGas === 'string' ? 
+                    ethers.parseUnits(options.maxPriorityFeePerGas, 'gwei') : 
+                    ethers.parseUnits(options.maxPriorityFeePerGas.toString(), 'gwei');
+            }
+            
+            return txRequest;
+        } catch (error) {
+            this.handleProviderError(error, "prepare contract transaction", { contractAddress, data, value, fromAddress });
+        }
+    }
+
+    /**
+     * Send a signed transaction to the network
+     * 
+     * @param signedTransaction The signed transaction data (hex string)
+     * @param provider Optional provider name or instance
+     * @param chainId Optional chain ID
+     * @returns Promise with transaction response and receipt
+     */
+    async sendSignedTransaction(
+        signedTransaction: string,
+        provider?: string,
+        chainId?: number
+    ): Promise<{ hash: string; receipt: ethers.TransactionReceipt | null }> {
+        try {
+            // Validate signed transaction is hex
+            if (!signedTransaction.startsWith('0x')) {
+                throw new Error('Signed transaction must be hex string starting with 0x');
+            }
+            
+            // Get provider
+            const ethersProvider = this.getProvider(provider, chainId);
+            
+            // Send the signed transaction
+            const txResponse = await ethersProvider.broadcastTransaction(signedTransaction);
+            
+            // Wait for transaction to be mined (with timeout)
+            let receipt: ethers.TransactionReceipt | null = null;
+            try {
+                receipt = await txResponse.wait(1); // Wait for 1 confirmation
+            } catch (error) {
+                // Transaction might still be pending, that's ok
+                silentLogger.debug('Transaction receipt not available yet:', { error: error instanceof Error ? error.message : String(error) });
+            }
+            
+            return {
+                hash: txResponse.hash,
+                receipt: receipt
+            };
+        } catch (error) {
+            this.handleProviderError(error, "send signed transaction", { signedTransaction: signedTransaction.substring(0, 20) + '...' });
         }
     }
 } 

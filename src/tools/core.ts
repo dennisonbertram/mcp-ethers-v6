@@ -1081,4 +1081,237 @@ ${saveToEnv ? "Private key has been saved to environment variables for this sess
       }
     }
   );
+
+  // Prepare Transaction tool (ETH transfers)
+  server.tool(
+    "prepareTransaction",
+    "Prepare a basic ETH transfer transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      toAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
+        "The Ethereum address to send ETH to"
+      ),
+      value: z.string().describe(
+        "The amount to send in ETH (e.g., '1.0', '0.5')"
+      ),
+      fromAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
+        "The Ethereum address sending the ETH"
+      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use."
+      ),
+      gasLimit: z.string().optional().describe(
+        "Optional. The gas limit for the transaction"
+      ),
+      gasPrice: z.string().optional().describe(
+        "Optional. The gas price (in gwei) for legacy transactions"
+      ),
+      maxFeePerGas: z.string().optional().describe(
+        "Optional. The maximum fee per gas (in gwei) for EIP-1559 transactions"
+      ),
+      maxPriorityFeePerGas: z.string().optional().describe(
+        "Optional. The maximum priority fee per gas (in gwei) for EIP-1559 transactions"
+      )
+    },
+    async ({ toAddress, value, fromAddress, provider, chainId, gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas }) => {
+      try {
+        // Prepare gas options
+        const options = {
+          gasLimit,
+          gasPrice,
+          maxFeePerGas,
+          maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareTransaction(
+          toAddress,
+          value,
+          fromAddress,
+          provider,
+          chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `ETH Transfer Transaction Prepared:
+
+From: ${fromAddress}
+To: ${toAddress}
+Amount: ${value} ETH
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  value: txRequest.value?.toString(),
+  from: txRequest.from,
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Prepare Contract Transaction tool
+  server.tool(
+    "prepareContractTransaction", 
+    "Prepare a smart contract interaction transaction for signing. Returns transaction data that can be signed and broadcast.",
+    {
+      contractAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
+        "The smart contract address to interact with"
+      ),
+      data: z.string().regex(/^0x[a-fA-F0-9]*$/).describe(
+        "The contract interaction data (encoded function call) as hex string"
+      ),
+      value: z.string().optional().default("0").describe(
+        "Optional. The amount of ETH to send with the transaction (default: '0')"
+      ),
+      fromAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe(
+        "The Ethereum address sending the transaction"
+      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use."
+      ),
+      gasLimit: z.string().optional().describe(
+        "Optional. The gas limit for the transaction"
+      ),
+      gasPrice: z.string().optional().describe(
+        "Optional. The gas price (in gwei) for legacy transactions"
+      ),
+      maxFeePerGas: z.string().optional().describe(
+        "Optional. The maximum fee per gas (in gwei) for EIP-1559 transactions"
+      ),
+      maxPriorityFeePerGas: z.string().optional().describe(
+        "Optional. The maximum priority fee per gas (in gwei) for EIP-1559 transactions"
+      )
+    },
+    async ({ contractAddress, data, value, fromAddress, provider, chainId, gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas }) => {
+      try {
+        // Prepare gas options
+        const options = {
+          gasLimit,
+          gasPrice,
+          maxFeePerGas,
+          maxPriorityFeePerGas
+        };
+        
+        const txRequest = await ethersService.prepareContractTransaction(
+          contractAddress,
+          data,
+          value || "0",
+          fromAddress,
+          provider,
+          chainId,
+          options
+        );
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Contract Transaction Prepared:
+
+Contract: ${contractAddress}
+From: ${fromAddress}
+Value: ${value || "0"} ETH
+Data: ${data}
+
+Transaction Data:
+${JSON.stringify({
+  to: txRequest.to,
+  data: txRequest.data,
+  value: txRequest.value?.toString(),
+  from: txRequest.from,
+  gasLimit: txRequest.gasLimit?.toString(),
+  gasPrice: txRequest.gasPrice?.toString(),
+  maxFeePerGas: txRequest.maxFeePerGas?.toString(),
+  maxPriorityFeePerGas: txRequest.maxPriorityFeePerGas?.toString(),
+  chainId: txRequest.chainId
+}, null, 2)}
+
+This transaction is ready to be signed and broadcast.`
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error preparing contract transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Send Signed Transaction tool
+  server.tool(
+    "sendSignedTransaction",
+    "Send a signed transaction to the blockchain network. Returns transaction hash and receipt.",
+    {
+      signedTransaction: z.string().regex(/^0x[a-fA-F0-9]*$/).describe(
+        "The signed transaction data as hex string"
+      ),
+      provider: z.string().optional().describe(PROVIDER_DESCRIPTION),
+      chainId: z.number().optional().describe(
+        "Optional. The chain ID to use."
+      )
+    },
+    async ({ signedTransaction, provider, chainId }) => {
+      try {
+        const result = await ethersService.sendSignedTransaction(
+          signedTransaction,
+          provider,
+          chainId
+        );
+        
+        let responseText = `Transaction Sent Successfully:
+
+Transaction Hash: ${result.hash}`;
+        
+        if (result.receipt) {
+          responseText += `
+Transaction Receipt:
+- Block Number: ${result.receipt.blockNumber}
+- Block Hash: ${result.receipt.blockHash}
+- Gas Used: ${result.receipt.gasUsed.toString()}
+- Status: ${result.receipt.status === 1 ? 'Success' : 'Failed'}`;
+        } else {
+          responseText += `
+Transaction Status: Pending (receipt not yet available)`;
+        }
+        
+        return {
+          content: [{ 
+            type: "text", 
+            text: responseText
+          }]
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ 
+            type: "text", 
+            text: `Error sending signed transaction: ${error instanceof Error ? error.message : String(error)}`
+          }]
+        };
+      }
+    }
+  );
 }
